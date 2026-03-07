@@ -1,0 +1,12 @@
+services:
+  app:
+#    image: yourname/my-app:latest # TODO: replace when it's ready
+    build: .        # TODO: remove. Builds from local Dockerfile instead of pulling image
+    ports:
+      - "3000:3000"
+    volumes:
+      - app-data:/app/data   # persist any data
+    restart: unless-stopped
+
+volumes:
+  app-data:

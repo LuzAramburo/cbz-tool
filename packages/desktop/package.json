@@ -1,0 +1,12 @@
+{
+  "name": "@my-app/desktop",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon --watch ../server --ext js --exec electron index.js"
+  },
+  "dependencies": {
+    "@my-app/server": "*",
+    "electron": "^38.8.4"
+  }
+}
