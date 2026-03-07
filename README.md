@@ -22,13 +22,25 @@ cbz-tool/
         └── index.js      ← spawns server, loads Vite in dev / Express in prod
 ```
 
-# Running the app
-- `npm run dev` for Vite + Electron (full desktop, hot reload)
-- `npm run dev:web` for Vite + Express only (browser at localhost:5173)
+## Packages
+- server: Node.js + Express. Exports start(port) for Electron to consume. bin.js is the standalone entry point for Docker.
+- ui: Vite + React + TypeScript. In dev proxies /api to Express on :3000. Builds static files into server/public.
+- desktop: Electron only (~15 lines). Imports and spawns server, loads localhost:5173 (Vite) in dev and localhost:3000 (Express) in prod.
 
-# Building the app
-- `npm run build` builds UI + docker image
-- `npm run publish` pushes to Docker Hub
+## Key decisions
+- Electron is a thin wrapper around the server — no business logic lives in desktop
+- UI has no knowledge of Electron
+- server/public is git ignored — it's a build artifact
+- ESLint + Prettier configured at root level, React-specific rules scoped to packages/ui via files glob
+
+## Dev scripts (root)
+- npm run dev       → Vite + Electron (full desktop, hot reload)
+- npm run dev:web   → Vite + Express only (browser at localhost:5173)
+- npm run build     → builds UI then bakes into Docker image
+- npm run lint      → ESLint across all packages
+- npm run format    → Prettier across all packages
+
+# Deployment
 
 # Self-hosting
 **download the compose file**
@@ -40,10 +52,14 @@ curl -O https://raw.githubusercontent.com/LuzAramburo/cbz-tool/main/docker-compo
 ```
 docker compose up -d
 ```
+# Desktop
+Electron (npm run dev for development)
 
-# Publishing
+# Publishing Docker image
+Docker image ships server + built UI only — no Electron code
+
 1. build UI + bake into docker image
 `npm run build`
 
-# 2. push image to Docker Hub
+2. push image to Docker Hub
 `docker push LuzAramburo/cbz-tool:latest`
