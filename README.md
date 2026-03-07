@@ -15,8 +15,8 @@ my-app/
     │   ├── vite.config.js ← proxies /api to Express in dev, builds to server/public
     │   ├── index.html
     │   └── src/
-    │       ├── main.jsx
-    │       └── App.jsx
+    │       ├── main.tsx
+    │       └── App.tsx
     └── desktop/
         ├── package.json
         └── index.js      ← spawns server, loads Vite in dev / Express in prod
