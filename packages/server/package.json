@@ -1,5 +1,5 @@
 {
-  "name": "@my-app/server",
+  "name": "@cbz-tool/server",
   "version": "1.0.0",
   "type": "module",
   "main": "index.js",

@@ -1,29 +1,29 @@
 {
-    "name": "my-app",
-    "private": true,
-    "workspaces": [
-        "packages/*"
-    ],
-    "scripts": {
-        "dev": "cross-env NODE_ENV=development concurrently \"npm run dev -w packages/ui\" \"npm run dev -w packages/desktop\"",
-        "dev:web": "cross-env NODE_ENV=development concurrently \"npm run dev -w packages/ui\" \"npm run dev -w packages/server\"",
-        "build": "npm run build -w packages/ui && docker build -t yourname/my-app .",
-        "publish": "docker push yourname/my-app:latest",
-        "lint": "eslint packages",
-        "lint:fix": "eslint packages --fix",
-        "format": "prettier --write packages",
-        "format:check": "prettier --check packages"
-    },
-    "devDependencies": {
-        "@eslint/js": "^9.39.4",
-        "@types/eslint": "^9.6.1",
-        "concurrently": "^8.0.0",
-        "cross-env": "^7.0.0",
-        "eslint": "^9.39.4",
-        "eslint-plugin-react-hooks": "^7.0.1",
-        "eslint-plugin-react-refresh": "^0.5.2",
-        "nodemon": "^3.0.0",
-        "prettier": "^3.8.1",
-        "typescript-eslint": "^8.56.1"
-    }
+  "name": "cbz-tool",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development concurrently \"npm run dev -w packages/ui\" \"npm run dev -w packages/desktop\"",
+    "dev:web": "cross-env NODE_ENV=development concurrently \"npm run dev -w packages/ui\" \"npm run dev -w packages/server\"",
+    "build": "npm run build -w packages/ui && docker build -t LuzAramburo/cbz-tool .",
+    "publish": "docker push LuzAramburo/cbz-tool:latest",
+    "lint": "eslint packages",
+    "lint:fix": "eslint packages --fix",
+    "format": "prettier --write packages",
+    "format:check": "prettier --check packages"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@types/eslint": "^9.6.1",
+    "concurrently": "^8.0.0",
+    "cross-env": "^7.0.0",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "nodemon": "^3.0.0",
+    "prettier": "^3.8.1",
+    "typescript-eslint": "^8.56.1"
+  }
 }

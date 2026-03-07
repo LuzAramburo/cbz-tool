@@ -1,12 +1,12 @@
 {
-  "name": "@my-app/desktop",
+  "name": "@cbz-tool/desktop",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "nodemon --watch ../server --ext js --exec electron index.js"
   },
   "dependencies": {
-    "@my-app/server": "*",
+    "@cbz-tool/server": "*",
     "electron": "^38.8.4"
   }
 }

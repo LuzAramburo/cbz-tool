@@ -1,6 +1,6 @@
 # Project structure
 ```
-my-app/
+cbz-tool/
 ├── package.json          ← workspace root, dev scripts
 ├── Dockerfile            ← builds server + baked UI into image
 ├── docker-compose.yml    ← for local testing (build:) / self-hosters (image:)
@@ -33,7 +33,7 @@ my-app/
 # Self-hosting
 **download the compose file**
 ```
-curl -O https://raw.githubusercontent.com/yourname/my-app/main/docker-compose.yml
+curl -O https://raw.githubusercontent.com/LuzAramburo/cbz-tool/main/docker-compose.yml
 ```
 
 **run it**
@@ -46,4 +46,4 @@ docker compose up -d
 `npm run build`
 
 # 2. push image to Docker Hub
-`docker push yourname/my-app:latest`
+`docker push LuzAramburo/cbz-tool:latest`
