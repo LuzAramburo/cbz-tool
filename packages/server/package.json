@@ -4,10 +4,16 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "node bin.js",
-    "dev": "nodemon bin.js"
+    "build": "tsc",
+    "start": "node dist/bin.js",
+    "dev": "nodemon --watch . --ext ts --exec \"tsc && node dist/bin.js\""
   },
   "dependencies": {
     "express": "^4.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.4.0",
+    "@types/express": "^5.0.6",
+    "typescript": "^5.9.3"
   }
 }
