@@ -1,16 +1,17 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-    plugins: [react()],
-    server: {
-        port: 5173,
-        proxy: {
-            '/api': 'http://localhost:3000'   // forward API calls to Express
-        }
+  plugins: [react(), tailwindcss()],
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': 'http://localhost:3000', // forward API calls to Express
     },
-    build: {
-        outDir: '../server/public',         // builds into server's public folder
-        emptyOutDir: true
-    }
+  },
+  build: {
+    outDir: '../server/public', // builds into server's public folder
+    emptyOutDir: true,
+  },
 });
