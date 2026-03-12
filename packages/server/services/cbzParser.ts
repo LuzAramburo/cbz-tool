@@ -12,12 +12,12 @@ const MIME: Record<string, 'image/jpeg' | 'image/png' | 'image/webp'> = {
   webp: 'image/webp',
 };
 
-function getMime(filename: string): 'image/jpeg' | 'image/png' | 'image/webp' {
+export function getMime(filename: string): 'image/jpeg' | 'image/png' | 'image/webp' {
   const ext = filename.split('.').pop()?.toLowerCase() ?? '';
   return MIME[ext] ?? 'image/jpeg';
 }
 
-function isImageEntry(filename: string): boolean {
+export function isImageEntry(filename: string): boolean {
   return (
     IMAGE_PATTERN.test(filename) && !filename.startsWith('__MACOSX') && !filename.startsWith('.')
   );
@@ -35,7 +35,7 @@ function readEntry(zipFile: yauzl.ZipFile, entry: yauzl.Entry): Promise<Buffer> 
   });
 }
 
-function parseMetadata(xml: string): ComicMetadata | null {
+export function parseMetadata(xml: string): ComicMetadata | null {
   try {
     const parser = new XMLParser({ ignoreAttributes: false });
     const parsed = parser.parse(xml);

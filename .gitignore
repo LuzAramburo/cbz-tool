@@ -2,5 +2,6 @@
 node_modules/
 packages/server/public/
 packages/server/dist
+/packages/server/coverage/
 
 /.claude/settings.local.json
