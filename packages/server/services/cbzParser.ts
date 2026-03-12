@@ -40,15 +40,15 @@ function parseMetadata(xml: string): ComicMetadata | null {
     const parser = new XMLParser({ ignoreAttributes: false });
     const parsed = parser.parse(xml);
     const info = parsed?.ComicInfo;
-    if (!info) return null;
-    return {
-      title: info.Title ?? undefined,
-      series: info.Series ?? undefined,
-      issue: info.Number != null ? String(info.Number) : undefined,
-      publisher: info.Publisher ?? undefined,
-      year: info.Year != null ? String(info.Year) : undefined,
-      summary: info.Summary ?? undefined,
-    };
+    if (!info || typeof info !== 'object') return null;
+    const metadata: ComicMetadata = {};
+    for (const [key, value] of Object.entries(info)) {
+      if (key.startsWith('@_')) continue;
+      if (value != null && typeof value !== 'object') {
+        metadata[key.toLowerCase()] = String(value);
+      }
+    }
+    return Object.keys(metadata).length > 0 ? metadata : null;
   } catch {
     return null;
   }

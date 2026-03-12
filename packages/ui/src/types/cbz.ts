@@ -3,14 +3,7 @@ export interface PageInfo {
   filename: string;
 }
 
-export interface ComicMetadata {
-  title?: string;
-  series?: string;
-  issue?: string;
-  publisher?: string;
-  year?: string;
-  summary?: string;
-}
+export type ComicMetadata = Record<string, string>;
 
 export interface UploadResponse {
   bookId: string;

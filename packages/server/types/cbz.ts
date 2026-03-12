@@ -5,14 +5,7 @@ export interface PageEntry {
   mimeType: 'image/jpeg' | 'image/png' | 'image/webp';
 }
 
-export interface ComicMetadata {
-  title?: string;
-  series?: string;
-  issue?: string;
-  publisher?: string;
-  year?: string;
-  summary?: string;
-}
+export type ComicMetadata = Record<string, string>;
 
 export interface Book {
   bookId: string;
