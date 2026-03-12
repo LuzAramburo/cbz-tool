@@ -1,3 +1,16 @@
+# CBZ Tool
+
+A tool for managing CBZ (Comic Book Zip) files. Upload a CBZ and inspect its contents — page images are displayed in a grid and any embedded metadata (title, series, publisher, etc.) is shown in a collapsible panel.
+
+Runs as a desktop app (Electron), a self-hosted web app (Docker), or a plain web server.
+
+## Features
+- Upload a CBZ file via file picker or drag and drop
+- View all pages as a grid of images
+- Display embedded ComicInfo.xml metadata fields
+
+---
+
 # Project structure
 ```
 cbz-tool/
