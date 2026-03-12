@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { UploadResponse } from '../types/cbz';
 
 interface PageListProps {
@@ -6,11 +7,21 @@ interface PageListProps {
 
 export default function PageList({ book }: PageListProps) {
   const metadataEntries = book.metadata ? Object.entries(book.metadata) : [];
+  const [metaOpen, setMetaOpen] = useState(true);
 
   return (
     <div className="flex flex-col gap-6">
       {metadataEntries.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 bg-white border rounded-xl">
+        <div className="bg-white border rounded-xl overflow-hidden">
+          <button
+            onClick={() => setMetaOpen((o) => !o)}
+            className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            <span>Metadata</span>
+            <span className="text-gray-400">{metaOpen ? '▲' : '▼'}</span>
+          </button>
+          {metaOpen && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 border-t">
           {metadataEntries.map(([key, value]) => (
             <div
               key={key}
@@ -34,6 +45,8 @@ export default function PageList({ book }: PageListProps) {
               )}
             </div>
           ))}
+          </div>
+          )}
         </div>
       )}
 
