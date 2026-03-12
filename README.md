@@ -42,7 +42,7 @@ cbz-tool/
 
 # Deployment
 
-# Self-hosting
+## Self-hosting
 **download the compose file**
 ```
 curl -O https://raw.githubusercontent.com/LuzAramburo/cbz-tool/main/docker-compose.yml
@@ -52,10 +52,10 @@ curl -O https://raw.githubusercontent.com/LuzAramburo/cbz-tool/main/docker-compo
 ```
 docker compose up -d
 ```
-# Desktop
+## Desktop
 Electron (npm run dev for development)
 
-# Publishing Docker image
+## Publishing Docker image
 Docker image ships server + built UI only — no Electron code
 
 1. build UI + bake into docker image
