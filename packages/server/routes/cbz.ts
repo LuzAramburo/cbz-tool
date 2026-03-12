@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import { parseCbz } from '../services/cbzParser.js';
-import { saveBook, getBook, deleteBook } from '../services/cbzStore.js';
+import { saveBook, getBook, deleteBook, removePage } from '../services/cbzStore.js';
 import type { UploadResponse } from '../types/cbz.js';
 
 const router = Router();
@@ -49,6 +49,29 @@ router.get('/:bookId/page/:index', (req: Request, res: Response) => {
 
   res.setHeader('Content-Type', page.mimeType);
   res.send(page.data);
+});
+
+router.delete('/:bookId/page/:index', (req: Request, res: Response) => {
+  const bookId = req.params['bookId'] as string;
+  const indexParam = req.params['index'] as string;
+
+  if (!getBook(bookId)) {
+    res.status(404).json({ error: 'Book not found' });
+    return;
+  }
+
+  const index = parseInt(indexParam, 10);
+  const book = getBook(bookId);
+  if (isNaN(index) || !book || index < 0 || index >= book.pages.length) {
+    res.status(404).json({ error: 'Page not found' });
+    return;
+  }
+
+  const updated = removePage(bookId, index)!;
+  res.json({
+    pageCount: updated.pages.length,
+    pages: updated.pages.map(({ index: i, filename }) => ({ index: i, filename })),
+  });
 });
 
 router.delete('/:bookId', (req: Request, res: Response) => {

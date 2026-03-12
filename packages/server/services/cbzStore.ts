@@ -13,3 +13,12 @@ export function getBook(id: string): Book | undefined {
 export function deleteBook(id: string): void {
   store.delete(id);
 }
+
+export function removePage(bookId: string, index: number): Book | undefined {
+  const book = store.get(bookId);
+  if (!book) return undefined;
+  book.pages = book.pages
+    .filter((_, i) => i !== index)
+    .map((page, i) => ({ ...page, index: i }));
+  return book;
+}
