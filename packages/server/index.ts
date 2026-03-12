@@ -13,10 +13,11 @@ export function start(port = 3000): Server {
   app.use('/api/cbz', cbzRouter);
 
   if (process.env.NODE_ENV !== 'development') {
-    app.use(express.static(join(__dirname, 'public')));
+    const publicDir = join(__dirname, '..', 'public');
+    app.use(express.static(publicDir));
 
     app.get('*', (req: Request, res: Response) => {
-      res.sendFile(join(__dirname, 'public', 'index.html'));
+      res.sendFile(join(publicDir, 'index.html'));
     });
   }
 

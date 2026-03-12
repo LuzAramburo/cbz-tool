@@ -5,3 +5,4 @@ packages/server/dist
 /packages/server/coverage/
 
 /.claude/settings.local.json
+/packages/desktop/release/

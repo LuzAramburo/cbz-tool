@@ -1,12 +1,36 @@
 {
   "name": "@cbz-tool/desktop",
   "version": "1.0.0",
+  "description": "CBZ Tool desktop app",
+  "author": "LuzAramburo",
   "type": "module",
+  "main": "index.js",
   "scripts": {
-    "dev": "nodemon --watch ../server --ext js --exec electron index.js"
+    "dev": "nodemon --watch ../server --ext js --exec electron index.js",
+    "package": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder"
   },
   "dependencies": {
-    "@cbz-tool/server": "*",
-    "electron": "^38.8.4"
+    "@cbz-tool/server": "*"
+  },
+  "devDependencies": {
+    "electron": "^38.8.4",
+    "electron-builder": "^26.8.1"
+  },
+  "build": {
+    "appId": "com.luzaramburo.cbz-tool",
+    "electronVersion": "38.8.4",
+    "productName": "CBZ Tool",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "index.js",
+      "node_modules/**",
+      "!node_modules/.cache/**"
+    ],
+    "win": {
+      "target": "nsis",
+      "forceCodeSigning": false
+    }
   }
 }
