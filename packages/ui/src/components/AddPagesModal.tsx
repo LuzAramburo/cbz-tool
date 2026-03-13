@@ -17,12 +17,18 @@ export default function AddPagesModal({ onClose, onAddPages, loading, totalPages
   const [stagedFiles, setStagedFiles] = useState<File[]>([]);
   const [insertAt, setInsertAt] = useState<number>(totalPages);
   const [dragOver, setDragOver] = useState(false);
+  const [rejectedCount, setRejectedCount] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const ACCEPTED = /\.(jpe?g|png|webp)$/i;
 
   function appendFiles(incoming: FileList | null) {
     if (!incoming) return;
-    const newFiles = Array.from(incoming);
-    setStagedFiles((prev) => [...prev, ...newFiles]);
+    const all = Array.from(incoming);
+    const accepted = all.filter((f) => ACCEPTED.test(f.name));
+    const rejected = all.length - accepted.length;
+    setRejectedCount(rejected);
+    setStagedFiles((prev) => [...prev, ...accepted]);
   }
 
   function handleDrop(e: React.DragEvent<HTMLDivElement>) {
@@ -108,6 +114,12 @@ export default function AddPagesModal({ onClose, onAddPages, loading, totalPages
               onChange={handleInputChange}
             />
           </div>
+
+          {rejectedCount > 0 && (
+            <p className="text-red-500 text-xs">
+              {rejectedCount} file{rejectedCount !== 1 ? 's were' : ' was'} skipped — only JPG, PNG, and WEBP are supported.
+            </p>
+          )}
 
           {/* Staged files */}
           {stagedFiles.length > 0 && (

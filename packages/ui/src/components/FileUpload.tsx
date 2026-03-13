@@ -7,10 +7,14 @@ interface FileUploadProps {
 
 export default function FileUpload({ onUpload, loading }: FileUploadProps) {
   const [dragging, setDragging] = useState(false);
+  const [formatError, setFormatError] = useState<string | null>(null);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (file) onUpload(file);
+    if (file) {
+      setFormatError(null);
+      onUpload(file);
+    }
     e.target.value = '';
   }
 
@@ -19,7 +23,13 @@ export default function FileUpload({ onUpload, loading }: FileUploadProps) {
     setDragging(false);
     if (loading) return;
     const file = e.dataTransfer.files[0];
-    if (file) onUpload(file);
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith('.cbz')) {
+      setFormatError(`"${file.name}" is not a CBZ file.`);
+      return;
+    }
+    setFormatError(null);
+    onUpload(file);
   }
 
   function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
@@ -43,6 +53,9 @@ export default function FileUpload({ onUpload, loading }: FileUploadProps) {
       <p className="text-gray-500 text-sm">
         {dragging ? 'Drop CBZ file here' : 'Drag & drop a CBZ file, or click to select'}
       </p>
+      {formatError && (
+        <p className="text-red-500 text-xs">{formatError}</p>
+      )}
       <label
         className={`cursor-pointer px-6 py-2 rounded-lg text-white font-medium transition-colors ${loading ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'}`}
       >
