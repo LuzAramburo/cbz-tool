@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
-import { parseCbz } from '../services/cbzParser.js';
-import { saveBook, getBook, deleteBook, removePage } from '../services/cbzStore.js';
+import { parseCbz, isImageEntry, getMime } from '../services/cbzParser.js';
+import { saveBook, getBook, deleteBook, removePage, addPages } from '../services/cbzStore.js';
 import type { UploadResponse } from '../types/cbz.js';
 
 const router = Router();
@@ -49,6 +49,49 @@ router.get('/:bookId/page/:index', (req: Request, res: Response) => {
 
   res.setHeader('Content-Type', page.mimeType);
   res.send(page.data);
+});
+
+router.post('/:bookId/pages', upload.array('files'), (req: Request, res: Response) => {
+  const bookId = req.params['bookId'] as string;
+  const book = getBook(bookId);
+  if (!book) {
+    res.status(404).json({ error: 'Book not found' });
+    return;
+  }
+
+  const files = req.files as Express.Multer.File[] | undefined;
+  if (!files || files.length === 0) {
+    res.status(400).json({ error: 'No files provided' });
+    return;
+  }
+
+  for (const file of files) {
+    if (!isImageEntry(file.originalname)) {
+      res.status(400).json({ error: `Unsupported file type: ${file.originalname}` });
+      return;
+    }
+  }
+
+  let insertAt = book.pages.length;
+  if (req.body['insertAt'] !== undefined) {
+    insertAt = parseInt(req.body['insertAt'], 10);
+    if (isNaN(insertAt) || insertAt < 0 || insertAt > book.pages.length) {
+      res.status(400).json({ error: 'insertAt out of range' });
+      return;
+    }
+  }
+
+  const newPages = files.map((file) => ({
+    filename: file.originalname,
+    data: file.buffer,
+    mimeType: getMime(file.originalname),
+  }));
+
+  const updated = addPages(bookId, insertAt, newPages)!;
+  res.json({
+    pageCount: updated.pages.length,
+    pages: updated.pages.map(({ index: i, filename }) => ({ index: i, filename })),
+  });
 });
 
 router.delete('/:bookId/page/:index', (req: Request, res: Response) => {
