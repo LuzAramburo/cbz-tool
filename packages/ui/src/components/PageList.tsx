@@ -26,7 +26,7 @@ export default function PageList({ book, onRemovePage }: PageListProps) {
         <div className="bg-white border rounded-xl overflow-hidden">
           <button
             onClick={() => setMetaOpen((o) => !o)}
-            className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            className="cursor-pointer w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
           >
             <span>Metadata</span>
             <span className="text-gray-400">{metaOpen ? '▲' : '▼'}</span>
@@ -74,7 +74,7 @@ export default function PageList({ book, onRemovePage }: PageListProps) {
               <div className="absolute inset-x-0 bottom-0 flex items-center justify-center rounded-b-lg bg-black/50 py-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
                   onClick={() => setPendingIndex(page.index)}
-                  className="text-white hover:text-red-300 transition-colors"
+                  className="cursor-pointer text-white hover:text-red-300 transition-colors"
                   title="Remove page"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -101,14 +101,14 @@ export default function PageList({ book, onRemovePage }: PageListProps) {
               <button
                 onClick={() => setPendingIndex(null)}
                 disabled={removing}
-                className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                className="cursor-pointer px-4 py-2 text-sm rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirmRemove}
                 disabled={removing}
-                className="px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50"
+                className="cursor-pointer px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {removing ? 'Removing…' : 'Remove'}
               </button>
