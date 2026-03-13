@@ -43,7 +43,20 @@ export default function FileUpload({ onUpload, loading }: FileUploadProps) {
       <p className="text-gray-500 text-sm">
         {dragging ? 'Drop CBZ file here' : 'Drag & drop a CBZ file, or click to select'}
       </p>
-      <label className={`cursor-pointer px-6 py-2 rounded-lg text-white font-medium transition-colors ${loading ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'}`}>
+      <label
+        className={`cursor-pointer px-6 py-2 rounded-lg text-white font-medium transition-colors ${loading ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'}`}
+      >
+        {loading && (
+          <svg className="inline-block mr-2 h-4 w-4 animate-spin" viewBox="0 0 16 16" fill="none">
+            <g fill="#ffffff" fill-rule="evenodd" clip-rule="evenodd">
+              <path
+                d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8z"
+                opacity=".2"
+              />
+              <path d="M7.25.75A.75.75 0 018 0a8 8 0 018 8 .75.75 0 01-1.5 0A6.5 6.5 0 008 1.5a.75.75 0 01-.75-.75z" />
+            </g>
+          </svg>
+        )}
         {loading ? 'Uploading...' : 'Open CBZ'}
         <input
           type="file"
