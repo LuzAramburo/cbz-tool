@@ -3,6 +3,7 @@ import type { UploadResponse } from '../types/cbz';
 
 interface UseCbzUpload {
   upload: (file: File) => Promise<void>;
+  removePage: (index: number) => Promise<void>;
   book: UploadResponse | null;
   loading: boolean;
   error: string | null;
@@ -36,5 +37,21 @@ export function useCbzUpload(): UseCbzUpload {
     }
   }
 
-  return { upload, book, loading, error };
+  async function removePage(index: number) {
+    if (!book) return;
+    try {
+      const res = await fetch(`/api/cbz/${book.bookId}/page/${index}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({})) as { error?: string };
+        setError(body.error ?? `Delete failed (${res.status})`);
+        return;
+      }
+      const data = await res.json() as { pageCount: number; pages: UploadResponse['pages'] };
+      setBook((prev) => prev ? { ...prev, pageCount: data.pageCount, pages: data.pages } : prev);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    }
+  }
+
+  return { upload, removePage, book, loading, error };
 }

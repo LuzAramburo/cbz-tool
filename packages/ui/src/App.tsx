@@ -3,7 +3,7 @@ import FileUpload from './components/FileUpload';
 import PageList from './components/PageList';
 
 export default function App() {
-  const { upload, book, loading, error } = useCbzUpload();
+  const { upload, removePage, book, loading, error } = useCbzUpload();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -20,7 +20,7 @@ export default function App() {
           </div>
         )}
 
-        {book && <PageList book={book} />}
+        {book && <PageList book={book} onRemovePage={removePage} />}
       </main>
     </div>
   );

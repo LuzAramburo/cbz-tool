@@ -3,11 +3,22 @@ import type { UploadResponse } from '../types/cbz';
 
 interface PageListProps {
   book: UploadResponse;
+  onRemovePage: (index: number) => Promise<void>;
 }
 
-export default function PageList({ book }: PageListProps) {
+export default function PageList({ book, onRemovePage }: PageListProps) {
   const metadataEntries = book.metadata ? Object.entries(book.metadata) : [];
   const [metaOpen, setMetaOpen] = useState(true);
+  const [pendingIndex, setPendingIndex] = useState<number | null>(null);
+  const [removing, setRemoving] = useState(false);
+
+  async function handleConfirmRemove() {
+    if (pendingIndex === null) return;
+    setRemoving(true);
+    await onRemovePage(pendingIndex);
+    setRemoving(false);
+    setPendingIndex(null);
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -52,17 +63,59 @@ export default function PageList({ book }: PageListProps) {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {book.pages.map((page) => (
-          <div key={page.index} className="flex flex-col gap-1">
-            <img
-              src={`/api/cbz/${book.bookId}/page/${page.index}`}
-              alt={page.filename}
-              className="w-full rounded-lg object-cover shadow"
-              loading="lazy"
-            />
+          <div key={page.filename} className="flex flex-col gap-1">
+            <div className="relative group">
+              <img
+                src={`/api/cbz/${book.bookId}/page/${page.index}?v=${encodeURIComponent(page.filename)}`}
+                alt={page.filename}
+                className="w-full rounded-lg object-cover shadow"
+                loading="lazy"
+              />
+              <div className="absolute inset-x-0 bottom-0 flex items-center justify-center rounded-b-lg bg-black/50 py-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  onClick={() => setPendingIndex(page.index)}
+                  className="text-white hover:text-red-300 transition-colors"
+                  title="Remove page"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                    <path d="M10 11v6" />
+                    <path d="M14 11v6" />
+                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                  </svg>
+                </button>
+              </div>
+            </div>
             <span className="text-xs text-center text-gray-400">{page.index + 1}</span>
           </div>
         ))}
       </div>
+
+      {pendingIndex !== null && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl w-80 p-6 flex flex-col gap-4">
+            <h2 className="text-base font-semibold text-gray-800">Remove page {pendingIndex + 1}?</h2>
+            <p className="text-sm text-gray-500">This action can't be undone.</p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setPendingIndex(null)}
+                disabled={removing}
+                className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmRemove}
+                disabled={removing}
+                className="px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                {removing ? 'Removing…' : 'Remove'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
