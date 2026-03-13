@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 interface AddPagesModalProps {
   onClose: () => void;
@@ -14,6 +14,11 @@ function formatSize(bytes: number): string {
 }
 
 export default function AddPagesModal({ onClose, onAddPages, loading, totalPages }: AddPagesModalProps) {
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
   const [stagedFiles, setStagedFiles] = useState<File[]>([]);
   const [insertAt, setInsertAt] = useState<number>(totalPages);
   const [dragOver, setDragOver] = useState(false);
