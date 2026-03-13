@@ -20,7 +20,13 @@ export default function App() {
           </div>
         )}
 
-        {book && <PageList book={book} onRemovePage={removePage} />}
+        {book && (
+          <div
+            className={`transition-opacity ${loading ? 'opacity-40 select-none cursor-not-allowed *:pointer-events-none' : ''}`}
+          >
+            <PageList book={book} onRemovePage={removePage} />
+          </div>
+        )}
       </main>
     </div>
   );
