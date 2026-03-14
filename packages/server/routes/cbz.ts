@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
+import JSZip from 'jszip';
 import { parseCbz, isImageEntry, getMime } from '../services/cbzParser.js';
 import {
   saveBook,
@@ -152,6 +153,51 @@ router.delete('/:bookId/page/:index', (req: Request, res: Response) => {
     pageCount: updated.pages.length,
     pages: updated.pages.map(({ index: i, filename }) => ({ index: i, filename })),
   });
+});
+
+function buildComicInfoXml(metadata: Record<string, string>): string {
+  const fields = Object.entries(metadata)
+    .map(([k, v]) => `  <${k}>${v}</${k}>`)
+    .join('\n');
+  return `<?xml version="1.0"?>\n<ComicInfo>\n${fields}\n</ComicInfo>`;
+}
+
+function buildDownloadFilename(metadata: Record<string, string> | null): string {
+  if (!metadata) return 'book.cbz';
+  const title = metadata['title'] ?? metadata['Title'] ?? '';
+  const series = metadata['series'] ?? metadata['Series'] ?? '';
+  const number = metadata['number'] ?? metadata['Number'] ?? '';
+  const seriesParts = [series, number && `#${number}`].filter(Boolean);
+  if (seriesParts.length > 0) {
+    const name = title ? `${seriesParts.join(' ')} - ${title}` : seriesParts.join(' ');
+    return `${name}.cbz`;
+  }
+  return title ? `${title}.cbz` : 'book.cbz';
+}
+
+router.get('/:bookId/download', async (req: Request, res: Response) => {
+  const bookId = req.params['bookId'] as string;
+  const book = getBook(bookId);
+  if (!book) {
+    res.status(404).json({ error: 'Book not found' });
+    return;
+  }
+
+  const zip = new JSZip();
+
+  for (const page of book.pages) {
+    zip.file(page.filename, page.data);
+  }
+
+  if (book.metadata) {
+    zip.file('ComicInfo.xml', buildComicInfoXml(book.metadata));
+  }
+
+  const buffer = await zip.generateAsync({ type: 'nodebuffer', compression: 'STORE' });
+
+  res.setHeader('Content-Type', 'application/zip');
+  res.setHeader('Content-Disposition', `attachment; filename="${buildDownloadFilename(book.metadata)}"`);
+  res.send(buffer);
 });
 
 router.delete('/:bookId', (req: Request, res: Response) => {
