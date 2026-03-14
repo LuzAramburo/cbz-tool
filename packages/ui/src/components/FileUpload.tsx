@@ -41,7 +41,7 @@ export default function FileUpload({ onUpload, loading }: FileUploadProps) {
     setDragging(false);
   }
 
-  const borderColor = dragging ? 'border-blue-500' : 'border-gray-300 hover:border-blue-400';
+  const borderColor = dragging ? 'border-blue-500' : 'border-gray-300 hover:border-blue-400 dark:border-gray-600 dark:hover:border-blue-500';
 
   return (
     <div
@@ -50,7 +50,7 @@ export default function FileUpload({ onUpload, loading }: FileUploadProps) {
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
     >
-      <p className="text-gray-500 text-sm">
+      <p className="text-gray-500 dark:text-gray-400 text-sm">
         {dragging ? 'Drop CBZ file here' : 'Drag & drop a CBZ file, or click to select'}
       </p>
       {formatError && (

@@ -23,35 +23,35 @@ export default function PageList({ book, onRemovePage }: PageListProps) {
   return (
     <div className="flex flex-col gap-6">
       {metadataEntries.length > 0 && (
-        <div className="bg-white border rounded-xl overflow-hidden">
+        <div className="bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-xl overflow-hidden">
           <button
             onClick={() => setMetaOpen((o) => !o)}
-            className="cursor-pointer w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            className="cursor-pointer w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
             <span>Metadata</span>
-            <span className="text-gray-400">{metaOpen ? '▲' : '▼'}</span>
+            <span className="text-gray-400 dark:text-gray-500">{metaOpen ? '▲' : '▼'}</span>
           </button>
           {metaOpen && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 border-t">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 border-t dark:border-gray-700">
           {metadataEntries.map(([key, value]) => (
             <div
               key={key}
               className={`flex flex-col gap-1 ${key === 'summary' ? 'col-span-full' : ''}`}
             >
-              <label className="text-xs font-medium text-gray-500 capitalize">{key}</label>
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400 capitalize">{key}</label>
               {key === 'summary' ? (
                 <textarea
                   readOnly
                   value={value ?? ''}
                   rows={3}
-                  className="px-3 py-1.5 text-sm border rounded-lg bg-gray-50 text-gray-800 resize-y"
+                  className="px-3 py-1.5 text-sm border rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-200 resize-y"
                 />
               ) : (
                 <input
                   type="text"
                   readOnly
                   value={value ?? ''}
-                  className="px-3 py-1.5 text-sm border rounded-lg bg-gray-50 text-gray-800"
+                  className="px-3 py-1.5 text-sm border rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
                 />
               )}
             </div>
@@ -87,21 +87,21 @@ export default function PageList({ book, onRemovePage }: PageListProps) {
                 </button>
               </div>
             </div>
-            <span className="text-xs text-center text-gray-400">{page.index + 1}</span>
+            <span className="text-xs text-center text-gray-400 dark:text-gray-500">{page.index + 1}</span>
           </div>
         ))}
       </div>
 
       {pendingIndex !== null && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl w-80 p-6 flex flex-col gap-4">
-            <h2 className="text-base font-semibold text-gray-800">Remove page {pendingIndex + 1}?</h2>
-            <p className="text-sm text-gray-500">This action can't be undone.</p>
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-xl w-80 p-6 flex flex-col gap-4">
+            <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100">Remove page {pendingIndex + 1}?</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">This action can't be undone.</p>
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setPendingIndex(null)}
                 disabled={removing}
-                className="cursor-pointer px-4 py-2 text-sm rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="cursor-pointer px-4 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancel
               </button>
