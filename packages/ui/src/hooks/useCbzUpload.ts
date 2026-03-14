@@ -6,14 +6,17 @@ interface UseCbzUpload {
   removePage: (index: number) => Promise<void>;
   addPages: (files: File[], insertAt: number) => Promise<void>;
   movePage: (index: number, toIndex: number) => Promise<void>;
+  downloadBook: () => void;
   book: UploadResponse | null;
   loading: boolean;
+  downloading: boolean;
   error: string | null;
 }
 
 export function useCbzUpload(): UseCbzUpload {
   const [book, setBook] = useState<UploadResponse | null>(null);
   const [loading, setLoading] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function upload(file: File): Promise<boolean> {
@@ -102,5 +105,32 @@ export function useCbzUpload(): UseCbzUpload {
     }
   }
 
-  return { upload, removePage, addPages, movePage, book, loading, error };
+  async function downloadBook() {
+    if (!book) return;
+    setDownloading(true);
+    try {
+      const res = await fetch(`/api/cbz/${book.bookId}/download`);
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({})) as { error?: string };
+        setError(body.error ?? `Download failed (${res.status})`);
+        return;
+      }
+      const blob = await res.blob();
+      const disposition = res.headers.get('Content-Disposition') ?? '';
+      const match = disposition.match(/filename="([^"]+)"/);
+      const filename = match?.[1] ?? 'book.cbz';
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setDownloading(false);
+    }
+  }
+
+  return { upload, removePage, addPages, movePage, downloadBook, book, loading, downloading, error };
 }

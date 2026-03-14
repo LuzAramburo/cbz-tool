@@ -8,7 +8,7 @@ import ActionBar from './components/ActionBar';
 import ToggleThemeButton from './components/ToggleThemeButton.tsx';
 
 export default function App() {
-  const { upload, removePage, addPages, movePage, book, loading, error } = useCbzUpload();
+  const { upload, removePage, addPages, movePage, downloadBook, book, loading, downloading, error } = useCbzUpload();
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [addPagesModalOpen, setAddPagesModalOpen] = useState(false);
   const [dark, setDark] = useState(() => {
@@ -60,6 +60,8 @@ export default function App() {
             loading={loading}
             onUploadClick={() => setUploadModalOpen(true)}
             onAddPagesClick={() => setAddPagesModalOpen(true)}
+            onDownloadClick={downloadBook}
+            downloading={downloading}
           />
         )}
 
@@ -103,6 +105,8 @@ export default function App() {
             loading={loading}
             onUploadClick={() => setUploadModalOpen(true)}
             onAddPagesClick={() => setAddPagesModalOpen(true)}
+            onDownloadClick={downloadBook}
+            downloading={downloading}
           />
         </div>
       )}

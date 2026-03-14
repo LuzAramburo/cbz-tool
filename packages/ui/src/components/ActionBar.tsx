@@ -1,10 +1,14 @@
+import LoadingIcon from './LoadingIcon';
+
 interface ActionBarProps {
   loading: boolean;
+  downloading: boolean;
   onUploadClick: () => void;
   onAddPagesClick: () => void;
+  onDownloadClick: () => void;
 }
 
-export default function ActionBar({ loading, onUploadClick, onAddPagesClick }: ActionBarProps) {
+export default function ActionBar({ loading, downloading, onUploadClick, onAddPagesClick, onDownloadClick }: ActionBarProps) {
   return (
     <div className="flex gap-3">
       <button
@@ -20,6 +24,14 @@ export default function ActionBar({ loading, onUploadClick, onAddPagesClick }: A
         className="cursor-pointer px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all"
       >
         Add Pages
+      </button>
+      <button
+        onClick={onDownloadClick}
+        disabled={loading || downloading}
+        className="cursor-pointer px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+      >
+        {downloading && <LoadingIcon />}
+        {downloading ? 'Downloading…' : 'Download Book'}
       </button>
     </div>
   );
