@@ -13,14 +13,21 @@ function formatSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export default function AddPagesModal({ onClose, onAddPages, loading, totalPages }: AddPagesModalProps) {
+export default function AddPagesModal({
+  onClose,
+  onAddPages,
+  loading,
+  totalPages,
+}: AddPagesModalProps) {
   useEffect(() => {
     document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, []);
 
   const [stagedFiles, setStagedFiles] = useState<File[]>([]);
-  const [insertAt, setInsertAt] = useState<number>(totalPages);
+  const [insertAt, setInsertAt] = useState<number>(0);
   const [dragOver, setDragOver] = useState(false);
   const [rejectedCount, setRejectedCount] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -85,7 +92,7 @@ export default function AddPagesModal({ onClose, onAddPages, loading, totalPages
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b dark:border-gray-700 flex-shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b dark:border-gray-700 shrink-0">
           <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Add Pages</h2>
           <button
             onClick={onClose}
@@ -93,7 +100,12 @@ export default function AddPagesModal({ onClose, onAddPages, loading, totalPages
             aria-label="Close"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -111,7 +123,9 @@ export default function AddPagesModal({ onClose, onAddPages, loading, totalPages
             <p className="text-gray-500 dark:text-gray-400 text-sm text-center">
               {dragOver ? 'Drop images here' : 'Drag & drop images here, or click to browse'}
             </p>
-            <p className="text-gray-400 dark:text-gray-500 text-xs">Accepted: JPG, PNG, WEBP · Max 50 MB per file</p>
+            <p className="text-gray-400 dark:text-gray-500 text-xs">
+              Accepted: JPG, PNG, WEBP · Max 50 MB per file
+            </p>
             <input
               ref={inputRef}
               type="file"
@@ -124,7 +138,8 @@ export default function AddPagesModal({ onClose, onAddPages, loading, totalPages
 
           {rejectedCount > 0 && (
             <p className="text-red-500 text-xs">
-              {rejectedCount} file{rejectedCount !== 1 ? 's were' : ' was'} skipped — only JPG, PNG, and WEBP are supported.
+              {rejectedCount} file{rejectedCount !== 1 ? 's were' : ' was'} skipped — only JPG, PNG,
+              and WEBP are supported.
             </p>
           )}
 
@@ -147,15 +162,29 @@ export default function AddPagesModal({ onClose, onAddPages, loading, totalPages
               <ul className="border border-gray-200 dark:border-gray-700 rounded-lg divide-y divide-gray-100 dark:divide-gray-700 max-h-40 overflow-y-auto">
                 {stagedFiles.map((f, i) => (
                   <li key={i} className="flex items-center justify-between px-3 py-2 text-sm">
-                    <span className="text-gray-700 dark:text-gray-300 truncate flex-1 mr-2">{f.name}</span>
-                    <span className="text-gray-400 dark:text-gray-500 text-xs mr-2 flex-shrink-0">{formatSize(f.size)}</span>
+                    <span className="text-gray-700 dark:text-gray-300 truncate flex-1 mr-2">
+                      {f.name}
+                    </span>
+                    <span className="text-gray-400 dark:text-gray-500 text-xs mr-2 shrink-0">
+                      {formatSize(f.size)}
+                    </span>
                     <button
                       onClick={() => removeFile(i)}
-                      className="text-gray-400 dark:text-gray-500 hover:text-red-500 transition-colors flex-shrink-0"
+                      className="text-gray-400 dark:text-gray-500 hover:text-red-500 transition-colors shrink-0"
                       aria-label={`Remove ${f.name}`}
                     >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
                       </svg>
                     </button>
                   </li>
@@ -166,7 +195,9 @@ export default function AddPagesModal({ onClose, onAddPages, loading, totalPages
 
           {/* Insert position */}
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Insert at position</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Insert at position
+            </label>
             <input
               type="number"
               min={0}
@@ -182,7 +213,7 @@ export default function AddPagesModal({ onClose, onAddPages, loading, totalPages
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t dark:border-gray-700 flex-shrink-0">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t dark:border-gray-700 shrink-0">
           <button
             onClick={onClose}
             className="cursor-pointer px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
@@ -194,7 +225,11 @@ export default function AddPagesModal({ onClose, onAddPages, loading, totalPages
             disabled={stagedFiles.length === 0 || loading}
             className="cursor-pointer px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors"
           >
-            {loading ? 'Adding...' : stagedFiles.length > 0 ? `Add ${stagedFiles.length} Page${stagedFiles.length !== 1 ? 's' : ''}` : 'Add Pages'}
+            {loading
+              ? 'Adding...'
+              : stagedFiles.length > 0
+                ? `Add ${stagedFiles.length} Page${stagedFiles.length !== 1 ? 's' : ''}`
+                : 'Add Pages'}
           </button>
         </div>
       </div>
