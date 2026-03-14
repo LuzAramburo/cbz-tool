@@ -55,9 +55,9 @@ packages/
 
 ### Server internals (`packages/server/`)
 - `index.ts` — Express app factory, mounts the CBZ router, serves static UI in prod
-- `routes/cbz.ts` — Five endpoints: `POST /api/cbz/upload`, `GET /api/cbz/:bookId/page/:index`, `POST /api/cbz/:bookId/pages` (multer `upload.array('files')`, body `insertAt`; returns `{ pageCount, pages }`), `DELETE /api/cbz/:bookId/page/:index` (returns updated `{ pageCount, pages }`), `DELETE /api/cbz/:bookId` (204)
+- `routes/cbz.ts` — Seven endpoints: `POST /api/cbz/upload`, `GET /api/cbz/:bookId/page/:index`, `POST /api/cbz/:bookId/pages` (multer `upload.array('files')`, body `insertAt`; returns `{ pageCount, pages }`), `PATCH /api/cbz/:bookId/page/:index` (body `{ toIndex }`; returns `{ pageCount, pages }`), `DELETE /api/cbz/:bookId/page/:index` (returns updated `{ pageCount, pages }`), `GET /api/cbz/:bookId/download` (rebuilds ZIP with JSZip, re-embeds `ComicInfo.xml`; filename derived from metadata: `Series #N - Title.cbz`), `DELETE /api/cbz/:bookId` (204)
 - `services/cbzParser.ts` — Core logic: reads a ZIP buffer with yauzl, filters images (jpg/png/webp), natural-sorts pages, parses `ComicInfo.xml` with fast-xml-parser. `getMime`, `isImageEntry`, and `parseMetadata` are exported for unit testing.
-- `services/cbzStore.ts` — In-memory `Map<bookId, Book>` storing raw image buffers. Single-user, no persistence. `addPages` splices entries at `insertAt` and resolves filename collisions via `uniqueFilename`; all page `index` fields are rewritten after every mutation.
+- `services/cbzStore.ts` — In-memory `Map<bookId, Book>` storing raw image buffers. Single-user, no persistence. `addPages` splices entries at `insertAt` and resolves filename collisions via `uniqueFilename`; `movePage` splices the page out and re-inserts at `toIndex`; all page `index` fields are rewritten after every mutation.
 
 ### Data flow
 1. UI uploads a `.cbz` file via `POST /api/cbz/upload` (multer, 50 MB limit)
@@ -65,9 +65,10 @@ packages/
 3. UI renders `<img src="/api/cbz/:bookId/page/:index">` — browser fetches each image directly, server streams the buffer
 
 ### UI internals (`packages/ui/src/`)
-- `hooks/useCbzUpload.ts` — manages upload state (`book`, `loading`, `error`); exposes `upload` (returns `Promise<boolean>` — `true` on success), `removePage`, and `addPages`
+- `hooks/useCbzUpload.ts` — manages upload state (`book`, `loading`, `downloading`, `error`); exposes `upload` (returns `Promise<boolean>` — `true` on success), `removePage`, `addPages`, `movePage`, and `downloadBook` (fetches `/download`, reads `Content-Disposition` filename, triggers browser save)
 - `components/FileUpload.tsx` — file picker + drag-and-drop zone; validates `.cbz` extension on drop
-- `components/PageList.tsx` — collapsible metadata panel + responsive image grid with per-page delete (hover overlay → confirmation modal)
+- `components/BookMetadata.tsx` — collapsible metadata panel; `summary` key gets a `<textarea>`, all others `<input readOnly>`; returns `null` when no entries
+- `components/PageGrid.tsx` — responsive image grid with move and delete modals; owns all page-interaction state (`pendingIndex`, `movingIndex`, `moveToSource`)
 - `components/UploadBookModal.tsx` — wraps `FileUpload` in a modal; uses `handleUploadAndClose` in `App.tsx` so the modal closes only on successful upload
 - `components/AddPagesModal.tsx` — stages image files (jpg/png/webp), picks insert position, calls `addPages`; filters unsupported formats on select/drop
 - Image `src` URLs include `?v={filename}` as a cache-buster so the browser refetches after pages are renumbered server-side
