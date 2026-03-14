@@ -4,6 +4,7 @@ import FileUpload from './components/FileUpload';
 import PageList from './components/PageList';
 import UploadBookModal from './components/UploadBookModal';
 import AddPagesModal from './components/AddPagesModal';
+import ActionBar from './components/ActionBar';
 
 export default function App() {
   const { upload, removePage, addPages, book, loading, error } = useCbzUpload();
@@ -26,11 +27,14 @@ export default function App() {
   }
 
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [showStickyBar, setShowStickyBar] = useState(false);
 
   useEffect(() => {
     function onScroll() {
       const docHeight = document.documentElement.scrollHeight;
-      setShowScrollTop(docHeight > 800 && window.scrollY >= docHeight * 0.4);
+      const scrolled = window.scrollY;
+      setShowScrollTop(docHeight > 800 && scrolled >= docHeight * 0.4);
+      setShowStickyBar(scrolled >= window.innerHeight);
     }
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
@@ -91,22 +95,11 @@ export default function App() {
         {!book ? (
           <FileUpload onUpload={upload} loading={loading} />
         ) : (
-          <div className="flex gap-3">
-            <button
-              onClick={() => setUploadModalOpen(true)}
-              disabled={loading}
-              className="cursor-pointer px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:shadow-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
-              Upload New Book
-            </button>
-            <button
-              onClick={() => setAddPagesModalOpen(true)}
-              disabled={loading}
-              className="cursor-pointer px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
-              Add Pages
-            </button>
-          </div>
+          <ActionBar
+            loading={loading}
+            onUploadClick={() => setUploadModalOpen(true)}
+            onAddPagesClick={() => setAddPagesModalOpen(true)}
+          />
         )}
 
         {error && (
@@ -139,6 +132,18 @@ export default function App() {
           loading={loading}
           totalPages={book.pageCount}
         />
+      )}
+
+      {book && (
+        <div
+          className={`fixed left-0 right-0 z-40 bg-white dark:bg-gray-900 border-b dark:border-gray-700 px-6 py-3 shadow-sm duration-500 transition-all ${showStickyBar ? 'top-0' : '-top-full'}`}
+        >
+          <ActionBar
+            loading={loading}
+            onUploadClick={() => setUploadModalOpen(true)}
+            onAddPagesClick={() => setAddPagesModalOpen(true)}
+          />
+        </div>
       )}
 
       <button
