@@ -30,7 +30,8 @@
     ],
     "win": {
       "target": "nsis",
-      "forceCodeSigning": false
+      "forceCodeSigning": false,
+      "icon": "../ui/public/favicon.ico"
     }
   }
 }
