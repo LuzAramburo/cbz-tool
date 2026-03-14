@@ -41,7 +41,9 @@ export default function FileUpload({ onUpload, loading }: FileUploadProps) {
     setDragging(false);
   }
 
-  const borderColor = dragging ? 'border-blue-500' : 'border-gray-300 hover:border-blue-400 dark:border-gray-600 dark:hover:border-blue-500';
+  const borderColor = dragging
+    ? 'border-blue-500'
+    : 'border-gray-300 hover:border-blue-400 dark:border-gray-600 dark:hover:border-blue-500';
 
   return (
     <div
@@ -53,15 +55,13 @@ export default function FileUpload({ onUpload, loading }: FileUploadProps) {
       <p className="text-gray-500 dark:text-gray-400 text-sm">
         {dragging ? 'Drop CBZ file here' : 'Drag & drop a CBZ file, or click to select'}
       </p>
-      {formatError && (
-        <p className="text-red-500 text-xs">{formatError}</p>
-      )}
+      {formatError && <p className="text-red-500 text-xs">{formatError}</p>}
       <label
         className={`cursor-pointer px-6 py-2 rounded-lg text-white font-medium transition-colors ${loading ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'}`}
       >
         {loading && (
           <svg className="inline-block mr-2 h-4 w-4 animate-spin" viewBox="0 0 16 16" fill="none">
-            <g fill="#ffffff" fill-rule="evenodd" clip-rule="evenodd">
+            <g fill="#ffffff" fillRule="evenodd" clipRule="evenodd">
               <path
                 d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8z"
                 opacity=".2"

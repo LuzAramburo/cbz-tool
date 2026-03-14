@@ -8,7 +8,7 @@ import ActionBar from './components/ActionBar';
 import ToggleThemeButton from './components/ToggleThemeButton.tsx';
 
 export default function App() {
-  const { upload, removePage, addPages, book, loading, error } = useCbzUpload();
+  const { upload, removePage, addPages, movePage, book, loading, error } = useCbzUpload();
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [addPagesModalOpen, setAddPagesModalOpen] = useState(false);
   const [dark, setDark] = useState(() => {
@@ -73,7 +73,7 @@ export default function App() {
           <div
             className={`transition-opacity ${loading ? 'opacity-40 select-none cursor-not-allowed *:pointer-events-none' : ''}`}
           >
-            <PageList book={book} onRemovePage={removePage} />
+            <PageList book={book} onRemovePage={removePage} onMovePage={movePage} />
           </div>
         )}
       </main>

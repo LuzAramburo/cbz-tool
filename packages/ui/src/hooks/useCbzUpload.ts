@@ -5,6 +5,7 @@ interface UseCbzUpload {
   upload: (file: File) => Promise<boolean>;
   removePage: (index: number) => Promise<void>;
   addPages: (files: File[], insertAt: number) => Promise<void>;
+  movePage: (index: number, toIndex: number) => Promise<void>;
   book: UploadResponse | null;
   loading: boolean;
   error: string | null;
@@ -81,5 +82,25 @@ export function useCbzUpload(): UseCbzUpload {
     }
   }
 
-  return { upload, removePage, addPages, book, loading, error };
+  async function movePage(index: number, toIndex: number) {
+    if (!book) return;
+    try {
+      const res = await fetch(`/api/cbz/${book.bookId}/page/${index}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ toIndex }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({})) as { error?: string };
+        setError(body.error ?? `Move failed (${res.status})`);
+        return;
+      }
+      const data = await res.json() as { pageCount: number; pages: UploadResponse['pages'] };
+      setBook((prev) => prev ? { ...prev, pageCount: data.pageCount, pages: data.pages } : prev);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    }
+  }
+
+  return { upload, removePage, addPages, movePage, book, loading, error };
 }
