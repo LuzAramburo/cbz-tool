@@ -3,6 +3,7 @@ import { PageInfo } from '../types/cbz.ts';
 import ArrowLeftIcon from './icons/ArrowLeftIcon.tsx';
 import ArrowRightIcon from './icons/ArrowRightIcon.tsx';
 import SwitchArrowsIcon from './icons/SwitchIcon.tsx';
+import TrashIcon from './icons/TrashIcon.tsx';
 
 type Props = {
   page: PageInfo;
@@ -68,7 +69,7 @@ export default function PageThumbnail({
             className="cursor-pointer text-white hover:text-red-300 hover:bg-black/50 rounded-sm transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             title="Remove page"
           >
-            <SwitchArrowsIcon />
+            <TrashIcon />
           </button>
         </div>
       </div>
