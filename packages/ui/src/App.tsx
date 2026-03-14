@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useCbzUpload } from './hooks/useCbzUpload';
 import FileUpload from './components/FileUpload';
-import PageList from './components/PageList';
+import BookMetadata from './components/BookMetadata';
+import PageGrid from './components/PageGrid';
 import UploadBookModal from './components/UploadBookModal';
 import AddPagesModal from './components/AddPagesModal';
 import ActionBar from './components/ActionBar';
@@ -73,9 +74,10 @@ export default function App() {
 
         {book && (
           <div
-            className={`transition-opacity ${loading ? 'opacity-40 select-none cursor-not-allowed *:pointer-events-none' : ''}`}
+            className={`flex flex-col gap-6 transition-opacity ${loading ? 'opacity-40 select-none cursor-not-allowed *:pointer-events-none' : ''}`}
           >
-            <PageList book={book} onRemovePage={removePage} onMovePage={movePage} />
+            {book.metadata && <BookMetadata metadata={book.metadata} />}
+            <PageGrid book={book} onRemovePage={removePage} onMovePage={movePage} />
           </div>
         )}
       </main>

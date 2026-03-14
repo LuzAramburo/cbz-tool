@@ -2,15 +2,13 @@ import { useState } from 'react';
 import type { UploadResponse } from '../types/cbz';
 import PageThumbnail from './PageThumbnail.tsx';
 
-interface PageListProps {
+interface PageGridProps {
   book: UploadResponse;
   onRemovePage: (index: number) => Promise<void>;
   onMovePage: (index: number, toIndex: number) => Promise<void>;
 }
 
-export default function PageList({ book, onRemovePage, onMovePage }: PageListProps) {
-  const metadataEntries = book.metadata ? Object.entries(book.metadata) : [];
-  const [metaOpen, setMetaOpen] = useState(true);
+export default function PageGrid({ book, onRemovePage, onMovePage }: PageGridProps) {
   const [pendingIndex, setPendingIndex] = useState<number | null>(null);
   const [removing, setRemoving] = useState(false);
   const [movingIndex, setMovingIndex] = useState<number | null>(null);
@@ -52,48 +50,7 @@ export default function PageList({ book, onRemovePage, onMovePage }: PageListPro
     parsedTarget - 1 !== moveToSource;
 
   return (
-    <div className="flex flex-col gap-6">
-      {metadataEntries.length > 0 && (
-        <div className="bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-xl overflow-hidden">
-          <button
-            onClick={() => setMetaOpen((o) => !o)}
-            className="cursor-pointer w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-          >
-            <span>Metadata</span>
-            <span className="text-gray-400 dark:text-gray-500">{metaOpen ? '▲' : '▼'}</span>
-          </button>
-          {metaOpen && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 border-t dark:border-gray-700">
-              {metadataEntries.map(([key, value]) => (
-                <div
-                  key={key}
-                  className={`flex flex-col gap-1 ${key === 'summary' ? 'col-span-full' : ''}`}
-                >
-                  <label className="text-xs font-medium text-gray-500 dark:text-gray-400 capitalize">
-                    {key}
-                  </label>
-                  {key === 'summary' ? (
-                    <textarea
-                      readOnly
-                      value={value ?? ''}
-                      rows={3}
-                      className="px-3 py-1.5 text-sm border rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-200 resize-y"
-                    />
-                  ) : (
-                    <input
-                      type="text"
-                      readOnly
-                      value={value ?? ''}
-                      className="px-3 py-1.5 text-sm border rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
+    <>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {book.pages.map((page) => (
           <PageThumbnail
@@ -173,6 +130,6 @@ export default function PageList({ book, onRemovePage, onMovePage }: PageListPro
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
