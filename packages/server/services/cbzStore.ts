@@ -37,6 +37,15 @@ function uniqueFilename(existing: Set<string>, filename: string): string {
   return candidate;
 }
 
+export function movePage(bookId: string, fromIndex: number, toIndex: number): Book | undefined {
+  const book = store.get(bookId);
+  if (!book) return undefined;
+  const [page] = book.pages.splice(fromIndex, 1);
+  book.pages.splice(toIndex, 0, page);
+  book.pages.forEach((p, i) => { p.index = i; });
+  return book;
+}
+
 export function addPages(
   bookId: string,
   insertAt: number,

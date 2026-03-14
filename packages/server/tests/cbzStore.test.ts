@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { randomUUID } from 'crypto';
-import { saveBook, getBook, deleteBook, removePage, addPages } from '../services/cbzStore.js';
+import { saveBook, getBook, deleteBook, removePage, addPages, movePage } from '../services/cbzStore.js';
 import type { Book, PageEntry } from '../types/cbz.js';
 
 function makePage(index: number, filename: string): PageEntry {
@@ -162,6 +162,51 @@ describe('cbzStore', () => {
       const result = addPages(book.bookId, 1, [makeNewPage('b.jpg')]);
       expect(result).toBe(getBook(book.bookId));
       expect(result?.pages).toHaveLength(2);
+    });
+  });
+
+  describe('movePage', () => {
+    it('moves from first to last position', () => {
+      const book = makeBook({ pages: [makePage(0, 'a.jpg'), makePage(1, 'b.jpg'), makePage(2, 'c.jpg')] });
+      saveBook(book);
+      movePage(book.bookId, 0, 2);
+      const updated = getBook(book.bookId)!;
+      expect(updated.pages.map((p) => p.filename)).toEqual(['b.jpg', 'c.jpg', 'a.jpg']);
+    });
+
+    it('moves from last to first position', () => {
+      const book = makeBook({ pages: [makePage(0, 'a.jpg'), makePage(1, 'b.jpg'), makePage(2, 'c.jpg')] });
+      saveBook(book);
+      movePage(book.bookId, 2, 0);
+      const updated = getBook(book.bookId)!;
+      expect(updated.pages.map((p) => p.filename)).toEqual(['c.jpg', 'a.jpg', 'b.jpg']);
+    });
+
+    it('moves within the middle (adjacent swap)', () => {
+      const book = makeBook({ pages: [makePage(0, 'a.jpg'), makePage(1, 'b.jpg'), makePage(2, 'c.jpg')] });
+      saveBook(book);
+      movePage(book.bookId, 1, 2);
+      const updated = getBook(book.bookId)!;
+      expect(updated.pages.map((p) => p.filename)).toEqual(['a.jpg', 'c.jpg', 'b.jpg']);
+    });
+
+    it('reindexes all pages to 0..N-1 after move', () => {
+      const book = makeBook({ pages: [makePage(0, 'a.jpg'), makePage(1, 'b.jpg'), makePage(2, 'c.jpg')] });
+      saveBook(book);
+      movePage(book.bookId, 0, 2);
+      const updated = getBook(book.bookId)!;
+      expect(updated.pages.map((p) => p.index)).toEqual([0, 1, 2]);
+    });
+
+    it('fromIndex === toIndex is a no-op and still returns the book', () => {
+      const book = makeBook({ pages: [makePage(0, 'a.jpg'), makePage(1, 'b.jpg'), makePage(2, 'c.jpg')] });
+      saveBook(book);
+      const result = movePage(book.bookId, 1, 1);
+      expect(result?.pages.map((p) => p.filename)).toEqual(['a.jpg', 'b.jpg', 'c.jpg']);
+    });
+
+    it('returns undefined for unknown bookId', () => {
+      expect(movePage(randomUUID(), 0, 1)).toBeUndefined();
     });
   });
 });

@@ -1,7 +1,14 @@
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import { parseCbz, isImageEntry, getMime } from '../services/cbzParser.js';
-import { saveBook, getBook, deleteBook, removePage, addPages } from '../services/cbzStore.js';
+import {
+  saveBook,
+  getBook,
+  deleteBook,
+  removePage,
+  addPages,
+  movePage,
+} from '../services/cbzStore.js';
 import type { UploadResponse } from '../types/cbz.js';
 
 const router = Router();
@@ -88,6 +95,36 @@ router.post('/:bookId/pages', upload.array('files'), (req: Request, res: Respons
   }));
 
   const updated = addPages(bookId, insertAt, newPages)!;
+  res.json({
+    pageCount: updated.pages.length,
+    pages: updated.pages.map(({ index: i, filename }) => ({ index: i, filename })),
+  });
+});
+
+router.patch('/:bookId/page/:index', (req: Request, res: Response) => {
+  const bookId = req.params['bookId'] as string;
+  const book = getBook(bookId);
+  if (!book) {
+    res.status(404).json({ error: 'Book not found' });
+    return;
+  }
+
+  const fromIndex = parseInt(req.params['index'] as string, 10);
+  const toIndex = parseInt(req.body['toIndex'], 10);
+
+  if (
+    isNaN(fromIndex) ||
+    fromIndex < 0 ||
+    fromIndex >= book.pages.length ||
+    isNaN(toIndex) ||
+    toIndex < 0 ||
+    toIndex >= book.pages.length
+  ) {
+    res.status(400).json({ error: 'Index out of range' });
+    return;
+  }
+
+  const updated = movePage(bookId, fromIndex, toIndex)!;
   res.json({
     pageCount: updated.pages.length,
     pages: updated.pages.map(({ index: i, filename }) => ({ index: i, filename })),
