@@ -7,7 +7,9 @@ interface UseCbzUpload {
   addPages: (files: File[], insertAt: number) => Promise<void>;
   movePage: (index: number, toIndex: number) => Promise<void>;
   downloadBook: () => void;
+  setMetadata: (metadata: Record<string, string> | null) => void;
   book: UploadResponse | null;
+  pendingMetadata: Record<string, string> | null;
   loading: boolean;
   downloading: boolean;
   error: string | null;
@@ -15,9 +17,14 @@ interface UseCbzUpload {
 
 export function useCbzUpload(): UseCbzUpload {
   const [book, setBook] = useState<UploadResponse | null>(null);
+  const [pendingMetadata, setPendingMetadata] = useState<Record<string, string> | null>(null);
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function setMetadata(metadata: Record<string, string> | null) {
+    setPendingMetadata(metadata);
+  }
 
   async function upload(file: File): Promise<boolean> {
     setLoading(true);
@@ -35,6 +42,7 @@ export function useCbzUpload(): UseCbzUpload {
       }
       const data: UploadResponse = await res.json();
       setBook(data);
+      setPendingMetadata(data.metadata);
       return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
@@ -109,6 +117,17 @@ export function useCbzUpload(): UseCbzUpload {
     if (!book) return;
     setDownloading(true);
     try {
+      const patchRes = await fetch(`/api/cbz/${book.bookId}/metadata`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ metadata: pendingMetadata }),
+      });
+      if (!patchRes.ok) {
+        const body = await patchRes.json().catch(() => ({})) as { error?: string };
+        setError(body.error ?? `Save metadata failed (${patchRes.status})`);
+        return;
+      }
+
       const res = await fetch(`/api/cbz/${book.bookId}/download`);
       if (!res.ok) {
         const body = await res.json().catch(() => ({})) as { error?: string };
@@ -132,5 +151,5 @@ export function useCbzUpload(): UseCbzUpload {
     }
   }
 
-  return { upload, removePage, addPages, movePage, downloadBook, book, loading, downloading, error };
+  return { upload, removePage, addPages, movePage, downloadBook, setMetadata, book, pendingMetadata, loading, downloading, error };
 }

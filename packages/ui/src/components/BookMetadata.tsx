@@ -2,9 +2,10 @@ import { useState } from 'react';
 
 interface BookMetadataProps {
   metadata: Record<string, string>;
+  onMetadataChange: (metadata: Record<string, string>) => void;
 }
 
-export default function BookMetadata({ metadata }: BookMetadataProps) {
+export default function BookMetadata({ metadata, onMetadataChange }: BookMetadataProps) {
   const entries = Object.entries(metadata);
   const [metaOpen, setMetaOpen] = useState(true);
 
@@ -31,17 +32,17 @@ export default function BookMetadata({ metadata }: BookMetadataProps) {
               </label>
               {key === 'summary' ? (
                 <textarea
-                  readOnly
                   value={value ?? ''}
                   rows={3}
-                  className="px-3 py-1.5 text-sm border rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-200 resize-y"
+                  onChange={(e) => onMetadataChange({ ...metadata, [key]: e.target.value })}
+                  className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 resize-y focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                 />
               ) : (
                 <input
                   type="text"
-                  readOnly
                   value={value ?? ''}
-                  className="px-3 py-1.5 text-sm border rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+                  onChange={(e) => onMetadataChange({ ...metadata, [key]: e.target.value })}
+                  className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                 />
               )}
             </div>
