@@ -1,4 +1,5 @@
 export default function LoadingIcon() {
+  // License: MLP. Made by HashiCorp: https://github.com/hashicorp/design-system/
   return (
     <svg className="inline-block mr-2 h-4 w-4 animate-spin" viewBox="0 0 16 16" fill="none">
       <g fill="#ffffff" fillRule="evenodd" clipRule="evenodd">

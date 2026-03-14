@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import LoadingIcon from './LoadingIcon.tsx';
+import LoadingIcon from './icons/LoadingIcon.tsx';
 
 interface FileUploadProps {
   onUpload: (file: File) => void;

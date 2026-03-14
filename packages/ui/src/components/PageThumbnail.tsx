@@ -1,5 +1,8 @@
-import LoadingIcon from './LoadingIcon.tsx';
+import LoadingIcon from './icons/LoadingIcon.tsx';
 import { PageInfo } from '../types/cbz.ts';
+import ArrowLeftIcon from './icons/ArrowLeftIcon.tsx';
+import ArrowRightIcon from './icons/ArrowRightIcon.tsx';
+import SwitchArrowsIcon from './icons/SwitchIcon.tsx';
 
 type Props = {
   page: PageInfo;
@@ -41,18 +44,7 @@ export default function PageThumbnail({
             className="cursor-pointer text-white hover:text-cyan-300 hover:bg-black/50 rounded-sm transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             title="Move page left"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
+            <ArrowLeftIcon />
           </button>
           <button
             onClick={() => handleMove(page.index, page.index + 1)}
@@ -60,18 +52,7 @@ export default function PageThumbnail({
             className="cursor-pointer text-white hover:text-cyan-300 hover:bg-black/50 rounded-sm transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             title="Move page right"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
+            <ArrowRightIcon />
           </button>
           <button
             onClick={() => openMoveTo(page.index)}
@@ -79,14 +60,7 @@ export default function PageThumbnail({
             className="cursor-pointer text-white hover:text-cyan-300 hover:bg-black/50 rounded-sm transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             title="Move to position"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
-              <path d="M14.293 2.293a1 1 0 0 1 1.414 0l4 4a1 1 0 0 1 0 1.414l-4 4a1 1 0 0 1-1.414-1.414L16.586 8H5a1 1 0 0 1 0-2h11.586l-2.293-2.293a1 1 0 0 1 0-1.414zm-4.586 10a1 1 0 0 1 0 1.414L7.414 16H19a1 1 0 1 1 0 2H7.414l2.293 2.293a1 1 0 0 1-1.414 1.414l-4-4a1 1 0 0 1 0-1.414l4-4a1 1 0 0 1 1.414 0z" />
-            </svg>
+            <SwitchArrowsIcon />
           </button>
           <button
             onClick={() => setPendingIndex(page.index)}
@@ -94,22 +68,7 @@ export default function PageThumbnail({
             className="cursor-pointer text-white hover:text-red-300 hover:bg-black/50 rounded-sm transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             title="Remove page"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="3 6 5 6 21 6" />
-              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-              <path d="M10 11v6" />
-              <path d="M14 11v6" />
-              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-            </svg>
+            <SwitchArrowsIcon />
           </button>
         </div>
       </div>
