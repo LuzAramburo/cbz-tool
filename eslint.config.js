@@ -11,6 +11,16 @@ export default [
   // TypeScript rules for ui
   ...tseslint.configs.recommended,
 
+  // Node globals for desktop (Electron main process)
+  {
+    files: ['packages/desktop/**/*.{js,ts}'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
+
   // React rules only for ui
   {
     files: ['packages/ui/src/**/*.{ts,tsx}'],
