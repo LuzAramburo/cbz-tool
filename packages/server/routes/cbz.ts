@@ -9,8 +9,9 @@ import {
   removePage,
   addPages,
   movePage,
+  updateMetadata,
 } from '../services/cbzStore.js';
-import type { UploadResponse } from '../types/cbz.js';
+import type { ComicMetadata, UploadResponse } from '../types/cbz.js';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
@@ -198,6 +199,23 @@ router.get('/:bookId/download', async (req: Request, res: Response) => {
   res.setHeader('Content-Type', 'application/zip');
   res.setHeader('Content-Disposition', `attachment; filename="${buildDownloadFilename(book.metadata)}"`);
   res.send(buffer);
+});
+
+router.patch('/:bookId/metadata', (req: Request, res: Response) => {
+  const bookId = req.params['bookId'] as string;
+  if (!getBook(bookId)) {
+    res.status(404).json({ error: 'Book not found' });
+    return;
+  }
+
+  const { metadata } = req.body as { metadata: unknown };
+  if (metadata !== null && (typeof metadata !== 'object' || Array.isArray(metadata))) {
+    res.status(400).json({ error: 'metadata must be an object or null' });
+    return;
+  }
+
+  const updated = updateMetadata(bookId, metadata as ComicMetadata | null)!;
+  res.json({ metadata: updated.metadata });
 });
 
 router.delete('/:bookId', (req: Request, res: Response) => {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { randomUUID } from 'crypto';
-import { saveBook, getBook, deleteBook, removePage, addPages, movePage } from '../services/cbzStore.js';
+import { saveBook, getBook, deleteBook, removePage, addPages, movePage, updateMetadata } from '../services/cbzStore.js';
 import type { Book, PageEntry } from '../types/cbz.js';
 
 function makePage(index: number, filename: string): PageEntry {
@@ -162,6 +162,48 @@ describe('cbzStore', () => {
       const result = addPages(book.bookId, 1, [makeNewPage('b.jpg')]);
       expect(result).toBe(getBook(book.bookId));
       expect(result?.pages).toHaveLength(2);
+    });
+  });
+
+  describe('updateMetadata', () => {
+    it('sets metadata on a book that had null', () => {
+      const book = makeBook({ metadata: null });
+      saveBook(book);
+      updateMetadata(book.bookId, { Title: 'My Comic' });
+      expect(getBook(book.bookId)!.metadata).toEqual({ Title: 'My Comic' });
+    });
+
+    it('replaces existing metadata with new values', () => {
+      const book = makeBook({ metadata: { Title: 'Old Title' } });
+      saveBook(book);
+      updateMetadata(book.bookId, { Title: 'New Title', Series: 'My Series' });
+      expect(getBook(book.bookId)!.metadata).toEqual({ Title: 'New Title', Series: 'My Series' });
+    });
+
+    it('sets metadata to null (clears it)', () => {
+      const book = makeBook({ metadata: { Title: 'Something' } });
+      saveBook(book);
+      updateMetadata(book.bookId, null);
+      expect(getBook(book.bookId)!.metadata).toBeNull();
+    });
+
+    it('returns the updated book', () => {
+      const book = makeBook({ metadata: null });
+      saveBook(book);
+      const result = updateMetadata(book.bookId, { Title: 'Test' });
+      expect(result).toBeDefined();
+      expect(result!.metadata).toEqual({ Title: 'Test' });
+    });
+
+    it('returns undefined for unknown bookId', () => {
+      expect(updateMetadata(randomUUID(), { Title: 'Test' })).toBeUndefined();
+    });
+
+    it('persists the change so getBook sees it', () => {
+      const book = makeBook({ metadata: null });
+      saveBook(book);
+      updateMetadata(book.bookId, { Title: 'Persisted' });
+      expect(getBook(book.bookId)!.metadata).toEqual({ Title: 'Persisted' });
     });
   });
 

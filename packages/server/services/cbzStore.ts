@@ -1,4 +1,4 @@
-import type { Book, PageEntry } from '../types/cbz.js';
+import type { Book, ComicMetadata, PageEntry } from '../types/cbz.js';
 
 const store = new Map<string, Book>();
 
@@ -43,6 +43,13 @@ export function movePage(bookId: string, fromIndex: number, toIndex: number): Bo
   const [page] = book.pages.splice(fromIndex, 1);
   book.pages.splice(toIndex, 0, page);
   book.pages.forEach((p, i) => { p.index = i; });
+  return book;
+}
+
+export function updateMetadata(bookId: string, metadata: ComicMetadata | null): Book | undefined {
+  const book = store.get(bookId);
+  if (!book) return undefined;
+  book.metadata = metadata;
   return book;
 }
 
