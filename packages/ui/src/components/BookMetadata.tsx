@@ -33,7 +33,7 @@ export default function BookMetadata({ metadata, onMetadataChange }: BookMetadat
               {key === 'summary' ? (
                 <textarea
                   value={value ?? ''}
-                  rows={3}
+                  rows={6}
                   onChange={(e) => onMetadataChange({ ...metadata, [key]: e.target.value })}
                   className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 resize-y focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                 />
