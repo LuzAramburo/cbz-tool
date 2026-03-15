@@ -10,6 +10,8 @@ import {
   addPages,
   movePage,
   updateMetadata,
+  setMetadataProperty,
+  removeMetadataProperty,
 } from '../services/cbzStore.js';
 import type { ComicMetadata, UploadResponse } from '../types/cbz.js';
 
@@ -201,6 +203,22 @@ router.get('/:bookId/download', async (req: Request, res: Response) => {
   res.setHeader('Content-Type', 'application/zip');
   res.setHeader('Content-Disposition', `attachment; filename="${buildDownloadFilename(book.metadata)}"`);
   res.send(buffer);
+});
+
+router.put('/:bookId/metadata/:key', (req: Request, res: Response) => {
+  const { bookId, key } = req.params as { bookId: string; key: string };
+  if (!getBook(bookId)) { res.status(404).json({ error: 'Book not found' }); return; }
+  const { value } = req.body as { value: unknown };
+  if (typeof value !== 'string') { res.status(400).json({ error: 'value must be a string' }); return; }
+  const updated = setMetadataProperty(bookId, key, value)!;
+  res.json({ metadata: updated.metadata });
+});
+
+router.delete('/:bookId/metadata/:key', (req: Request, res: Response) => {
+  const { bookId, key } = req.params as { bookId: string; key: string };
+  if (!getBook(bookId)) { res.status(404).json({ error: 'Book not found' }); return; }
+  const updated = removeMetadataProperty(bookId, key)!;
+  res.json({ metadata: updated.metadata });
 });
 
 router.patch('/:bookId/metadata', (req: Request, res: Response) => {

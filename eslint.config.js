@@ -21,6 +21,21 @@ export default [
     },
   },
 
+  // For server
+  {
+    files: ['packages/server/**/*.{js,ts}'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          varsIgnorePattern: '^_',
+          argsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
+    },
+  },
+
   // React rules only for ui
   {
     files: ['packages/ui/src/**/*.{ts,tsx}'],

@@ -53,6 +53,23 @@ export function updateMetadata(bookId: string, metadata: ComicMetadata | null): 
   return book;
 }
 
+export function setMetadataProperty(bookId: string, key: string, value: string): Book | undefined {
+  const book = store.get(bookId);
+  if (!book) return undefined;
+  book.metadata = { ...(book.metadata ?? {}), [key]: value };
+  return book;
+}
+
+export function removeMetadataProperty(bookId: string, key: string): Book | undefined {
+  const book = store.get(bookId);
+  if (!book) return undefined;
+  if (book.metadata) {
+    const { [key]: _, ...rest } = book.metadata;
+    book.metadata = Object.keys(rest).length ? rest : null;
+  }
+  return book;
+}
+
 export function addPages(
   bookId: string,
   insertAt: number,
