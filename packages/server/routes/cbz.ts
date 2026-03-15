@@ -187,7 +187,9 @@ router.get('/:bookId/download', async (req: Request, res: Response) => {
   const zip = new JSZip();
 
   for (const page of book.pages) {
-    zip.file(page.filename, page.data);
+    const ext = page.filename.includes('.') ? page.filename.slice(page.filename.lastIndexOf('.')) : '';
+    const newFilename = String(page.index + 1).padStart(3, '0') + ext;
+    zip.file(newFilename, page.data);
   }
 
   if (book.metadata) {
