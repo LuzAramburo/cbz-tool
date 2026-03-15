@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 import JSZip from 'jszip';
 import { parseCbz, isImageEntry, getMime } from '../services/cbzParser.js';
@@ -189,7 +189,9 @@ router.get('/:bookId/download', async (req: Request, res: Response) => {
   const zip = new JSZip();
 
   for (const page of book.pages) {
-    const ext = page.filename.includes('.') ? page.filename.slice(page.filename.lastIndexOf('.')) : '';
+    const ext = page.filename.includes('.')
+      ? page.filename.slice(page.filename.lastIndexOf('.'))
+      : '';
     const newFilename = String(page.index + 1).padStart(3, '0') + ext;
     zip.file(newFilename, page.data);
   }
@@ -201,22 +203,34 @@ router.get('/:bookId/download', async (req: Request, res: Response) => {
   const buffer = await zip.generateAsync({ type: 'nodebuffer', compression: 'STORE' });
 
   res.setHeader('Content-Type', 'application/zip');
-  res.setHeader('Content-Disposition', `attachment; filename="${buildDownloadFilename(book.metadata)}"`);
+  res.setHeader(
+    'Content-Disposition',
+    `attachment; filename="${buildDownloadFilename(book.metadata)}"`
+  );
   res.send(buffer);
 });
 
 router.put('/:bookId/metadata/:key', (req: Request, res: Response) => {
   const { bookId, key } = req.params as { bookId: string; key: string };
-  if (!getBook(bookId)) { res.status(404).json({ error: 'Book not found' }); return; }
+  if (!getBook(bookId)) {
+    res.status(404).json({ error: 'Book not found' });
+    return;
+  }
   const { value } = req.body as { value: unknown };
-  if (typeof value !== 'string') { res.status(400).json({ error: 'value must be a string' }); return; }
+  if (typeof value !== 'string') {
+    res.status(400).json({ error: 'value must be a string' });
+    return;
+  }
   const updated = setMetadataProperty(bookId, key, value)!;
   res.json({ metadata: updated.metadata });
 });
 
 router.delete('/:bookId/metadata/:key', (req: Request, res: Response) => {
   const { bookId, key } = req.params as { bookId: string; key: string };
-  if (!getBook(bookId)) { res.status(404).json({ error: 'Book not found' }); return; }
+  if (!getBook(bookId)) {
+    res.status(404).json({ error: 'Book not found' });
+    return;
+  }
   const updated = removeMetadataProperty(bookId, key)!;
   res.json({ metadata: updated.metadata });
 });
@@ -247,6 +261,19 @@ router.delete('/:bookId', (req: Request, res: Response) => {
   }
   deleteBook(bookId);
   res.status(204).send();
+});
+
+router.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      res.status(413).json({ error: 'File too large. Maximum size is 50 MB.' });
+    } else {
+      res.status(400).json({ error: err.message });
+    }
+    return;
+  }
+  console.error('Unexpected error in CBZ router:', err);
+  res.status(500).json({ error: 'Internal server error' });
 });
 
 export default router;
