@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import CloseIcon from './icons/CloseIcon.tsx';
+import Modal from './Modal.tsx';
 
 interface BookMetadataProps {
   metadata: Record<string, string>;
@@ -13,17 +14,6 @@ export default function BookMetadata({ metadata, onMetadataChange }: BookMetadat
   const [newKey, setNewKey] = useState('');
   const [newValue, setNewValue] = useState('');
   const [confirmDeleteKey, setConfirmDeleteKey] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (addModalOpen || confirmDeleteKey !== null) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [addModalOpen, confirmDeleteKey]);
 
   function handleAddConfirm() {
     const trimmed = newKey.trim().toLowerCase();
@@ -112,104 +102,56 @@ export default function BookMetadata({ metadata, onMetadataChange }: BookMetadat
 
       {/* Add Property Modal */}
       {addModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-          onClick={handleAddCancel}
+        <Modal
+          title="Add property"
+          onClose={handleAddCancel}
+          size="sm"
+          footer={{ confirmLabel: 'Add', onConfirm: handleAddConfirm, disabled: addConfirmDisabled }}
         >
-          <div
-            className="bg-white dark:bg-gray-900 rounded-xl shadow-xl w-full max-w-sm mx-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-6 py-4 border-b dark:border-gray-700">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                Add property
-              </h2>
-            </div>
-            <div className="p-6 flex flex-col gap-4">
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Property name
-                </label>
-                <input
-                  type="text"
-                  value={newKey}
-                  onChange={(e) => setNewKey(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleAddConfirm()}
-                  autoFocus
-                  className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
-                  placeholder="e.g. Genre"
-                />
-                {newKey.trim() !== '' && newKey.trim() in metadata && (
-                  <p className="text-xs text-red-500">Property already exists.</p>
-                )}
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Value
-                </label>
-                <input
-                  type="text"
-                  value={newValue}
-                  onChange={(e) => setNewValue(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleAddConfirm()}
-                  className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
-                  placeholder="e.g. Action"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t dark:border-gray-700">
-              <button
-                onClick={handleAddCancel}
-                className="cursor-pointer px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleAddConfirm}
-                disabled={addConfirmDisabled}
-                className="cursor-pointer px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors"
-              >
-                Add
-              </button>
-            </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Property name
+            </label>
+            <input
+              type="text"
+              value={newKey}
+              onChange={(e) => setNewKey(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAddConfirm()}
+              autoFocus
+              className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+              placeholder="e.g. Genre"
+            />
+            {newKey.trim() !== '' && newKey.trim() in metadata && (
+              <p className="text-xs text-red-500">Property already exists.</p>
+            )}
           </div>
-        </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Value</label>
+            <input
+              type="text"
+              value={newValue}
+              onChange={(e) => setNewValue(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAddConfirm()}
+              className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+              placeholder="e.g. Action"
+            />
+          </div>
+        </Modal>
       )}
 
       {/* Delete Confirmation Modal */}
       {confirmDeleteKey !== null && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-          onClick={() => setConfirmDeleteKey(null)}
+        <Modal
+          title="Remove property"
+          onClose={() => setConfirmDeleteKey(null)}
+          size="sm"
+          variant="plain"
+          footer={{ confirmLabel: 'Remove', onConfirm: handleDeleteConfirm, danger: true }}
         >
-          <div
-            className="bg-white dark:bg-gray-900 rounded-xl shadow-xl w-80 mx-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="px-6 py-5">
-              <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100 mb-2">
-                Remove property
-              </h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Remove property &ldquo;{confirmDeleteKey}&rdquo;?
-              </p>
-            </div>
-            <div className="flex items-center justify-end gap-3 px-6 py-4">
-              <button
-                onClick={() => setConfirmDeleteKey(null)}
-                className="cursor-pointer px-4 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteConfirm}
-                className="cursor-pointer px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors"
-              >
-                Remove
-              </button>
-            </div>
-          </div>
-        </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Remove property &ldquo;{confirmDeleteKey}&rdquo;?
+          </p>
+        </Modal>
       )}
     </>
   );
