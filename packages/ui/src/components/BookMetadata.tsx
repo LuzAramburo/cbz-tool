@@ -26,7 +26,7 @@ export default function BookMetadata({ metadata, onMetadataChange }: BookMetadat
   }, [addModalOpen, confirmDeleteKey]);
 
   function handleAddConfirm() {
-    const trimmed = newKey.trim();
+    const trimmed = newKey.trim().toLowerCase();
     if (!trimmed || trimmed in metadata) return;
     onMetadataChange({ ...metadata, [trimmed]: newValue });
     setNewKey('');
