@@ -12,7 +12,7 @@ npm run dev:web      # Browser only — runs Vite + Express (no Electron)
 
 ### Build & Package
 ```bash
-npm run build        # Build UI → server/public, then build Docker image
+npm run build        # Build UI locally + build/tag the Docker image (for publishing)
 npm run package      # Build UI + server, then produce Electron installer via electron-builder
 ```
 
@@ -81,5 +81,5 @@ packages/
 
 ### Deployment targets
 - **Electron**: `npm run dev` / `npm run package` → NSIS installer in `packages/desktop/release/`
-- **Docker**: `npm run build` → image `LuzAramburo/cbz-tool`; self-hosters use `docker-compose.yml`
+- **Docker**: self-hosters just run `docker compose up` — the multi-stage `Dockerfile` builds the UI and server internally with no local build step required. `npm run build` is for building/tagging the image to publish.
 - Code signing is disabled for local builds (`CSC_IDENTITY_AUTO_DISCOVERY=false`)
