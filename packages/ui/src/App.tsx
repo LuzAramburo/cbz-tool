@@ -12,6 +12,27 @@ export default function App() {
   const { upload, removePage, addPages, movePage, downloadBook, setMetadata, book, pendingMetadata, loading, downloading, error } = useCbzUpload();
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [addPagesModalOpen, setAddPagesModalOpen] = useState(false);
+  const [maxFileSizeMb, setMaxFileSizeMb] = useState(50);
+
+  useEffect(() => {
+    let cancelled = false;
+    function fetchConfig(attempt = 0) {
+      fetch('/api/config')
+        .then((r) => r.json())
+        .then((data: { maxFileSizeMb: number }) => {
+          if (!cancelled) setMaxFileSizeMb(data.maxFileSizeMb);
+        })
+        .catch(() => {
+          if (!cancelled && attempt < 5) {
+            setTimeout(() => fetchConfig(attempt + 1), 1000 * (attempt + 1));
+          }
+        });
+    }
+    fetchConfig();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const [dark, setDark] = useState(() => {
     const stored = localStorage.getItem('theme');
     const isDark = stored
@@ -96,6 +117,7 @@ export default function App() {
           onAddPages={addPages}
           loading={loading}
           totalPages={book.pageCount}
+          maxFileSizeMb={maxFileSizeMb}
         />
       )}
 

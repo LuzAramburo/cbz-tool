@@ -1,2 +1,9 @@
-import { start } from './index.js';
+import { config } from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+config({ path: resolve(__dirname, '../../../.env') });
+
+const { start } = await import('./index.js');
 start();

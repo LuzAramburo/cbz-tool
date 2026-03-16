@@ -6,6 +6,8 @@ services:
       - "3000:3000"
     volumes:
       - app-data:/app/data   # persist any data
+    environment:
+      - MAX_FILE_SIZE_MB=40  # default is 50; change to override the upload limit
     restart: unless-stopped
 
 volumes:

@@ -10,6 +10,10 @@ export function start(port = 3000): Server {
   const app = express();
   app.use(express.json());
 
+  app.get('/api/config', (_req, res) => {
+    res.json({ maxFileSizeMb: parseInt(process.env['MAX_FILE_SIZE_MB'] ?? '50', 10) });
+  });
+
   app.use('/api/cbz', cbzRouter);
 
   if (process.env.NODE_ENV !== 'development') {

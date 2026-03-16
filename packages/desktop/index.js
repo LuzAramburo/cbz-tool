@@ -1,9 +1,12 @@
-import { start } from '@cbz-tool/server';
+import { config } from 'dotenv';
 import { app, BrowserWindow } from 'electron';
 import { fileURLToPath } from 'url';
-import { join, dirname } from 'path';
+import { join, dirname, resolve } from 'path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+config({ path: resolve(__dirname, '../../.env') });
+
+const { start } = await import('@cbz-tool/server');
 
 app.commandLine.appendSwitch('disable-gpu-shader-disk-cache');
 

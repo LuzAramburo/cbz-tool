@@ -6,6 +6,7 @@ interface AddPagesModalProps {
   onAddPages: (files: File[], insertAt: number) => Promise<void>;
   loading: boolean;
   totalPages: number;
+  maxFileSizeMb: number;
 }
 
 function formatSize(bytes: number): string {
@@ -19,6 +20,7 @@ export default function AddPagesModal({
   onAddPages,
   loading,
   totalPages,
+  maxFileSizeMb,
 }: AddPagesModalProps) {
   const [stagedFiles, setStagedFiles] = useState<File[]>([]);
   const [insertAt, setInsertAt] = useState<number>(0);
@@ -104,7 +106,7 @@ export default function AddPagesModal({
           {dragOver ? 'Drop images here' : 'Drag & drop images here, or click to browse'}
         </p>
         <p className="text-gray-400 dark:text-gray-500 text-xs">
-          Accepted: JPG, PNG, WEBP · Max 50 MB per file
+          Accepted: JPG, PNG, WEBP · Max {maxFileSizeMb} MB per file
         </p>
         <input
           ref={inputRef}

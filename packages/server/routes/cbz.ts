@@ -16,7 +16,8 @@ import {
 import type { ComicMetadata, UploadResponse } from '../types/cbz.js';
 
 const router = Router();
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
+const MAX_FILE_SIZE_BYTES = parseInt(process.env['MAX_FILE_SIZE_MB'] ?? '50', 10) * 1024 * 1024;
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: MAX_FILE_SIZE_BYTES } });
 
 router.post('/upload', upload.single('file'), async (req: Request, res: Response) => {
   if (!req.file) {
@@ -266,7 +267,7 @@ router.delete('/:bookId', (req: Request, res: Response) => {
 router.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
-      res.status(413).json({ error: 'File too large. Maximum size is 50 MB.' });
+      res.status(413).json({ error: `File too large. Maximum size is ${MAX_FILE_SIZE_BYTES / (1024 * 1024)} MB.` });
     } else {
       res.status(400).json({ error: err.message });
     }
