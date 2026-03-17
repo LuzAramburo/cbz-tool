@@ -1,26 +1,54 @@
-import type { Book, ComicMetadata, PageEntry } from '../types/cbz.js';
+import fs from 'fs';
+import fsp from 'fs/promises';
+import path from 'path';
+import type { Book, ComicMetadata, PageEntry, PageData } from '../types/cbz.js';
 
-const store = new Map<string, Book>();
+let dataDir = '';
+const cache = new Map<string, Book>();
 
-export function saveBook(book: Book): void {
-  store.set(book.bookId, book);
+export function initStore(dir: string): void {
+  dataDir = path.resolve(dir);
+  fs.mkdirSync(dir, { recursive: true });
+
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const manifestPath = path.join(dir, entry.name, 'manifest.json');
+    if (fs.existsSync(manifestPath)) {
+      try {
+        const book: Book = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+        cache.set(book.bookId, book);
+      } catch {
+        console.warn(`[cbzStore] Failed to load manifest for ${entry.name}, skipping`);
+      }
+    }
+  }
 }
 
-export function getBook(id: string): Book | undefined {
-  return store.get(id);
+function bookDir(bookId: string): string {
+  return path.join(dataDir, bookId);
 }
 
-export function deleteBook(id: string): void {
-  store.delete(id);
+function pagesDir(bookId: string): string {
+  return path.join(dataDir, bookId, 'pages');
 }
 
-export function removePage(bookId: string, index: number): Book | undefined {
-  const book = store.get(bookId);
-  if (!book) return undefined;
-  book.pages = book.pages
-    .filter((_, i) => i !== index)
-    .map((page, i) => ({ ...page, index: i }));
-  return book;
+function manifestPath(bookId: string): string {
+  return path.join(dataDir, bookId, 'manifest.json');
+}
+
+export function getPagePath(bookId: string, filename: string): string {
+  return path.join(dataDir, bookId, 'pages', filename);
+}
+
+async function writeManifest(book: Book): Promise<void> {
+  const target = manifestPath(book.bookId);
+  const tmp = target + '.tmp';
+  await fsp.writeFile(tmp, JSON.stringify(book, null, 2));
+  await fsp.rename(tmp, target);
+}
+
+function reindex(pages: PageEntry[]): void {
+  pages.forEach((p, i) => { p.index = i; });
 }
 
 function uniqueFilename(existing: Set<string>, filename: string): string {
@@ -37,55 +65,112 @@ function uniqueFilename(existing: Set<string>, filename: string): string {
   return candidate;
 }
 
-export function movePage(bookId: string, fromIndex: number, toIndex: number): Book | undefined {
-  const book = store.get(bookId);
+export async function saveBook(book: Book, pageFiles: PageData[]): Promise<void> {
+  const dir = pagesDir(book.bookId);
+  await fsp.mkdir(dir, { recursive: true });
+
+  await Promise.all(
+    pageFiles.map((pf) => fsp.writeFile(path.join(dir, pf.filename), pf.data))
+  );
+
+  cache.set(book.bookId, book);
+  await writeManifest(book);
+}
+
+export async function getBook(id: string): Promise<Book | undefined> {
+  const cached = cache.get(id);
+  if (cached) return cached;
+
+  const mp = manifestPath(id);
+  try {
+    const book: Book = JSON.parse(await fsp.readFile(mp, 'utf-8'));
+    cache.set(id, book);
+    return book;
+  } catch {
+    return undefined;
+  }
+}
+
+export async function deleteBook(id: string): Promise<void> {
+  cache.delete(id);
+  const dir = bookDir(id);
+  await fsp.rm(dir, { recursive: true, force: true });
+}
+
+export async function removePage(bookId: string, index: number): Promise<Book | undefined> {
+  const book = cache.get(bookId);
   if (!book) return undefined;
+
+  const [removed] = book.pages.splice(index, 1);
+  if (removed) {
+    const filePath = getPagePath(bookId, removed.filename);
+    await fsp.rm(filePath, { force: true });
+  }
+
+  reindex(book.pages);
+  await writeManifest(book);
+  return book;
+}
+
+export async function addPages(
+  bookId: string,
+  insertAt: number,
+  newPages: PageData[],
+): Promise<Book | undefined> {
+  const book = cache.get(bookId);
+  if (!book) return undefined;
+
+  const existing = new Set(book.pages.map((p) => p.filename));
+  const resolved: PageEntry[] = [];
+  const dir = pagesDir(bookId);
+
+  for (const p of newPages) {
+    const filename = uniqueFilename(existing, p.filename);
+    existing.add(filename);
+    await fsp.writeFile(path.join(dir, filename), p.data);
+    resolved.push({ filename, index: 0, mimeType: p.mimeType });
+  }
+
+  book.pages.splice(insertAt, 0, ...resolved);
+  reindex(book.pages);
+  await writeManifest(book);
+  return book;
+}
+
+export async function movePage(bookId: string, fromIndex: number, toIndex: number): Promise<Book | undefined> {
+  const book = cache.get(bookId);
+  if (!book) return undefined;
+
   const [page] = book.pages.splice(fromIndex, 1);
   book.pages.splice(toIndex, 0, page);
-  book.pages.forEach((p, i) => { p.index = i; });
+  reindex(book.pages);
+  await writeManifest(book);
   return book;
 }
 
-export function updateMetadata(bookId: string, metadata: ComicMetadata | null): Book | undefined {
-  const book = store.get(bookId);
+export async function updateMetadata(bookId: string, metadata: ComicMetadata | null): Promise<Book | undefined> {
+  const book = cache.get(bookId);
   if (!book) return undefined;
   book.metadata = metadata;
+  await writeManifest(book);
   return book;
 }
 
-export function setMetadataProperty(bookId: string, key: string, value: string): Book | undefined {
-  const book = store.get(bookId);
+export async function setMetadataProperty(bookId: string, key: string, value: string): Promise<Book | undefined> {
+  const book = cache.get(bookId);
   if (!book) return undefined;
   book.metadata = { ...(book.metadata ?? {}), [key]: value };
+  await writeManifest(book);
   return book;
 }
 
-export function removeMetadataProperty(bookId: string, key: string): Book | undefined {
-  const book = store.get(bookId);
+export async function removeMetadataProperty(bookId: string, key: string): Promise<Book | undefined> {
+  const book = cache.get(bookId);
   if (!book) return undefined;
   if (book.metadata) {
     const { [key]: _, ...rest } = book.metadata;
     book.metadata = Object.keys(rest).length ? rest : null;
   }
-  return book;
-}
-
-export function addPages(
-  bookId: string,
-  insertAt: number,
-  newPages: Omit<PageEntry, 'index'>[],
-): Book | undefined {
-  const book = store.get(bookId);
-  if (!book) return undefined;
-  const existing = new Set(book.pages.map((p) => p.filename));
-  const resolved: PageEntry[] = newPages.map((p) => {
-    const filename = uniqueFilename(existing, p.filename);
-    existing.add(filename);
-    return { ...p, filename, index: 0 };
-  });
-  book.pages.splice(insertAt, 0, ...resolved);
-  book.pages.forEach((page, i) => {
-    page.index = i;
-  });
+  await writeManifest(book);
   return book;
 }

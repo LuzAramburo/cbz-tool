@@ -1,7 +1,13 @@
 import yauzl from 'yauzl';
 import { XMLParser } from 'fast-xml-parser';
 import { randomUUID } from 'crypto';
-import type { Book, PageEntry, ComicMetadata } from '../types/cbz.js';
+import type { PageData, ComicMetadata } from '../types/cbz.js';
+
+export interface ParsedCbz {
+  bookId: string;
+  pages: PageData[];
+  metadata: ComicMetadata | null;
+}
 
 const IMAGE_PATTERN = /\.(jpe?g|png|webp)$/i;
 const UNSUPPORTED_IMAGE_PATTERN = /\.(gif|bmp|tiff?|avif|svg|ico)$/i;
@@ -54,7 +60,7 @@ export function parseMetadata(xml: string): ComicMetadata | null {
   }
 }
 
-export function parseCbz(fileBuffer: Buffer): Promise<Book> {
+export function parseCbz(fileBuffer: Buffer): Promise<ParsedCbz> {
   return new Promise((resolve, reject) => {
     yauzl.fromBuffer(fileBuffer, { lazyEntries: true }, (err, zipFile) => {
       if (err || !zipFile) return reject(err ?? new Error('Failed to open ZIP'));
@@ -93,8 +99,7 @@ export function parseCbz(fileBuffer: Buffer): Promise<Book> {
           a.filename.localeCompare(b.filename, undefined, { numeric: true, sensitivity: 'base' })
         );
 
-        const pages: PageEntry[] = imageEntries.map(({ filename, data }, index) => ({
-          index,
+        const pages: PageData[] = imageEntries.map(({ filename, data }) => ({
           filename,
           data,
           mimeType: getMime(filename),

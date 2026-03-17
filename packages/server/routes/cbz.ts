@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import multer from 'multer';
+import fs from 'fs/promises';
 import JSZip from 'jszip';
 import { parseCbz, isImageEntry, getMime } from '../services/cbzParser.js';
 import {
@@ -12,8 +13,9 @@ import {
   updateMetadata,
   setMetadataProperty,
   removeMetadataProperty,
+  getPagePath,
 } from '../services/cbzStore.js';
-import type { ComicMetadata, UploadResponse } from '../types/cbz.js';
+import type { Book, ComicMetadata, PageData, UploadResponse } from '../types/cbz.js';
 
 const router = Router();
 const MAX_FILE_SIZE_BYTES = parseInt(process.env['MAX_FILE_SIZE_MB'] ?? '50', 10) * 1024 * 1024;
@@ -26,8 +28,19 @@ router.post('/upload', upload.single('file'), async (req: Request, res: Response
   }
 
   try {
-    const book = await parseCbz(req.file.buffer);
-    saveBook(book);
+    const parsed = await parseCbz(req.file.buffer);
+
+    const book: Book = {
+      bookId: parsed.bookId,
+      pages: parsed.pages.map((p, index) => ({
+        index,
+        filename: p.filename,
+        mimeType: p.mimeType,
+      })),
+      metadata: parsed.metadata,
+    };
+
+    await saveBook(book, parsed.pages);
 
     const response: UploadResponse = {
       bookId: book.bookId,
@@ -43,10 +56,10 @@ router.post('/upload', upload.single('file'), async (req: Request, res: Response
   }
 });
 
-router.get('/:bookId/page/:index', (req: Request, res: Response) => {
+router.get('/:bookId/page/:index', async (req: Request, res: Response) => {
   const bookId = req.params['bookId'] as string;
   const indexParam = req.params['index'] as string;
-  const book = getBook(bookId);
+  const book = await getBook(bookId);
   if (!book) {
     res.status(404).json({ error: 'Book not found' });
     return;
@@ -60,12 +73,12 @@ router.get('/:bookId/page/:index', (req: Request, res: Response) => {
   }
 
   res.setHeader('Content-Type', page.mimeType);
-  res.send(page.data);
+  res.sendFile(getPagePath(bookId, page.filename));
 });
 
-router.post('/:bookId/pages', upload.array('files'), (req: Request, res: Response) => {
+router.post('/:bookId/pages', upload.array('files'), async (req: Request, res: Response) => {
   const bookId = req.params['bookId'] as string;
-  const book = getBook(bookId);
+  const book = await getBook(bookId);
   if (!book) {
     res.status(404).json({ error: 'Book not found' });
     return;
@@ -93,22 +106,22 @@ router.post('/:bookId/pages', upload.array('files'), (req: Request, res: Respons
     }
   }
 
-  const newPages = files.map((file) => ({
+  const newPages: PageData[] = files.map((file) => ({
     filename: file.originalname,
     data: file.buffer,
     mimeType: getMime(file.originalname),
   }));
 
-  const updated = addPages(bookId, insertAt, newPages)!;
+  const updated = (await addPages(bookId, insertAt, newPages))!;
   res.json({
     pageCount: updated.pages.length,
     pages: updated.pages.map(({ index: i, filename }) => ({ index: i, filename })),
   });
 });
 
-router.patch('/:bookId/page/:index', (req: Request, res: Response) => {
+router.patch('/:bookId/page/:index', async (req: Request, res: Response) => {
   const bookId = req.params['bookId'] as string;
-  const book = getBook(bookId);
+  const book = await getBook(bookId);
   if (!book) {
     res.status(404).json({ error: 'Book not found' });
     return;
@@ -129,30 +142,30 @@ router.patch('/:bookId/page/:index', (req: Request, res: Response) => {
     return;
   }
 
-  const updated = movePage(bookId, fromIndex, toIndex)!;
+  const updated = (await movePage(bookId, fromIndex, toIndex))!;
   res.json({
     pageCount: updated.pages.length,
     pages: updated.pages.map(({ index: i, filename }) => ({ index: i, filename })),
   });
 });
 
-router.delete('/:bookId/page/:index', (req: Request, res: Response) => {
+router.delete('/:bookId/page/:index', async (req: Request, res: Response) => {
   const bookId = req.params['bookId'] as string;
   const indexParam = req.params['index'] as string;
 
-  if (!getBook(bookId)) {
+  const book = await getBook(bookId);
+  if (!book) {
     res.status(404).json({ error: 'Book not found' });
     return;
   }
 
   const index = parseInt(indexParam, 10);
-  const book = getBook(bookId);
-  if (isNaN(index) || !book || index < 0 || index >= book.pages.length) {
+  if (isNaN(index) || index < 0 || index >= book.pages.length) {
     res.status(404).json({ error: 'Page not found' });
     return;
   }
 
-  const updated = removePage(bookId, index)!;
+  const updated = (await removePage(bookId, index))!;
   res.json({
     pageCount: updated.pages.length,
     pages: updated.pages.map(({ index: i, filename }) => ({ index: i, filename })),
@@ -181,7 +194,7 @@ function buildDownloadFilename(metadata: Record<string, string> | null): string 
 
 router.get('/:bookId/download', async (req: Request, res: Response) => {
   const bookId = req.params['bookId'] as string;
-  const book = getBook(bookId);
+  const book = await getBook(bookId);
   if (!book) {
     res.status(404).json({ error: 'Book not found' });
     return;
@@ -194,7 +207,8 @@ router.get('/:bookId/download', async (req: Request, res: Response) => {
       ? page.filename.slice(page.filename.lastIndexOf('.'))
       : '';
     const newFilename = String(page.index + 1).padStart(3, '0') + ext;
-    zip.file(newFilename, page.data);
+    const data = await fs.readFile(getPagePath(bookId, page.filename));
+    zip.file(newFilename, data);
   }
 
   if (book.metadata) {
@@ -211,9 +225,9 @@ router.get('/:bookId/download', async (req: Request, res: Response) => {
   res.send(buffer);
 });
 
-router.put('/:bookId/metadata/:key', (req: Request, res: Response) => {
+router.put('/:bookId/metadata/:key', async (req: Request, res: Response) => {
   const { bookId, key } = req.params as { bookId: string; key: string };
-  if (!getBook(bookId)) {
+  if (!(await getBook(bookId))) {
     res.status(404).json({ error: 'Book not found' });
     return;
   }
@@ -222,23 +236,23 @@ router.put('/:bookId/metadata/:key', (req: Request, res: Response) => {
     res.status(400).json({ error: 'value must be a string' });
     return;
   }
-  const updated = setMetadataProperty(bookId, key, value)!;
+  const updated = (await setMetadataProperty(bookId, key, value))!;
   res.json({ metadata: updated.metadata });
 });
 
-router.delete('/:bookId/metadata/:key', (req: Request, res: Response) => {
+router.delete('/:bookId/metadata/:key', async (req: Request, res: Response) => {
   const { bookId, key } = req.params as { bookId: string; key: string };
-  if (!getBook(bookId)) {
+  if (!(await getBook(bookId))) {
     res.status(404).json({ error: 'Book not found' });
     return;
   }
-  const updated = removeMetadataProperty(bookId, key)!;
+  const updated = (await removeMetadataProperty(bookId, key))!;
   res.json({ metadata: updated.metadata });
 });
 
-router.patch('/:bookId/metadata', (req: Request, res: Response) => {
+router.patch('/:bookId/metadata', async (req: Request, res: Response) => {
   const bookId = req.params['bookId'] as string;
-  if (!getBook(bookId)) {
+  if (!(await getBook(bookId))) {
     res.status(404).json({ error: 'Book not found' });
     return;
   }
@@ -249,18 +263,18 @@ router.patch('/:bookId/metadata', (req: Request, res: Response) => {
     return;
   }
 
-  const updated = updateMetadata(bookId, metadata as ComicMetadata | null)!;
+  const updated = (await updateMetadata(bookId, metadata as ComicMetadata | null))!;
   res.json({ metadata: updated.metadata });
 });
 
-router.delete('/:bookId', (req: Request, res: Response) => {
+router.delete('/:bookId', async (req: Request, res: Response) => {
   const bookId = req.params['bookId'] as string;
-  const book = getBook(bookId);
+  const book = await getBook(bookId);
   if (!book) {
     res.status(404).json({ error: 'Book not found' });
     return;
   }
-  deleteBook(bookId);
+  await deleteBook(bookId);
   res.status(204).send();
 });
 

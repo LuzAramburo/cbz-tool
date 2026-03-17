@@ -41,5 +41,8 @@ RUN npm ci --workspace=packages/server --omit=dev --ignore-scripts
 COPY --from=server-builder /app/packages/server/dist ./packages/server/dist
 COPY --from=server-builder /app/packages/server/public ./packages/server/public
 
+ENV DATA_DIR=/app/data
+RUN mkdir -p /app/data
+
 EXPOSE 3000
 CMD ["node", "packages/server/dist/bin.js"]

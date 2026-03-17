@@ -1,6 +1,11 @@
 export interface PageEntry {
   index: number;
   filename: string;
+  mimeType: 'image/jpeg' | 'image/png' | 'image/webp';
+}
+
+export interface PageData {
+  filename: string;
   data: Buffer;
   mimeType: 'image/jpeg' | 'image/png' | 'image/webp';
 }

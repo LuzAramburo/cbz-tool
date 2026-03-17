@@ -92,7 +92,6 @@ describe('parseCbz', () => {
       const book = await parseCbz(buf);
       expect(book.pages).toHaveLength(1);
       expect(book.pages[0].mimeType).toBe('image/jpeg');
-      expect(book.pages[0].index).toBe(0);
       expect(book.pages[0].filename).toBe('page01.jpg');
     });
 
@@ -130,14 +129,14 @@ describe('parseCbz', () => {
       expect(book.pages.map((p) => p.filename)).toEqual(['page1.jpg', 'page2.jpg', 'page10.jpg']);
     });
 
-    it('assigns sequential indexes after sorting', async () => {
+    it('pages are in sorted order by array position', async () => {
       const buf = await makeZip([
         { name: 'page2.jpg', content: FAKE_JPEG },
         { name: 'page1.jpg', content: FAKE_JPEG },
       ]);
       const book = await parseCbz(buf);
-      expect(book.pages[0].index).toBe(0);
-      expect(book.pages[1].index).toBe(1);
+      expect(book.pages[0].filename).toBe('page1.jpg');
+      expect(book.pages[1].filename).toBe('page2.jpg');
     });
   });
 

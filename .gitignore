@@ -6,4 +6,6 @@ packages/server/dist
 
 /.claude/settings.local.json
 /.env
+/data/
 /packages/desktop/release/
+/packages/server/data/

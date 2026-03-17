@@ -6,7 +6,9 @@ import { join, dirname, resolve } from 'path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 config({ path: resolve(__dirname, '../../.env') });
 
-const { start } = await import('@cbz-tool/server');
+const dataDir = process.env['DATA_DIR'] ?? join(app.getPath('userData'), 'cbz-data');
+const { initStore, start } = await import('@cbz-tool/server');
+initStore(dataDir);
 
 app.commandLine.appendSwitch('disable-gpu-shader-disk-cache');
 

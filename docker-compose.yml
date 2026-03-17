@@ -8,6 +8,7 @@ services:
       - app-data:/app/data   # persist any data
     environment:
       - MAX_FILE_SIZE_MB=40  # default is 50; change to override the upload limit
+      - DATA_DIR=/app/data
     restart: unless-stopped
 
 volumes:
