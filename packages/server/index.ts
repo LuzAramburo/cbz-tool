@@ -16,7 +16,7 @@ export function start(port = 3000): Server {
     res.json({ maxFileSizeMb: parseInt(process.env['MAX_FILE_SIZE_MB'] ?? '50', 10) });
   });
 
-  app.use('/api/cbz', cbzRouter);
+  app.use('/api/books', cbzRouter);
 
   if (process.env.NODE_ENV !== 'development') {
     const publicDir = join(__dirname, '..', 'public');

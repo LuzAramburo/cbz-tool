@@ -1,12 +1,12 @@
 import yauzl from 'yauzl';
 import { XMLParser } from 'fast-xml-parser';
 import { randomUUID } from 'crypto';
-import type { PageData, ComicMetadata } from '../types/cbz.js';
+import type { PageData, BookMetadata } from '../types/cbz.js';
 
 export interface ParsedCbz {
   bookId: string;
   pages: PageData[];
-  metadata: ComicMetadata | null;
+  metadata: BookMetadata | null;
 }
 
 const IMAGE_PATTERN = /\.(jpe?g|png|webp)$/i;
@@ -41,13 +41,13 @@ function readEntry(zipFile: yauzl.ZipFile, entry: yauzl.Entry): Promise<Buffer> 
   });
 }
 
-export function parseMetadata(xml: string): ComicMetadata | null {
+export function parseMetadata(xml: string): BookMetadata | null {
   try {
     const parser = new XMLParser({ ignoreAttributes: false });
     const parsed = parser.parse(xml);
     const info = parsed?.ComicInfo;
     if (!info || typeof info !== 'object') return null;
-    const metadata: ComicMetadata = {};
+    const metadata: BookMetadata = {};
     for (const [key, value] of Object.entries(info)) {
       if (key.startsWith('@_')) continue;
       if (value != null && typeof value !== 'object') {

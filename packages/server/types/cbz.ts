@@ -10,12 +10,12 @@ export interface PageData {
   mimeType: 'image/jpeg' | 'image/png' | 'image/webp';
 }
 
-export type ComicMetadata = Record<string, string>;
+export type BookMetadata = Record<string, string>;
 
 export interface Book {
   bookId: string;
   pages: PageEntry[];
-  metadata: ComicMetadata | null;
+  metadata: BookMetadata | null;
 }
 
 export interface PageInfo {
@@ -27,5 +27,13 @@ export interface UploadResponse {
   bookId: string;
   pageCount: number;
   pages: PageInfo[];
-  metadata: ComicMetadata | null;
+  metadata: BookMetadata | null;
+}
+
+export interface BookSummary {
+  bookId: string;
+  title: string | null;
+  series: string | null;
+  number: string | null;
+  coverPageIndex: number;
 }

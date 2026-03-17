@@ -14,12 +14,25 @@ import {
   setMetadataProperty,
   removeMetadataProperty,
   getPagePath,
+  listBooks,
 } from '../services/cbzStore.js';
-import type { Book, ComicMetadata, PageData, UploadResponse } from '../types/cbz.js';
+import type { Book, BookSummary, BookMetadata, PageData, UploadResponse } from '../types/cbz.js';
 
 const router = Router();
 const MAX_FILE_SIZE_BYTES = parseInt(process.env['MAX_FILE_SIZE_MB'] ?? '50', 10) * 1024 * 1024;
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: MAX_FILE_SIZE_BYTES } });
+
+router.get('/', (_req: Request, res: Response) => {
+  const books = listBooks();
+  const summaries: BookSummary[] = books.map((book) => ({
+    bookId: book.bookId,
+    title: book.metadata?.['title'] ?? null,
+    series: book.metadata?.['series'] ?? null,
+    number: book.metadata?.['number'] ?? null,
+    coverPageIndex: 0,
+  }));
+  res.json(summaries);
+});
 
 router.post('/upload', upload.single('file'), async (req: Request, res: Response) => {
   if (!req.file) {
@@ -263,7 +276,7 @@ router.patch('/:bookId/metadata', async (req: Request, res: Response) => {
     return;
   }
 
-  const updated = (await updateMetadata(bookId, metadata as ComicMetadata | null))!;
+  const updated = (await updateMetadata(bookId, metadata as BookMetadata | null))!;
   res.json({ metadata: updated.metadata });
 });
 

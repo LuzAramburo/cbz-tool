@@ -55,14 +55,14 @@ packages/
 
 ### Server internals (`packages/server/`)
 - `index.ts` — Express app factory, mounts the CBZ router, serves static UI in prod
-- `routes/cbz.ts` — Eight endpoints: `POST /api/cbz/upload`, `GET /api/cbz/:bookId/page/:index`, `POST /api/cbz/:bookId/pages` (multer `upload.array('files')`, body `insertAt`; returns `{ pageCount, pages }`), `PATCH /api/cbz/:bookId/page/:index` (body `{ toIndex }`; returns `{ pageCount, pages }`), `DELETE /api/cbz/:bookId/page/:index` (returns updated `{ pageCount, pages }`), `PATCH /api/cbz/:bookId/metadata` (body `{ metadata: Record<string,string> | null }`; returns `{ metadata }`), `GET /api/cbz/:bookId/download` (rebuilds ZIP with JSZip, re-embeds `ComicInfo.xml`; filename derived from metadata: `Series #N - Title.cbz`), `DELETE /api/cbz/:bookId` (204)
+- `routes/cbz.ts` — All book endpoints mounted at `/api/books`: `GET /api/books` (list all books), `POST /api/books/upload`, `GET /api/books/:bookId/page/:index`, `POST /api/books/:bookId/pages` (multer `upload.array('files')`, body `insertAt`; returns `{ pageCount, pages }`), `PATCH /api/books/:bookId/page/:index` (body `{ toIndex }`; returns `{ pageCount, pages }`), `DELETE /api/books/:bookId/page/:index` (returns updated `{ pageCount, pages }`), `PATCH /api/books/:bookId/metadata` (body `{ metadata: Record<string,string> | null }`; returns `{ metadata }`), `PUT /api/books/:bookId/metadata/:key`, `DELETE /api/books/:bookId/metadata/:key`, `GET /api/books/:bookId/download` (rebuilds ZIP with JSZip, re-embeds `ComicInfo.xml`; filename derived from metadata: `Series #N - Title.cbz`), `DELETE /api/books/:bookId` (204)
 - `services/cbzParser.ts` — Core logic: reads a ZIP buffer with yauzl, filters images (jpg/png/webp), natural-sorts pages, parses `ComicInfo.xml` with fast-xml-parser. `getMime`, `isImageEntry`, and `parseMetadata` are exported for unit testing.
 - `services/cbzStore.ts` — In-memory `Map<bookId, Book>` storing raw image buffers. Single-user, no persistence. `addPages` splices entries at `insertAt` and resolves filename collisions via `uniqueFilename`; `movePage` splices the page out and re-inserts at `toIndex`; `updateMetadata` replaces `book.metadata` in-place; all page `index` fields are rewritten after every mutation.
 
 ### Data flow
-1. UI uploads a `.cbz` file via `POST /api/cbz/upload` (multer, 50 MB limit)
+1. UI uploads a `.cbz` file via `POST /api/books/upload` (multer, 50 MB limit)
 2. Server extracts ZIP → stores `Book` (with page `Buffer`s) in memory → returns page manifest
-3. UI renders `<img src="/api/cbz/:bookId/page/:index">` — browser fetches each image directly, server streams the buffer
+3. UI renders `<img src="/api/books/:bookId/page/:index">` — browser fetches each image directly, server streams the buffer
 
 ### UI internals (`packages/ui/src/`)
 - `hooks/useCbzUpload.ts` — manages upload state (`book`, `pendingMetadata`, `loading`, `downloading`, `error`); exposes `upload` (returns `Promise<boolean>` — `true` on success), `removePage`, `addPages`, `movePage`, `setMetadata` (replaces full metadata object in local state), and `downloadBook` (PATCHes `pendingMetadata` to server first, then fetches `/download`, reads `Content-Disposition` filename, triggers browser save)

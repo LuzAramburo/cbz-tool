@@ -28,7 +28,7 @@ export default function PageThumbnail({
     <div className="flex flex-col gap-1">
       <div className="relative group">
         <img
-          src={`/api/cbz/${bookId}/page/${page.index}?v=${encodeURIComponent(page.filename)}`}
+          src={`/api/books/${bookId}/page/${page.index}?v=${encodeURIComponent(page.filename)}`}
           alt={page.filename}
           className="w-full rounded-lg object-cover shadow"
           loading="lazy"

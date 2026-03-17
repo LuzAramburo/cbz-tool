@@ -3,11 +3,11 @@ export interface PageInfo {
   filename: string;
 }
 
-export type ComicMetadata = Record<string, string>;
+export type BookMetadata = Record<string, string>;
 
 export interface UploadResponse {
   bookId: string;
   pageCount: number;
   pages: PageInfo[];
-  metadata: ComicMetadata | null;
+  metadata: BookMetadata | null;
 }

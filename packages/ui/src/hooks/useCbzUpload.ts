@@ -34,7 +34,7 @@ export function useCbzUpload(): UseCbzUpload {
     formData.append('file', file);
 
     try {
-      const res = await fetch('/api/cbz/upload', { method: 'POST', body: formData });
+      const res = await fetch('/api/books/upload', { method: 'POST', body: formData });
       if (!res.ok) {
         const body = await res.json().catch(() => ({})) as { error?: string };
         setError(body.error ?? `Upload failed (${res.status})`);
@@ -55,7 +55,7 @@ export function useCbzUpload(): UseCbzUpload {
   async function removePage(index: number) {
     if (!book) return;
     try {
-      const res = await fetch(`/api/cbz/${book.bookId}/page/${index}`, { method: 'DELETE' });
+      const res = await fetch(`/api/books/${book.bookId}/page/${index}`, { method: 'DELETE' });
       if (!res.ok) {
         const body = await res.json().catch(() => ({})) as { error?: string };
         setError(body.error ?? `Delete failed (${res.status})`);
@@ -78,7 +78,7 @@ export function useCbzUpload(): UseCbzUpload {
     formData.append('insertAt', String(insertAt));
 
     try {
-      const res = await fetch(`/api/cbz/${book.bookId}/pages`, { method: 'POST', body: formData });
+      const res = await fetch(`/api/books/${book.bookId}/pages`, { method: 'POST', body: formData });
       if (!res.ok) {
         const body = await res.json().catch(() => ({})) as { error?: string };
         setError(body.error ?? `Add pages failed (${res.status})`);
@@ -96,7 +96,7 @@ export function useCbzUpload(): UseCbzUpload {
   async function movePage(index: number, toIndex: number) {
     if (!book) return;
     try {
-      const res = await fetch(`/api/cbz/${book.bookId}/page/${index}`, {
+      const res = await fetch(`/api/books/${book.bookId}/page/${index}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ toIndex }),
@@ -117,7 +117,7 @@ export function useCbzUpload(): UseCbzUpload {
     if (!book) return;
     setDownloading(true);
     try {
-      const patchRes = await fetch(`/api/cbz/${book.bookId}/metadata`, {
+      const patchRes = await fetch(`/api/books/${book.bookId}/metadata`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ metadata: pendingMetadata }),
@@ -128,7 +128,7 @@ export function useCbzUpload(): UseCbzUpload {
         return;
       }
 
-      const res = await fetch(`/api/cbz/${book.bookId}/download`);
+      const res = await fetch(`/api/books/${book.bookId}/download`);
       if (!res.ok) {
         const body = await res.json().catch(() => ({})) as { error?: string };
         setError(body.error ?? `Download failed (${res.status})`);

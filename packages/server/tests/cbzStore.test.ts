@@ -13,6 +13,7 @@ import {
   addPages,
   movePage,
   updateMetadata,
+  listBooks,
   getPagePath,
 } from '../services/cbzStore.js';
 import type { Book, PageEntry, PageData } from '../types/cbz.js';
@@ -311,6 +312,42 @@ describe('cbzStore', () => {
 
     it('returns undefined for unknown bookId', async () => {
       expect(await movePage(randomUUID(), 0, 1)).toBeUndefined();
+    });
+  });
+
+  describe('listBooks', () => {
+    it('returns empty array when no books saved', () => {
+      expect(listBooks()).toEqual([]);
+    });
+
+    it('returns all saved books', async () => {
+      const a = makeBook({ pages: [makePage(0, 'a.jpg')] });
+      const b = makeBook({ pages: [makePage(0, 'b.jpg')] });
+      await saveBook(a.book, a.pageFiles);
+      await saveBook(b.book, b.pageFiles);
+      const result = listBooks();
+      expect(result).toHaveLength(2);
+      const ids = result.map((b) => b.bookId).sort();
+      expect(ids).toEqual([a.book.bookId, b.book.bookId].sort());
+    });
+
+    it('excludes deleted books', async () => {
+      const a = makeBook({ pages: [makePage(0, 'a.jpg')] });
+      const b = makeBook({ pages: [makePage(0, 'b.jpg')] });
+      await saveBook(a.book, a.pageFiles);
+      await saveBook(b.book, b.pageFiles);
+      await deleteBook(a.book.bookId);
+      const result = listBooks();
+      expect(result).toHaveLength(1);
+      expect(result[0].bookId).toBe(b.book.bookId);
+    });
+
+    it('reflects metadata updates', async () => {
+      const { book, pageFiles } = makeBook({ metadata: { title: 'Original' } });
+      await saveBook(book, pageFiles);
+      await updateMetadata(book.bookId, { title: 'Updated' });
+      const result = listBooks();
+      expect(result[0].metadata).toEqual({ title: 'Updated' });
     });
   });
 });

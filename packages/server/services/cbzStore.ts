@@ -1,13 +1,14 @@
 import fs from 'fs';
 import fsp from 'fs/promises';
 import path from 'path';
-import type { Book, ComicMetadata, PageEntry, PageData } from '../types/cbz.js';
+import type { Book, BookMetadata, PageEntry, PageData } from '../types/cbz.js';
 
 let dataDir = '';
 const cache = new Map<string, Book>();
 
 export function initStore(dir: string): void {
   dataDir = path.resolve(dir);
+  cache.clear();
   fs.mkdirSync(dir, { recursive: true });
 
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -63,6 +64,10 @@ function uniqueFilename(existing: Set<string>, filename: string): string {
     counter++;
   } while (existing.has(candidate));
   return candidate;
+}
+
+export function listBooks(): Book[] {
+  return Array.from(cache.values());
 }
 
 export async function saveBook(book: Book, pageFiles: PageData[]): Promise<void> {
@@ -148,7 +153,7 @@ export async function movePage(bookId: string, fromIndex: number, toIndex: numbe
   return book;
 }
 
-export async function updateMetadata(bookId: string, metadata: ComicMetadata | null): Promise<Book | undefined> {
+export async function updateMetadata(bookId: string, metadata: BookMetadata | null): Promise<Book | undefined> {
   const book = cache.get(bookId);
   if (!book) return undefined;
   book.metadata = metadata;
