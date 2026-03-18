@@ -35,5 +35,6 @@ export interface BookSummary {
   title: string | null;
   series: string | null;
   number: string | null;
+  pageCount: number;
   coverPageIndex: number;
 }

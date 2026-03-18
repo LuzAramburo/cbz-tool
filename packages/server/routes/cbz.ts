@@ -20,7 +20,10 @@ import type { Book, BookSummary, BookMetadata, PageData, UploadResponse } from '
 
 const router = Router();
 const MAX_FILE_SIZE_BYTES = parseInt(process.env['MAX_FILE_SIZE_MB'] ?? '50', 10) * 1024 * 1024;
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: MAX_FILE_SIZE_BYTES } });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MAX_FILE_SIZE_BYTES },
+});
 
 router.get('/', (_req: Request, res: Response) => {
   const books = listBooks();
@@ -29,6 +32,7 @@ router.get('/', (_req: Request, res: Response) => {
     title: book.metadata?.['title'] ?? null,
     series: book.metadata?.['series'] ?? null,
     number: book.metadata?.['number'] ?? null,
+    pageCount: book.pages.length,
     coverPageIndex: 0,
   }));
   res.json(summaries);
@@ -67,6 +71,24 @@ router.post('/upload', upload.single('file'), async (req: Request, res: Response
     console.error('Failed to parse CBZ:', err);
     res.status(400).json({ error: 'Failed to parse CBZ file' });
   }
+});
+
+router.get('/:bookId', async (req: Request, res: Response) => {
+  const bookId = req.params['bookId'] as string;
+  const book = await getBook(bookId);
+  if (!book) {
+    res.status(404).json({ error: 'Book not found' });
+    return;
+  }
+
+  const response: UploadResponse = {
+    bookId: book.bookId,
+    pageCount: book.pages.length,
+    pages: book.pages.map(({ index, filename }) => ({ index, filename })),
+    metadata: book.metadata,
+  };
+
+  res.json(response);
 });
 
 router.get('/:bookId/page/:index', async (req: Request, res: Response) => {
@@ -294,7 +316,11 @@ router.delete('/:bookId', async (req: Request, res: Response) => {
 router.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
-      res.status(413).json({ error: `File too large. Maximum size is ${MAX_FILE_SIZE_BYTES / (1024 * 1024)} MB.` });
+      res
+        .status(413)
+        .json({
+          error: `File too large. Maximum size is ${MAX_FILE_SIZE_BYTES / (1024 * 1024)} MB.`,
+        });
     } else {
       res.status(400).json({ error: err.message });
     }
