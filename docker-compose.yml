@@ -1,7 +1,6 @@
 services:
   app:
-#    image: LuzAramburo/cbz-tool:latest # TODO: replace when it's ready
-    build: .        # TODO: remove. Builds from local Dockerfile instead of pulling image
+    image: luzaramburo/cbz-tool:latest
     ports:
       - "3000:3000"
     volumes:
