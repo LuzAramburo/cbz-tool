@@ -5,13 +5,16 @@ import BookMetadata from './components/BookMetadata';
 import PageGrid from './components/PageGrid';
 import UploadBookModal from './components/UploadBookModal';
 import AddPagesModal from './components/AddPagesModal';
+import LibraryModal from './components/LibraryModal';
+import BookLibrary from './components/BookLibrary';
 import ActionBar from './components/ActionBar';
 import ToggleThemeButton from './components/ToggleThemeButton.tsx';
 
 export default function App() {
-  const { upload, removePage, addPages, movePage, downloadBook, setMetadata, book, pendingMetadata, loading, downloading, error } = useCbzUpload();
+  const { upload, openBook, removePage, addPages, movePage, downloadBook, setMetadata, book, pendingMetadata, loading, downloading, error } = useCbzUpload();
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [addPagesModalOpen, setAddPagesModalOpen] = useState(false);
+  const [libraryModalOpen, setLibraryModalOpen] = useState(false);
   const [maxFileSizeMb, setMaxFileSizeMb] = useState(50);
 
   useEffect(() => {
@@ -67,6 +70,16 @@ export default function App() {
     if (await upload(file)) setUploadModalOpen(false);
   }
 
+  async function handleSelectBook(bookId: string) {
+    setLibraryModalOpen(false);
+    await openBook(bookId);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function handleDeleteBook(_bookId: string) {
+    // TODO: wire up delete
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <header className="bg-white dark:bg-gray-900 border-b dark:border-gray-700 px-6 py-4 flex items-center justify-between">
@@ -76,11 +89,15 @@ export default function App() {
 
       <main className="max-w-6xl mx-auto px-6 py-8 flex flex-col gap-6">
         {!book ? (
-          <FileUpload onUpload={upload} loading={loading} />
+          <>
+            <FileUpload onUpload={upload} loading={loading} />
+            <BookLibrary onSelect={handleSelectBook} onDelete={handleDeleteBook} />
+          </>
         ) : (
           <ActionBar
             loading={loading}
             onUploadClick={() => setUploadModalOpen(true)}
+            onLibraryClick={() => setLibraryModalOpen(true)}
             onAddPagesClick={() => setAddPagesModalOpen(true)}
             onDownloadClick={downloadBook}
             downloading={downloading}
@@ -111,6 +128,14 @@ export default function App() {
         />
       )}
 
+      {libraryModalOpen && (
+        <LibraryModal
+          onClose={() => setLibraryModalOpen(false)}
+          onSelect={handleSelectBook}
+          onDelete={handleDeleteBook}
+        />
+      )}
+
       {addPagesModalOpen && book && (
         <AddPagesModal
           onClose={() => setAddPagesModalOpen(false)}
@@ -128,6 +153,7 @@ export default function App() {
           <ActionBar
             loading={loading}
             onUploadClick={() => setUploadModalOpen(true)}
+            onLibraryClick={() => setLibraryModalOpen(true)}
             onAddPagesClick={() => setAddPagesModalOpen(true)}
             onDownloadClick={downloadBook}
             downloading={downloading}

@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import type { UploadResponse } from '../types/cbz';
+import * as api from '../clients/booksClient';
 
 interface UseCbzUpload {
   upload: (file: File) => Promise<boolean>;
+  openBook: (bookId: string) => Promise<void>;
   removePage: (index: number) => Promise<void>;
   addPages: (files: File[], insertAt: number) => Promise<void>;
   movePage: (index: number, toIndex: number) => Promise<void>;
@@ -29,18 +31,8 @@ export function useCbzUpload(): UseCbzUpload {
   async function upload(file: File): Promise<boolean> {
     setLoading(true);
     setError(null);
-
-    const formData = new FormData();
-    formData.append('file', file);
-
     try {
-      const res = await fetch('/api/books/upload', { method: 'POST', body: formData });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({})) as { error?: string };
-        setError(body.error ?? `Upload failed (${res.status})`);
-        return false;
-      }
-      const data: UploadResponse = await res.json();
+      const data = await api.uploadBook(file);
       setBook(data);
       setPendingMetadata(data.metadata);
       return true;
@@ -52,16 +44,24 @@ export function useCbzUpload(): UseCbzUpload {
     }
   }
 
+  async function openBook(bookId: string) {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await api.getBook(bookId);
+      setBook(data);
+      setPendingMetadata(data.metadata);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function removePage(index: number) {
     if (!book) return;
     try {
-      const res = await fetch(`/api/books/${book.bookId}/page/${index}`, { method: 'DELETE' });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({})) as { error?: string };
-        setError(body.error ?? `Delete failed (${res.status})`);
-        return;
-      }
-      const data = await res.json() as { pageCount: number; pages: UploadResponse['pages'] };
+      const data = await api.deletePage(book.bookId, index);
       setBook((prev) => prev ? { ...prev, pageCount: data.pageCount, pages: data.pages } : prev);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
@@ -72,19 +72,8 @@ export function useCbzUpload(): UseCbzUpload {
     if (!book) return;
     setLoading(true);
     setError(null);
-
-    const formData = new FormData();
-    files.forEach((f) => formData.append('files', f));
-    formData.append('insertAt', String(insertAt));
-
     try {
-      const res = await fetch(`/api/books/${book.bookId}/pages`, { method: 'POST', body: formData });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({})) as { error?: string };
-        setError(body.error ?? `Add pages failed (${res.status})`);
-        return;
-      }
-      const data = await res.json() as { pageCount: number; pages: UploadResponse['pages'] };
+      const data = await api.addPages(book.bookId, files, insertAt);
       setBook((prev) => prev ? { ...prev, pageCount: data.pageCount, pages: data.pages } : prev);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
@@ -96,17 +85,7 @@ export function useCbzUpload(): UseCbzUpload {
   async function movePage(index: number, toIndex: number) {
     if (!book) return;
     try {
-      const res = await fetch(`/api/books/${book.bookId}/page/${index}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ toIndex }),
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({})) as { error?: string };
-        setError(body.error ?? `Move failed (${res.status})`);
-        return;
-      }
-      const data = await res.json() as { pageCount: number; pages: UploadResponse['pages'] };
+      const data = await api.movePage(book.bookId, index, toIndex);
       setBook((prev) => prev ? { ...prev, pageCount: data.pageCount, pages: data.pages } : prev);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
@@ -117,27 +96,8 @@ export function useCbzUpload(): UseCbzUpload {
     if (!book) return;
     setDownloading(true);
     try {
-      const patchRes = await fetch(`/api/books/${book.bookId}/metadata`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ metadata: pendingMetadata }),
-      });
-      if (!patchRes.ok) {
-        const body = await patchRes.json().catch(() => ({})) as { error?: string };
-        setError(body.error ?? `Save metadata failed (${patchRes.status})`);
-        return;
-      }
-
-      const res = await fetch(`/api/books/${book.bookId}/download`);
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({})) as { error?: string };
-        setError(body.error ?? `Download failed (${res.status})`);
-        return;
-      }
-      const blob = await res.blob();
-      const disposition = res.headers.get('Content-Disposition') ?? '';
-      const match = disposition.match(/filename="([^"]+)"/);
-      const filename = match?.[1] ?? 'book.cbz';
+      await api.patchMetadata(book.bookId, pendingMetadata);
+      const { blob, filename } = await api.downloadBook(book.bookId);
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -151,5 +111,5 @@ export function useCbzUpload(): UseCbzUpload {
     }
   }
 
-  return { upload, removePage, addPages, movePage, downloadBook, setMetadata, book, pendingMetadata, loading, downloading, error };
+  return { upload, openBook, removePage, addPages, movePage, downloadBook, setMetadata, book, pendingMetadata, loading, downloading, error };
 }

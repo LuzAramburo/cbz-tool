@@ -13,7 +13,7 @@ interface ModalProps {
   onClose: () => void;
   title?: string;
   footer?: ModalFooter;
-  size?: 'sm' | 'lg';
+  size?: 'sm' | 'lg' | 'xl';
   variant?: 'bordered' | 'plain';
   children: ReactNode;
 }
@@ -34,7 +34,7 @@ export default function Modal({
   }, []);
 
   const bordered = variant === 'bordered';
-  const widthClass = size === 'sm' ? 'max-w-sm' : 'max-w-lg';
+  const widthClass = size === 'xl' ? 'max-w-4xl' : size === 'sm' ? 'max-w-sm' : 'max-w-lg';
 
   return (
     <div

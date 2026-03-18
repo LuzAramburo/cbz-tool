@@ -11,3 +11,12 @@ export interface UploadResponse {
   pages: PageInfo[];
   metadata: BookMetadata | null;
 }
+
+export interface BookSummary {
+  bookId: string;
+  title: string | null;
+  series: string | null;
+  number: string | null;
+  pageCount: number;
+  coverPageIndex: number;
+}
