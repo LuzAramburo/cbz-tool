@@ -1,5 +1,6 @@
 import type { BookSummary } from '../types/cbz';
 import { getPageImageUrl } from '../clients/booksClient';
+import TrashIcon from './icons/TrashIcon';
 
 interface BookCardProps {
   book: BookSummary;
@@ -41,21 +42,7 @@ export default function BookCard({ book, onSelect, onDelete }: BookCardProps) {
         className="cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity absolute top-1 right-1 p-1.5 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30"
         aria-label={`Delete ${title}`}
       >
-        <svg
-          className="h-4 w-4"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <polyline points="3 6 5 6 21 6" />
-          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-          <path d="M10 11v6" />
-          <path d="M14 11v6" />
-          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-        </svg>
+        <TrashIcon size="sm" />
       </button>
     </div>
   );

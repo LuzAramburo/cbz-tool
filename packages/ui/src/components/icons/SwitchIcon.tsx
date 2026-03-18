@@ -1,9 +1,11 @@
-export default function SwitchArrowsIcon() {
+import { iconSizes, type IconSize } from './iconSize';
+
+export default function SwitchArrowsIcon({ size = 'lg' }: { size?: IconSize }) {
   // License: PD. Made by mono-company: https://github.com/mono-company/mono-icons
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      className="h-6 w-6"
+      className={iconSizes[size]}
       viewBox="0 0 24 24"
       fill="currentColor"
     >

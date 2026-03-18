@@ -1,8 +1,14 @@
-export default function LoadingIcon() {
+import { iconSizes, type IconSize } from './iconSize';
+
+export default function LoadingIcon({ size = 'sm' }: { size?: IconSize }) {
   // License: MLP. Made by HashiCorp: https://github.com/hashicorp/design-system/
   return (
-    <svg className="inline-block mr-2 h-4 w-4 animate-spin" viewBox="0 0 16 16" fill="none">
-      <g fill="#ffffff" fillRule="evenodd" clipRule="evenodd">
+    <svg
+      className={`inline-block mr-2 ${iconSizes[size]} animate-spin`}
+      viewBox="0 0 16 16"
+      fill="none"
+    >
+      <g fill="currentColor" fillRule="evenodd" clipRule="evenodd">
         <path
           d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8z"
           opacity=".2"
