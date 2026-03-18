@@ -1,5 +1,5 @@
 import { config } from 'dotenv';
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, Menu } from 'electron';
 import { fileURLToPath } from 'url';
 import { join, dirname, resolve } from 'path';
 
@@ -17,6 +17,7 @@ const PORT = 3000;
 let server;
 
 app.whenReady().then(() => {
+  Menu.setApplicationMenu(null);
   server = start(PORT);
   const win = new BrowserWindow({
     width: 1200,
