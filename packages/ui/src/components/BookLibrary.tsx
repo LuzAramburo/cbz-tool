@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { BookSummary } from '../types/cbz';
 import { listBooks } from '../clients/booksClient';
 import BookCard from './BookCard';
@@ -7,16 +7,24 @@ interface BookLibraryProps {
   onSelect: (bookId: string) => void;
   onDelete: (bookId: string, title: string) => void;
   refreshKey?: number;
+  onEmpty?: () => void;
 }
 
-export default function BookLibrary({ onSelect, onDelete, refreshKey }: BookLibraryProps) {
+export default function BookLibrary({ onSelect, onDelete, refreshKey, onEmpty }: BookLibraryProps) {
   const [books, setBooks] = useState<BookSummary[] | null>(null);
+  const onEmptyRef = useRef(onEmpty);
+  useEffect(() => {
+    onEmptyRef.current = onEmpty;
+  });
 
   useEffect(() => {
     let cancelled = false;
     listBooks()
       .then((data) => {
-        if (!cancelled) setBooks(data);
+        if (!cancelled) {
+          setBooks(data);
+          if (data.length === 0) onEmptyRef.current?.();
+        }
       })
       .catch(() => {
         if (!cancelled) setBooks([]);

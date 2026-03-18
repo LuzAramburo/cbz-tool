@@ -146,6 +146,7 @@ export default function App() {
           onSelect={handleSelectBook}
           onDelete={handleDeleteBook}
           refreshKey={refreshKey}
+          onEmpty={() => setLibraryModalOpen(false)}
         />
       )}
 
