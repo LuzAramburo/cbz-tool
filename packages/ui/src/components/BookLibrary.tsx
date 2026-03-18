@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import type { BookSummary } from '../types/cbz';
 import { listBooks } from '../clients/booksClient';
 import BookCard from './BookCard';
+import LoadingIcon from './icons/LoadingIcon.tsx';
 
 interface BookLibraryProps {
   onSelect: (bookId: string) => void;
@@ -37,12 +38,7 @@ export default function BookLibrary({ onSelect, onDelete, refreshKey, onEmpty }:
   if (books === null) {
     return (
       <div className="flex justify-center py-8">
-        <svg className="h-6 w-6 animate-spin text-gray-400" viewBox="0 0 16 16" fill="none">
-          <g fill="currentColor" fillRule="evenodd" clipRule="evenodd">
-            <path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8z" opacity=".2" />
-            <path d="M7.25.75A.75.75 0 018 0a8 8 0 018 8 .75.75 0 01-1.5 0A6.5 6.5 0 008 1.5a.75.75 0 01-.75-.75z" />
-          </g>
-        </svg>
+        <LoadingIcon />
       </div>
     );
   }
