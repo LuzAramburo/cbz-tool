@@ -57,6 +57,14 @@ export async function patchMetadata(bookId: string, metadata: BookMetadata | nul
   });
 }
 
+export async function deleteBook(bookId: string): Promise<void> {
+  const res = await fetch(`/api/books/${bookId}`, { method: 'DELETE' });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(body.error ?? `Delete failed (${res.status})`);
+  }
+}
+
 export async function downloadBook(bookId: string): Promise<{ blob: Blob; filename: string }> {
   const res = await fetch(`/api/books/${bookId}/download`);
   if (!res.ok) {

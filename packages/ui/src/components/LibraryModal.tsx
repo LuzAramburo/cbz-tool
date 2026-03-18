@@ -4,13 +4,14 @@ import BookLibrary from './BookLibrary';
 interface LibraryModalProps {
   onClose: () => void;
   onSelect: (bookId: string) => void;
-  onDelete: (bookId: string) => void;
+  onDelete: (bookId: string, title: string) => void;
+  refreshKey?: number;
 }
 
-export default function LibraryModal({ onClose, onSelect, onDelete }: LibraryModalProps) {
+export default function LibraryModal({ onClose, onSelect, onDelete, refreshKey }: LibraryModalProps) {
   return (
     <Modal title="Open from Library" onClose={onClose} size="xl">
-      <BookLibrary onSelect={onSelect} onDelete={onDelete} />
+      <BookLibrary onSelect={onSelect} onDelete={onDelete} refreshKey={refreshKey} />
     </Modal>
   );
 }

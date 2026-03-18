@@ -1,12 +1,15 @@
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import CloseButton from './CloseButton.tsx';
+import LoadingIcon from './icons/LoadingIcon.tsx';
 
 interface ModalFooter {
   confirmLabel: string;
   onConfirm: () => void;
   disabled?: boolean;
   danger?: boolean;
+  loading?: boolean;
+  loadingLabel?: string;
 }
 
 interface ModalProps {
@@ -66,14 +69,15 @@ export default function Modal({
             </button>
             <button
               onClick={footer.onConfirm}
-              disabled={footer.disabled}
-              className={`cursor-pointer px-4 py-2 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+              disabled={footer.disabled || footer.loading}
+              className={`cursor-pointer px-4 py-2 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center ${
                 footer.danger
                   ? 'bg-red-500 hover:bg-red-600'
                   : 'bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300'
               }`}
             >
-              {footer.confirmLabel}
+              {footer.loading && <LoadingIcon />}
+              {footer.loading ? (footer.loadingLabel ?? footer.confirmLabel) : footer.confirmLabel}
             </button>
           </div>
         )}

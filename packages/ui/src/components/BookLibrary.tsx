@@ -5,10 +5,11 @@ import BookCard from './BookCard';
 
 interface BookLibraryProps {
   onSelect: (bookId: string) => void;
-  onDelete: (bookId: string) => void;
+  onDelete: (bookId: string, title: string) => void;
+  refreshKey?: number;
 }
 
-export default function BookLibrary({ onSelect, onDelete }: BookLibraryProps) {
+export default function BookLibrary({ onSelect, onDelete, refreshKey }: BookLibraryProps) {
   const [books, setBooks] = useState<BookSummary[] | null>(null);
 
   useEffect(() => {
@@ -23,7 +24,7 @@ export default function BookLibrary({ onSelect, onDelete }: BookLibraryProps) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [refreshKey]);
 
   if (books === null) {
     return (

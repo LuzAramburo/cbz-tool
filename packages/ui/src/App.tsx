@@ -5,17 +5,21 @@ import BookMetadata from './components/BookMetadata';
 import PageGrid from './components/PageGrid';
 import UploadBookModal from './components/UploadBookModal';
 import AddPagesModal from './components/AddPagesModal';
+import Modal from './components/Modal';
 import LibraryModal from './components/LibraryModal';
 import BookLibrary from './components/BookLibrary';
 import ActionBar from './components/ActionBar';
 import ToggleThemeButton from './components/ToggleThemeButton.tsx';
 
 export default function App() {
-  const { upload, openBook, removePage, addPages, movePage, downloadBook, setMetadata, book, pendingMetadata, loading, downloading, error } = useCbzUpload();
+  const { upload, openBook, removePage, addPages, movePage, deleteBook, downloadBook, setMetadata, book, pendingMetadata, loading, downloading, error } = useCbzUpload();
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [addPagesModalOpen, setAddPagesModalOpen] = useState(false);
   const [libraryModalOpen, setLibraryModalOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [maxFileSizeMb, setMaxFileSizeMb] = useState(50);
+  const [pendingDeleteBook, setPendingDeleteBook] = useState<{ bookId: string; title: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -75,9 +79,17 @@ export default function App() {
     await openBook(bookId);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  function handleDeleteBook(_bookId: string) {
-    // TODO: wire up delete
+  function handleDeleteBook(bookId: string, title: string) {
+    setPendingDeleteBook({ bookId, title });
+  }
+
+  async function confirmDeleteBook() {
+    if (!pendingDeleteBook) return;
+    setDeleting(true);
+    await deleteBook(pendingDeleteBook.bookId);
+    setRefreshKey((k) => k + 1);
+    setDeleting(false);
+    setPendingDeleteBook(null);
   }
 
   return (
@@ -91,7 +103,7 @@ export default function App() {
         {!book ? (
           <>
             <FileUpload onUpload={upload} loading={loading} />
-            <BookLibrary onSelect={handleSelectBook} onDelete={handleDeleteBook} />
+            <BookLibrary onSelect={handleSelectBook} onDelete={handleDeleteBook} refreshKey={refreshKey} />
           </>
         ) : (
           <ActionBar
@@ -133,6 +145,7 @@ export default function App() {
           onClose={() => setLibraryModalOpen(false)}
           onSelect={handleSelectBook}
           onDelete={handleDeleteBook}
+          refreshKey={refreshKey}
         />
       )}
 
@@ -144,6 +157,19 @@ export default function App() {
           totalPages={book.pageCount}
           maxFileSizeMb={maxFileSizeMb}
         />
+      )}
+
+      {pendingDeleteBook && (
+        <Modal
+          title="Delete Book"
+          onClose={() => setPendingDeleteBook(null)}
+          size="sm"
+          footer={{ confirmLabel: 'Delete', onConfirm: confirmDeleteBook, danger: true, loading: deleting, loadingLabel: 'Deleting\u2026' }}
+        >
+          <p className="text-sm text-gray-700 dark:text-gray-300">
+            Are you sure you want to delete &ldquo;{pendingDeleteBook.title}&rdquo;?
+          </p>
+        </Modal>
       )}
 
       {book && (

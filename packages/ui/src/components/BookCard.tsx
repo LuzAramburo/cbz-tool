@@ -5,7 +5,7 @@ import TrashIcon from './icons/TrashIcon';
 interface BookCardProps {
   book: BookSummary;
   onSelect: (bookId: string) => void;
-  onDelete: (bookId: string) => void;
+  onDelete: (bookId: string, title: string) => void;
 }
 
 export default function BookCard({ book, onSelect, onDelete }: BookCardProps) {
@@ -38,7 +38,7 @@ export default function BookCard({ book, onSelect, onDelete }: BookCardProps) {
         </div>
       </button>
       <button
-        onClick={() => onDelete(book.bookId)}
+        onClick={() => onDelete(book.bookId, title)}
         className="cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity absolute top-1 right-1 p-1.5 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30"
         aria-label={`Delete ${title}`}
       >

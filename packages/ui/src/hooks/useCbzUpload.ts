@@ -8,6 +8,7 @@ interface UseCbzUpload {
   removePage: (index: number) => Promise<void>;
   addPages: (files: File[], insertAt: number) => Promise<void>;
   movePage: (index: number, toIndex: number) => Promise<void>;
+  deleteBook: (bookId: string) => Promise<void>;
   downloadBook: () => void;
   setMetadata: (metadata: Record<string, string> | null) => void;
   book: UploadResponse | null;
@@ -92,6 +93,18 @@ export function useCbzUpload(): UseCbzUpload {
     }
   }
 
+  async function deleteBook(bookId: string) {
+    try {
+      await api.deleteBook(bookId);
+      if (book?.bookId === bookId) {
+        setBook(null);
+        setPendingMetadata(null);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    }
+  }
+
   async function downloadBook() {
     if (!book) return;
     setDownloading(true);
@@ -111,5 +124,5 @@ export function useCbzUpload(): UseCbzUpload {
     }
   }
 
-  return { upload, openBook, removePage, addPages, movePage, downloadBook, setMetadata, book, pendingMetadata, loading, downloading, error };
+  return { upload, openBook, removePage, addPages, movePage, deleteBook, downloadBook, setMetadata, book, pendingMetadata, loading, downloading, error };
 }
