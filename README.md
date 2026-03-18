@@ -6,11 +6,13 @@ Available as a desktop app (Electron), a self-hosted web app (Docker), or a loca
 
 ## Features
 - Upload a CBZ via file picker or drag and drop
+- Browse and reopen books from a persistent library
 - View all pages as a responsive image grid
 - Reorder pages by moving them to any position
 - Delete individual pages
+- Manage book library
 - Add new pages (JPG, PNG, WEBP) at any position
-- Edit embedded ComicInfo.xml metadata fields (title, series, publisher, etc.)
+- Edit embedded ComicInfo.xml metadata — add, edit, or remove individual fields
 - Download the modified CBZ with changes applied
 
 ---
@@ -61,11 +63,18 @@ services:
       - "3000:3000"
     environment:
       - MAX_FILE_SIZE_MB=50  # default is 50
+      - DATA_DIR=/app/data
+    volumes:
+      - app-data:/app/data   # persist library across restarts
+
+volumes:
+  app-data:
 ```
 
 | Variable | Default | Description |
 |---|---|---|
 | `MAX_FILE_SIZE_MB` | `50` | Maximum upload size in MB. Reflected in both the server limit and the UI hint. |
+| `DATA_DIR` | `./data` | Directory where books are stored on disk. Mount a volume here to persist your library. |
 
 ## Desktop app (Electron)
 
