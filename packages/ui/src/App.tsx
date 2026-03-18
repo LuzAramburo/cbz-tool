@@ -12,13 +12,32 @@ import ActionBar from './components/ActionBar';
 import ToggleThemeButton from './components/ToggleThemeButton.tsx';
 
 export default function App() {
-  const { upload, openBook, removePage, addPages, movePage, deleteBook, downloadBook, setMetadata, book, pendingMetadata, loading, downloading, error } = useCbzUpload();
+  const {
+    upload,
+    openBook,
+    removePage,
+    addPages,
+    movePage,
+    deleteBook,
+    downloadBook,
+    saveMetadata,
+    setMetadata,
+    book,
+    pendingMetadata,
+    loading,
+    downloading,
+    saving,
+    error,
+  } = useCbzUpload();
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [addPagesModalOpen, setAddPagesModalOpen] = useState(false);
   const [libraryModalOpen, setLibraryModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [maxFileSizeMb, setMaxFileSizeMb] = useState(50);
-  const [pendingDeleteBook, setPendingDeleteBook] = useState<{ bookId: string; title: string } | null>(null);
+  const [pendingDeleteBook, setPendingDeleteBook] = useState<{
+    bookId: string;
+    title: string;
+  } | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
@@ -103,7 +122,11 @@ export default function App() {
         {!book ? (
           <>
             <FileUpload onUpload={upload} loading={loading} />
-            <BookLibrary onSelect={handleSelectBook} onDelete={handleDeleteBook} refreshKey={refreshKey} />
+            <BookLibrary
+              onSelect={handleSelectBook}
+              onDelete={handleDeleteBook}
+              refreshKey={refreshKey}
+            />
           </>
         ) : (
           <ActionBar
@@ -126,7 +149,14 @@ export default function App() {
           <div
             className={`flex flex-col gap-6 transition-opacity ${loading ? 'opacity-40 select-none cursor-not-allowed *:pointer-events-none' : ''}`}
           >
-            {pendingMetadata && <BookMetadata metadata={pendingMetadata} onMetadataChange={setMetadata} />}
+            {pendingMetadata && (
+              <BookMetadata
+                metadata={pendingMetadata}
+                onMetadataChange={setMetadata}
+                onSave={saveMetadata}
+                saving={saving}
+              />
+            )}
             <PageGrid book={book} onRemovePage={removePage} onMovePage={movePage} />
           </div>
         )}
@@ -165,7 +195,13 @@ export default function App() {
           title="Delete Book"
           onClose={() => setPendingDeleteBook(null)}
           size="sm"
-          footer={{ confirmLabel: 'Delete', onConfirm: confirmDeleteBook, danger: true, loading: deleting, loadingLabel: 'Deleting\u2026' }}
+          footer={{
+            confirmLabel: 'Delete',
+            onConfirm: confirmDeleteBook,
+            danger: true,
+            loading: deleting,
+            loadingLabel: 'Deleting...',
+          }}
         >
           <p className="text-sm text-gray-700 dark:text-gray-300">
             Are you sure you want to delete &ldquo;{pendingDeleteBook.title}&rdquo;?

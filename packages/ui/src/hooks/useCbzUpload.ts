@@ -10,11 +10,13 @@ interface UseCbzUpload {
   movePage: (index: number, toIndex: number) => Promise<void>;
   deleteBook: (bookId: string) => Promise<void>;
   downloadBook: () => void;
+  saveMetadata: () => Promise<void>;
   setMetadata: (metadata: Record<string, string> | null) => void;
   book: UploadResponse | null;
   pendingMetadata: Record<string, string> | null;
   loading: boolean;
   downloading: boolean;
+  saving: boolean;
   error: string | null;
 }
 
@@ -23,6 +25,7 @@ export function useCbzUpload(): UseCbzUpload {
   const [pendingMetadata, setPendingMetadata] = useState<Record<string, string> | null>(null);
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   function setMetadata(metadata: Record<string, string> | null) {
@@ -105,6 +108,19 @@ export function useCbzUpload(): UseCbzUpload {
     }
   }
 
+  async function saveMetadata() {
+    if (!book) return;
+    setSaving(true);
+    try {
+      await api.patchMetadata(book.bookId, pendingMetadata);
+      setBook((prev) => prev ? { ...prev, metadata: pendingMetadata } : prev);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function downloadBook() {
     if (!book) return;
     setDownloading(true);
@@ -124,5 +140,5 @@ export function useCbzUpload(): UseCbzUpload {
     }
   }
 
-  return { upload, openBook, removePage, addPages, movePage, deleteBook, downloadBook, setMetadata, book, pendingMetadata, loading, downloading, error };
+  return { upload, openBook, removePage, addPages, movePage, deleteBook, downloadBook, saveMetadata, setMetadata, book, pendingMetadata, loading, downloading, saving, error };
 }

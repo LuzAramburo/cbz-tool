@@ -5,9 +5,16 @@ import Modal from './Modal.tsx';
 interface BookMetadataProps {
   metadata: Record<string, string>;
   onMetadataChange: (metadata: Record<string, string>) => void;
+  onSave?: () => void;
+  saving?: boolean;
 }
 
-export default function BookMetadata({ metadata, onMetadataChange }: BookMetadataProps) {
+export default function BookMetadata({
+  metadata,
+  onMetadataChange,
+  onSave,
+  saving,
+}: BookMetadataProps) {
   const entries = Object.entries(metadata);
   const [metaOpen, setMetaOpen] = useState(true);
   const [addModalOpen, setAddModalOpen] = useState(false);
@@ -87,13 +94,20 @@ export default function BookMetadata({ metadata, onMetadataChange }: BookMetadat
                 )}
               </div>
             ))}
-            <div className="col-span-full pt-1">
+            <div className="col-span-full pt-1 flex items-center gap-4">
               <button
                 onClick={() => setAddModalOpen(true)}
-                className="ml-auto cursor-pointer flex items-center gap-1.5 text-sm text-blue-300 hover:text-blue-300 border border-blue-300 rounded-lg px-4 py-2 dark:hover:text-blue-100 dark:hover:border-blue-100 transition-colors"
+                className="cursor-pointer flex items-center gap-1.5 text-sm text-blue-400 hover:text-blue-300 border border-blue-400 hover:border-blue-300 rounded-lg px-4 py-2 transition-colors"
               >
                 <span className="text-lg leading-none">+</span>
                 Add property
+              </button>
+              <button
+                onClick={onSave}
+                disabled={saving}
+                className="cursor-pointer flex items-center gap-1.5 text-sm text-blue-400 hover:text-blue-300 border border-blue-400 hover:border-blue-300 rounded-lg px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {saving ? 'Saving...' : 'Save metadata'}
               </button>
             </div>
           </div>
@@ -106,7 +120,11 @@ export default function BookMetadata({ metadata, onMetadataChange }: BookMetadat
           title="Add property"
           onClose={handleAddCancel}
           size="sm"
-          footer={{ confirmLabel: 'Add', onConfirm: handleAddConfirm, disabled: addConfirmDisabled }}
+          footer={{
+            confirmLabel: 'Add',
+            onConfirm: handleAddConfirm,
+            disabled: addConfirmDisabled,
+          }}
         >
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
