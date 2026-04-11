@@ -1,6 +1,7 @@
 import fs from 'fs';
 import fsp from 'fs/promises';
 import path from 'path';
+import { randomUUID } from 'crypto';
 import type { Book, BookMetadata, PageEntry, PageData } from '../types/cbz.js';
 
 let dataDir = '';
@@ -140,6 +141,41 @@ export async function addPages(
   reindex(book.pages);
   await writeManifest(book);
   return book;
+}
+
+export async function mergeBooks(
+  bookIds: string[],
+  metadata?: BookMetadata | null,
+): Promise<Book | undefined> {
+  const books: Book[] = [];
+  for (const id of bookIds) {
+    const book = cache.get(id);
+    if (!book) return undefined;
+    books.push(book);
+  }
+
+  const resolvedMetadata: BookMetadata | null =
+    metadata !== undefined ? metadata : (books[0]!.metadata ?? null);
+
+  const newId = randomUUID();
+  const existing = new Set<string>();
+  const pages: PageEntry[] = [];
+  const pageFiles: PageData[] = [];
+
+  for (const book of books) {
+    for (const page of book.pages) {
+      const data = await fsp.readFile(getPagePath(book.bookId, page.filename));
+      const filename = uniqueFilename(existing, page.filename);
+      existing.add(filename);
+      pages.push({ index: 0, filename, mimeType: page.mimeType });
+      pageFiles.push({ filename, data, mimeType: page.mimeType });
+    }
+  }
+
+  reindex(pages);
+  const newBook: Book = { bookId: newId, pages, metadata: resolvedMetadata };
+  await saveBook(newBook, pageFiles);
+  return newBook;
 }
 
 export async function movePage(bookId: string, fromIndex: number, toIndex: number): Promise<Book | undefined> {
