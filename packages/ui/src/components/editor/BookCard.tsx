@@ -1,6 +1,6 @@
-import type { BookSummary } from '../types/cbz';
-import { getPageImageUrl } from '../clients/booksClient';
-import TrashIcon from './icons/TrashIcon';
+import type { BookSummary } from '../../types/cbz';
+import { getPageImageUrl } from '../../clients/booksClient';
+import TrashIcon from '../icons/TrashIcon';
 
 interface BookCardProps {
   book: BookSummary;

@@ -1,7 +1,7 @@
-import LoadingIcon from './icons/LoadingIcon.tsx';
-import DownloadIcon from './icons/DownloadIcon.tsx';
-import AddIcon from './icons/AddIcon.tsx';
-import UploadIcon from './icons/UploadIcon.tsx';
+import LoadingIcon from '../icons/LoadingIcon.tsx';
+import DownloadIcon from '../icons/DownloadIcon.tsx';
+import AddIcon from '../icons/AddIcon.tsx';
+import UploadIcon from '../icons/UploadIcon.tsx';
 
 interface ActionBarProps {
   loading: boolean;

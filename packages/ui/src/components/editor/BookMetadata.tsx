@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import CloseIcon from './icons/CloseIcon.tsx';
-import Modal from './Modal.tsx';
+import CloseIcon from '../icons/CloseIcon.tsx';
+import Modal from '../modals/Modal.tsx';
 
 interface BookMetadataProps {
   metadata: Record<string, string>;

@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useCbzUpload } from '../hooks/useCbzUpload';
-import FileUpload from '../components/FileUpload';
-import BookMetadata from '../components/BookMetadata';
-import PageGrid from '../components/PageGrid';
-import UploadBookModal from '../components/UploadBookModal';
-import AddPagesModal from '../components/AddPagesModal';
-import Modal from '../components/Modal';
-import LibraryModal from '../components/LibraryModal';
-import BookLibrary from '../components/BookLibrary';
-import ActionBar from '../components/ActionBar';
+import FileUpload from '../components/editor/FileUpload';
+import BookMetadata from '../components/editor/BookMetadata';
+import PageGrid from '../components/editor/PageGrid';
+import UploadBookModal from '../components/modals/UploadBookModal';
+import AddPagesModal from '../components/modals/AddPagesModal';
+import Modal from '../components/modals/Modal';
+import LibraryModal from '../components/modals/LibraryModal';
+import BookLibrary from '../components/editor/BookLibrary';
+import ActionBar from '../components/layout/ActionBar';
 
 export default function EditorView() {
   const {

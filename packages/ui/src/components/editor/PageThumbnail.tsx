@@ -1,10 +1,10 @@
-import LoadingIcon from './icons/LoadingIcon.tsx';
-import { PageInfo } from '../types/cbz.ts';
-import ArrowLeftIcon from './icons/ArrowLeftIcon.tsx';
-import ArrowRightIcon from './icons/ArrowRightIcon.tsx';
-import SwitchArrowsIcon from './icons/SwitchIcon.tsx';
-import TrashIcon from './icons/TrashIcon.tsx';
-import { getPageImageUrl } from '../clients/booksClient';
+import LoadingIcon from '../icons/LoadingIcon.tsx';
+import { PageInfo } from '../../types/cbz.ts';
+import ArrowLeftIcon from '../icons/ArrowLeftIcon.tsx';
+import ArrowRightIcon from '../icons/ArrowRightIcon.tsx';
+import SwitchArrowsIcon from '../icons/SwitchIcon.tsx';
+import TrashIcon from '../icons/TrashIcon.tsx';
+import { getPageImageUrl } from '../../clients/booksClient';
 
 type Props = {
   page: PageInfo;

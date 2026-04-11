@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import type { BookSummary } from '../types/cbz';
-import { listBooks } from '../clients/booksClient';
+import type { BookSummary } from '../../types/cbz';
+import { listBooks } from '../../clients/booksClient';
 import BookCard from './BookCard';
-import LoadingIcon from './icons/LoadingIcon.tsx';
+import LoadingIcon from '../icons/LoadingIcon.tsx';
 
 interface BookLibraryProps {
   onSelect: (bookId: string) => void;

@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import type { UploadResponse } from '../types/cbz';
+import type { UploadResponse } from '../../types/cbz';
 import PageThumbnail from './PageThumbnail.tsx';
-import Modal from './Modal.tsx';
+import Modal from '../modals/Modal.tsx';
 
 interface PageGridProps {
   book: UploadResponse;

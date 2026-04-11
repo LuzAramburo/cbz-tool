@@ -1,4 +1,4 @@
-import CloseIcon from './icons/CloseIcon.tsx';
+import CloseIcon from '../icons/CloseIcon.tsx';
 
 export default function CloseButton({ onClose }: { onClose: () => void }) {
   return (

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Router, Switch, Route } from 'wouter';
-import NavHeader from './components/NavHeader';
+import NavHeader from './components/layout/NavHeader';
 import HomeView from './views/HomeView';
 import EditorView from './views/EditorView';
 import MergeView from './views/MergeView';
