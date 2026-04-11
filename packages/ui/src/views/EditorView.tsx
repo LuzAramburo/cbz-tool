@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useCbzUpload } from '../hooks/useCbzUpload';
+import { useEditorBooks } from '../hooks/useEditorBooks.ts';
 import FileUpload from '../components/editor/FileUpload';
 import BookMetadata from '../components/editor/BookMetadata';
 import PageGrid from '../components/editor/PageGrid';
@@ -27,7 +27,7 @@ export default function EditorView() {
     downloading,
     saving,
     error,
-  } = useCbzUpload();
+  } = useEditorBooks();
 
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [addPagesModalOpen, setAddPagesModalOpen] = useState(false);
@@ -98,6 +98,7 @@ export default function EditorView() {
   return (
     <>
       <main className="max-w-6xl mx-auto px-6 py-8 flex flex-col gap-6">
+        <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">Edit Book</h1>
         {!book ? (
           <>
             <FileUpload onUpload={upload} loading={loading} />

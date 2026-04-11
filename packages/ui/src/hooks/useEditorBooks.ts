@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import type { UploadResponse } from '../types/cbz';
 import * as api from '../clients/booksClient';
+import { useBookOperations } from './useBookOperations';
 
-interface UseCbzUpload {
+interface UseEditorBooks {
   upload: (file: File) => Promise<boolean>;
   openBook: (bookId: string) => Promise<void>;
   removePage: (index: number) => Promise<void>;
@@ -14,38 +15,34 @@ interface UseCbzUpload {
   setMetadata: (metadata: Record<string, string> | null) => void;
   book: UploadResponse | null;
   pendingMetadata: Record<string, string> | null;
+  uploading: boolean;
   loading: boolean;
   downloading: boolean;
   saving: boolean;
   error: string | null;
 }
 
-export function useCbzUpload(): UseCbzUpload {
+export function useEditorBooks(): UseEditorBooks {
   const [book, setBook] = useState<UploadResponse | null>(null);
   const [pendingMetadata, setPendingMetadata] = useState<Record<string, string> | null>(null);
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const ops = useBookOperations(setError);
 
   function setMetadata(metadata: Record<string, string> | null) {
     setPendingMetadata(metadata);
   }
 
   async function upload(file: File): Promise<boolean> {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await api.uploadBook(file);
+    const data = await ops.upload(file);
+    if (data) {
       setBook(data);
       setPendingMetadata(data.metadata);
       return true;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-      return false;
-    } finally {
-      setLoading(false);
     }
+    return false;
   }
 
   async function openBook(bookId: string) {
@@ -66,7 +63,7 @@ export function useCbzUpload(): UseCbzUpload {
     if (!book) return;
     try {
       const data = await api.deletePage(book.bookId, index);
-      setBook((prev) => prev ? { ...prev, pageCount: data.pageCount, pages: data.pages } : prev);
+      setBook((prev) => (prev ? { ...prev, pageCount: data.pageCount, pages: data.pages } : prev));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     }
@@ -78,7 +75,7 @@ export function useCbzUpload(): UseCbzUpload {
     setError(null);
     try {
       const data = await api.addPages(book.bookId, files, insertAt);
-      setBook((prev) => prev ? { ...prev, pageCount: data.pageCount, pages: data.pages } : prev);
+      setBook((prev) => (prev ? { ...prev, pageCount: data.pageCount, pages: data.pages } : prev));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
@@ -90,21 +87,17 @@ export function useCbzUpload(): UseCbzUpload {
     if (!book) return;
     try {
       const data = await api.movePage(book.bookId, index, toIndex);
-      setBook((prev) => prev ? { ...prev, pageCount: data.pageCount, pages: data.pages } : prev);
+      setBook((prev) => (prev ? { ...prev, pageCount: data.pageCount, pages: data.pages } : prev));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     }
   }
 
   async function deleteBook(bookId: string) {
-    try {
-      await api.deleteBook(bookId);
-      if (book?.bookId === bookId) {
-        setBook(null);
-        setPendingMetadata(null);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+    const success = await ops.remove(bookId);
+    if (success && book?.bookId === bookId) {
+      setBook(null);
+      setPendingMetadata(null);
     }
   }
 
@@ -113,7 +106,7 @@ export function useCbzUpload(): UseCbzUpload {
     setSaving(true);
     try {
       await api.patchMetadata(book.bookId, pendingMetadata);
-      setBook((prev) => prev ? { ...prev, metadata: pendingMetadata } : prev);
+      setBook((prev) => (prev ? { ...prev, metadata: pendingMetadata } : prev));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
@@ -140,5 +133,22 @@ export function useCbzUpload(): UseCbzUpload {
     }
   }
 
-  return { upload, openBook, removePage, addPages, movePage, deleteBook, downloadBook, saveMetadata, setMetadata, book, pendingMetadata, loading, downloading, saving, error };
+  return {
+    upload,
+    openBook,
+    removePage,
+    addPages,
+    movePage,
+    deleteBook,
+    downloadBook,
+    saveMetadata,
+    setMetadata,
+    book,
+    pendingMetadata,
+    uploading: ops.uploading,
+    loading,
+    downloading,
+    saving,
+    error,
+  };
 }

@@ -1,14 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
-import type { BookSummary, UploadResponse, BookMetadata } from '../types/cbz';
-import {
-  listBooks,
-  getBook,
-  uploadBook,
-  deleteBook,
-  mergeBooks,
-  downloadBook,
-} from '../clients/booksClient';
+import type { BookMetadata } from '../types/cbz';
+import { getBook } from '../clients/booksClient';
+import { useMergeBooks } from '../hooks/useMergeBooks';
 import BookCard from '../components/editor/BookCard';
 import BookMetadataPanel from '../components/editor/BookMetadata';
 import UploadBookModal from '../components/modals/UploadBookModal';
@@ -20,36 +14,29 @@ import MergeIcon from '../components/icons/MergeIcon';
 
 export default function MergeView() {
   const [, navigate] = useLocation();
-  const [books, setBooks] = useState<BookSummary[] | null>(null);
+  const {
+    books,
+    mergedBook,
+    uploading,
+    deleting,
+    merging,
+    downloading,
+    error,
+    upload,
+    remove,
+    merge,
+    downloadMerged,
+    dismissMergedBook,
+  } = useMergeBooks();
+
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [pendingMetadata, setPendingMetadata] = useState<BookMetadata | null>(null);
   const [metadataLoading, setMetadataLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [merging, setMerging] = useState(false);
-  const [downloading, setDownloading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [mergedBook, setMergedBook] = useState<UploadResponse | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [pendingDeleteBook, setPendingDeleteBook] = useState<{
     bookId: string;
     title: string;
   } | null>(null);
-  const [deleting, setDeleting] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    listBooks()
-      .then((data) => {
-        if (!cancelled) setBooks(data);
-      })
-      .catch(() => {
-        if (!cancelled) setBooks([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [refreshKey]);
 
   const firstId = selectedIds[0];
   useEffect(() => {
@@ -86,70 +73,19 @@ export default function MergeView() {
 
   async function confirmDeleteBook() {
     if (!pendingDeleteBook) return;
-    setDeleting(true);
-    try {
-      await deleteBook(pendingDeleteBook.bookId);
-      setSelectedIds((prev) => prev.filter((id) => id !== pendingDeleteBook.bookId));
-      setRefreshKey((k) => k + 1);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-    } finally {
-      setDeleting(false);
-      setPendingDeleteBook(null);
-    }
-  }
-
-  async function handleUpload(file: File): Promise<boolean> {
-    setUploading(true);
-    setError(null);
-    try {
-      await uploadBook(file);
-      setRefreshKey((k) => k + 1);
-      return true;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-      return false;
-    } finally {
-      setUploading(false);
-    }
+    await remove(pendingDeleteBook.bookId);
+    setSelectedIds((prev) => prev.filter((id) => id !== pendingDeleteBook.bookId));
+    setPendingDeleteBook(null);
   }
 
   async function handleUploadAndClose(file: File) {
-    if (await handleUpload(file)) setUploadModalOpen(false);
+    if (await upload(file)) setUploadModalOpen(false);
   }
 
   async function handleMerge() {
-    setMerging(true);
-    setError(null);
-    try {
-      const result = await mergeBooks(selectedIds, pendingMetadata);
-      setMergedBook(result);
-      setSelectedIds([]);
-      setPendingMetadata(null);
-      setRefreshKey((k) => k + 1);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-    } finally {
-      setMerging(false);
-    }
-  }
-
-  async function handleDownloadMerged() {
-    if (!mergedBook) return;
-    setDownloading(true);
-    try {
-      const { blob, filename } = await downloadBook(mergedBook.bookId);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-    } finally {
-      setDownloading(false);
-    }
+    await merge(selectedIds, pendingMetadata);
+    setSelectedIds([]);
+    setPendingMetadata(null);
   }
 
   const canMerge = selectedIds.length >= 2;
@@ -188,7 +124,7 @@ export default function MergeView() {
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <button
-                onClick={handleDownloadMerged}
+                onClick={downloadMerged}
                 disabled={downloading}
                 className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-700 dark:text-green-300 border border-green-300 dark:border-green-700 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/40 disabled:opacity-50 transition-colors"
               >
@@ -202,7 +138,7 @@ export default function MergeView() {
                 Open in Editor
               </button>
               <button
-                onClick={() => setMergedBook(null)}
+                onClick={dismissMergedBook}
                 aria-label="Dismiss"
                 className="cursor-pointer text-green-400 dark:text-green-600 hover:text-green-600 dark:hover:text-green-400 transition-colors text-xl leading-none px-1"
               >
