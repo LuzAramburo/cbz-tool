@@ -83,16 +83,24 @@ packages/
 4. UI can also browse the library (`GET /api/books`) and open an existing book (`GET /api/books/:bookId`) without re-uploading
 
 ### UI internals (`packages/ui/src/`)
-- `hooks/useCbzUpload.ts` — manages upload state (`book`, `pendingMetadata`, `loading`, `downloading`, `error`); exposes `upload`, `openBook` (fetches existing book by ID), `removePage`, `addPages`, `movePage`, `deleteBook`, `setMetadata`, and `downloadBook` (PATCHes `pendingMetadata` to server first, then fetches `/download`)
+- `views/HomeView.tsx` — feature launcher home page (square cards per feature)
+- `views/EditorView.tsx` — full upload/edit flow (book state, modals, scroll behavior)
+- `views/MergeView.tsx` — merge books page (stub, to be implemented)
+- `hooks/useCbzUpload.ts` — manages upload state (`book`, `pendingMetadata`, `loading`, `downloading`, `saving`, `error`); exposes `upload`, `openBook` (fetches existing book by ID), `removePage`, `addPages`, `movePage`, `deleteBook`, `setMetadata`, `saveMetadata`, and `downloadBook` (PATCHes `pendingMetadata` to server first, then fetches `/download`)
 - `clients/booksClient.ts` — typed fetch wrappers for all `/api/books` endpoints; shared `apiFetch<T>()` helper for error handling
-- `components/FileUpload.tsx` — file picker + drag-and-drop zone; validates `.cbz` extension on drop
-- `components/BookLibrary.tsx` — fetches and displays library as a grid of `BookCard`s; accepts `onEmpty` callback for auto-closing modals when the last book is deleted; re-fetches on `refreshKey` change
-- `components/LibraryModal.tsx` — wraps `BookLibrary` in a modal; threads `onEmpty` to auto-close
-- `components/BookCard.tsx` — single book entry showing cover image, title, series/number, page count; hover reveals delete button
-- `components/BookMetadata.tsx` — collapsible metadata panel with editable fields; `summary` key gets a `<textarea>`, all others `<input>`; calls `onMetadataChange(fullMetadataObject)` on every field change; supports add/delete of individual properties
-- `components/PageGrid.tsx` — responsive image grid with move and delete modals; owns all page-interaction state (`pendingIndex`, `movingIndex`, `moveToSource`)
-- `components/UploadBookModal.tsx` — wraps `FileUpload` in a modal; uses `handleUploadAndClose` in `App.tsx` so the modal closes only on successful upload
-- `components/AddPagesModal.tsx` — stages image files (jpg/png/webp), picks insert position, calls `addPages`; filters unsupported formats on select/drop
+- `components/` is organised into subfolders by responsibility:
+  - `layout/` — app shell: `NavHeader.tsx`, `ActionBar.tsx`, `ToggleThemeButton.tsx`
+  - `editor/` — components owned by EditorView: `FileUpload.tsx`, `BookLibrary.tsx`, `BookCard.tsx`, `BookMetadata.tsx`, `PageGrid.tsx`, `PageThumbnail.tsx`
+  - `modals/` — modal system: `Modal.tsx`, `CloseButton.tsx`, `UploadBookModal.tsx`, `AddPagesModal.tsx`, `LibraryModal.tsx`
+  - `icons/` — SVG icon components (see Icons gotcha below)
+- `components/editor/FileUpload.tsx` — file picker + drag-and-drop zone; validates `.cbz` extension on drop
+- `components/editor/BookLibrary.tsx` — fetches and displays library as a grid of `BookCard`s; accepts `onEmpty` callback for auto-closing modals when the last book is deleted; re-fetches on `refreshKey` change
+- `components/modals/LibraryModal.tsx` — wraps `BookLibrary` in a modal; threads `onEmpty` to auto-close
+- `components/editor/BookCard.tsx` — single book entry showing cover image, title, series/number, page count; hover reveals delete button
+- `components/editor/BookMetadata.tsx` — collapsible metadata panel with editable fields; `summary` key gets a `<textarea>`, all others `<input>`; calls `onMetadataChange(fullMetadataObject)` on every field change; supports add/delete of individual properties
+- `components/editor/PageGrid.tsx` — responsive image grid with move and delete modals; owns all page-interaction state (`pendingIndex`, `movingIndex`, `moveToSource`)
+- `components/modals/UploadBookModal.tsx` — wraps `FileUpload` in a modal; uses `handleUploadAndClose` in `EditorView.tsx` so the modal closes only on successful upload
+- `components/modals/AddPagesModal.tsx` — stages image files (jpg/png/webp), picks insert position, calls `addPages`; filters unsupported formats on select/drop
 - Image `src` URLs include `?v={filename}` as a cache-buster so the browser refetches after pages are renumbered server-side
 - Modals lock `document.body` scroll on mount via a `useEffect` cleanup pattern
 
@@ -107,6 +115,8 @@ packages/
 - Code signing is disabled for local builds (`CSC_IDENTITY_AUTO_DISCOVERY=false`)
 
 ### Gotchas
+- **Routing**: Uses **Wouter v3** with browser History API (no hashes). Default `<Router>` is sufficient — no custom hook needed. Vite dev server and the Express `*` catch-all both serve `index.html` for deep links automatically. Routes: `/` → Home, `/editor` → Editor, `/merge` → Merge.
+- **Icons**: `components/icons/` — action icons use `size: IconSize` + `iconSizes` map. Standalone display icons (e.g. used large in cards) accept a `className` prop instead. Do not mix patterns.
 - **ESM + dotenv hoisting**: Static `import` statements are hoisted before any code runs, so `process.env` values set by `dotenv.config()` arrive too late for module-level constants. Always use `await import('./module.js')` (dynamic import) for server modules that read env vars at load time — see `bin.ts` and `desktop/index.js`.
 - **Two server entry points**: `npm run dev:web` goes through `packages/server/bin.ts`; `npm run dev` (Electron) goes through `packages/desktop/index.js`. Any env/startup logic (e.g. dotenv) must be in **both**.
 - **Vite/Express startup race**: In `dev:web`, Vite opens the browser before Express is ready. UI fetches to `/api/*` on mount will get `ECONNREFUSED` and should include retry logic rather than failing silently once.
