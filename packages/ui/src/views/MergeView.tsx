@@ -31,15 +31,24 @@ export default function MergeView() {
   const [mergedBook, setMergedBook] = useState<UploadResponse | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
-  const [pendingDeleteBook, setPendingDeleteBook] = useState<{ bookId: string; title: string } | null>(null);
+  const [pendingDeleteBook, setPendingDeleteBook] = useState<{
+    bookId: string;
+    title: string;
+  } | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     listBooks()
-      .then((data) => { if (!cancelled) setBooks(data); })
-      .catch(() => { if (!cancelled) setBooks([]); });
-    return () => { cancelled = true; };
+      .then((data) => {
+        if (!cancelled) setBooks(data);
+      })
+      .catch(() => {
+        if (!cancelled) setBooks([]);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [refreshKey]);
 
   const firstId = selectedIds[0];
@@ -57,8 +66,12 @@ export default function MergeView() {
           setMetadataLoading(false);
         }
       })
-      .catch(() => { if (!cancelled) setMetadataLoading(false); });
-    return () => { cancelled = true; };
+      .catch(() => {
+        if (!cancelled) setMetadataLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [firstId]);
 
   function handleBookSelect(bookId: string) {
@@ -243,7 +256,12 @@ export default function MergeView() {
                       </div>
                     )}
                     <div className={isSelected ? 'ring-2 ring-blue-500 rounded-lg' : ''}>
-                      <BookCard book={book} onSelect={handleBookSelect} onDelete={handleDeleteBook} />
+                      <BookCard
+                        book={book}
+                        onSelect={handleBookSelect}
+                        onDelete={handleDeleteBook}
+                        compact
+                      />
                     </div>
                   </div>
                 );
@@ -278,7 +296,9 @@ export default function MergeView() {
               className="cursor-pointer flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {merging ? <LoadingIcon /> : <MergeIcon className="w-4 h-4" />}
-              {merging ? 'Merging...' : `Merge${selectedIds.length >= 2 ? ` ${selectedIds.length}` : ''} Books`}
+              {merging
+                ? 'Merging...'
+                : `Merge${selectedIds.length >= 2 ? ` ${selectedIds.length}` : ''} Books`}
             </button>
             {!canMerge && (
               <p className="text-xs text-gray-400 dark:text-gray-500">
