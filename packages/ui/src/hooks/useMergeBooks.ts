@@ -30,7 +30,9 @@ export function useMergeBooks() {
   }
 
   async function remove(bookId: string): Promise<boolean> {
-    return ops.remove(bookId);
+    const success = await ops.remove(bookId);
+    if (success) refresh();
+    return success;
   }
 
   async function merge(bookIds: string[], metadata: BookMetadata | null) {
