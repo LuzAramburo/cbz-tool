@@ -29,6 +29,13 @@ export default function EditorView() {
     error,
   } = useEditorBooks();
 
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get('open');
+    if (!id) return;
+    window.history.replaceState(null, '', '/editor');
+    openBook(id);
+  }, [openBook]); // triggered by ?open= from "Open in Editor" on merge page; replaceState cleans URL so re-runs are no-ops
+
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [addPagesModalOpen, setAddPagesModalOpen] = useState(false);
   const [libraryModalOpen, setLibraryModalOpen] = useState(false);

@@ -130,7 +130,7 @@ export default function MergeView() {
                 {downloading ? 'Downloading...' : 'Download'}
               </button>
               <button
-                onClick={() => navigate('/editor')}
+                onClick={() => navigate(`/editor?open=${mergedBook.bookId}`)}
                 className="cursor-pointer px-3 py-1.5 text-sm font-medium text-green-700 dark:text-green-300 border border-green-300 dark:border-green-700 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors"
               >
                 Open in Editor
