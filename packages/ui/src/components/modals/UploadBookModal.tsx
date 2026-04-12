@@ -1,5 +1,5 @@
 import Modal from './Modal.tsx';
-import FileUpload from './FileUpload';
+import FileUpload from '../editor/FileUpload';
 
 interface UploadBookModalProps {
   onClose: () => void;

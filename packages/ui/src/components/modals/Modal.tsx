@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import CloseButton from './CloseButton.tsx';
-import LoadingIcon from './icons/LoadingIcon.tsx';
+import LoadingIcon from '../icons/LoadingIcon.tsx';
 
 interface ModalFooter {
   confirmLabel: string;

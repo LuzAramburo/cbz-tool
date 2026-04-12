@@ -1,5 +1,5 @@
 import Modal from './Modal';
-import BookLibrary from './BookLibrary';
+import BookLibrary from '../editor/BookLibrary';
 
 interface LibraryModalProps {
   onClose: () => void;

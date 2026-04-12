@@ -15,6 +15,7 @@ import {
   removeMetadataProperty,
   getPagePath,
   listBooks,
+  mergeBooks,
 } from '../services/cbzStore.js';
 import type { Book, BookSummary, BookMetadata, PageData, UploadResponse } from '../types/cbz.js';
 
@@ -71,6 +72,58 @@ router.post('/upload', upload.single('file'), async (req: Request, res: Response
     console.error('Failed to parse CBZ:', err);
     res.status(400).json({ error: 'Failed to parse CBZ file' });
   }
+});
+
+router.post('/merge', async (req: Request, res: Response) => {
+  const { bookIds, metadata } = req.body as { bookIds: unknown; metadata: unknown };
+
+  if (!Array.isArray(bookIds) || bookIds.length === 0) {
+    res.status(400).json({ error: 'bookIds must be a non-empty array' });
+    return;
+  }
+  if (bookIds.length < 2) {
+    res.status(400).json({ error: 'bookIds must contain at least 2 book IDs' });
+    return;
+  }
+  for (let i = 0; i < bookIds.length; i++) {
+    if (typeof bookIds[i] !== 'string' || !bookIds[i]) {
+      res.status(400).json({ error: `bookIds contains an invalid entry at index ${i}` });
+      return;
+    }
+  }
+  if (new Set(bookIds).size !== bookIds.length) {
+    res.status(400).json({ error: 'bookIds contains duplicate IDs' });
+    return;
+  }
+  if (metadata !== undefined && metadata !== null && (typeof metadata !== 'object' || Array.isArray(metadata))) {
+    res.status(400).json({ error: 'metadata must be an object or null' });
+    return;
+  }
+
+  for (const id of bookIds as string[]) {
+    const book = await getBook(id);
+    if (!book) {
+      res.status(404).json({ error: `Book not found: ${id}` });
+      return;
+    }
+  }
+
+  const newBook = await mergeBooks(
+    bookIds as string[],
+    metadata !== undefined ? (metadata as BookMetadata | null) : undefined,
+  );
+  if (!newBook) {
+    res.status(404).json({ error: 'One or more books could not be found during merge' });
+    return;
+  }
+
+  const response: UploadResponse = {
+    bookId: newBook.bookId,
+    pageCount: newBook.pages.length,
+    pages: newBook.pages.map(({ index, filename }) => ({ index, filename })),
+    metadata: newBook.metadata,
+  };
+  res.json(response);
 });
 
 router.get('/:bookId', async (req: Request, res: Response) => {

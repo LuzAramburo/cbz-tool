@@ -65,6 +65,17 @@ export async function deleteBook(bookId: string): Promise<void> {
   }
 }
 
+export async function mergeBooks(
+  bookIds: string[],
+  metadata: BookMetadata | null,
+): Promise<UploadResponse> {
+  return apiFetch<UploadResponse>('/api/books/merge', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ bookIds, metadata }),
+  });
+}
+
 export async function downloadBook(bookId: string): Promise<{ blob: Blob; filename: string }> {
   const res = await fetch(`/api/books/${bookId}/download`);
   if (!res.ok) {

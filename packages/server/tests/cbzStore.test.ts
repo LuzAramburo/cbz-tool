@@ -15,6 +15,7 @@ import {
   updateMetadata,
   listBooks,
   getPagePath,
+  mergeBooks,
 } from '../services/cbzStore.js';
 import type { Book, PageEntry, PageData } from '../types/cbz.js';
 
@@ -312,6 +313,129 @@ describe('cbzStore', () => {
 
     it('returns undefined for unknown bookId', async () => {
       expect(await movePage(randomUUID(), 0, 1)).toBeUndefined();
+    });
+  });
+
+  describe('mergeBooks', () => {
+    it('merges two books: book A pages then book B pages in order', async () => {
+      const a = makeBook({ pages: [makePage(0, 'a1.jpg'), makePage(1, 'a2.jpg')] });
+      const b = makeBook({ pages: [makePage(0, 'b1.jpg'), makePage(1, 'b2.jpg')] });
+      await saveBook(a.book, a.pageFiles);
+      await saveBook(b.book, b.pageFiles);
+      const merged = await mergeBooks([a.book.bookId, b.book.bookId]);
+      expect(merged!.pages.map((p) => p.filename)).toEqual(['a1.jpg', 'a2.jpg', 'b1.jpg', 'b2.jpg']);
+    });
+
+    it('merges three books in sequence', async () => {
+      const a = makeBook({ pages: [makePage(0, 'a.jpg')] });
+      const b = makeBook({ pages: [makePage(0, 'b.jpg')] });
+      const c = makeBook({ pages: [makePage(0, 'c.jpg')] });
+      await saveBook(a.book, a.pageFiles);
+      await saveBook(b.book, b.pageFiles);
+      await saveBook(c.book, c.pageFiles);
+      const merged = await mergeBooks([a.book.bookId, b.book.bookId, c.book.bookId]);
+      expect(merged!.pages.map((p) => p.filename)).toEqual(['a.jpg', 'b.jpg', 'c.jpg']);
+    });
+
+    it('resolves filename collisions across books with -1 suffix', async () => {
+      const a = makeBook({ pages: [makePage(0, 'img.jpg')] });
+      const b = makeBook({ pages: [makePage(0, 'img.jpg')] });
+      await saveBook(a.book, a.pageFiles);
+      await saveBook(b.book, b.pageFiles);
+      const merged = await mergeBooks([a.book.bookId, b.book.bookId]);
+      expect(merged!.pages.map((p) => p.filename)).toEqual(['img.jpg', 'img-1.jpg']);
+    });
+
+    it('resolves three-way collision with -1 and -2 suffixes', async () => {
+      const a = makeBook({ pages: [makePage(0, 'img.jpg')] });
+      const b = makeBook({ pages: [makePage(0, 'img.jpg')] });
+      const c = makeBook({ pages: [makePage(0, 'img.jpg')] });
+      await saveBook(a.book, a.pageFiles);
+      await saveBook(b.book, b.pageFiles);
+      await saveBook(c.book, c.pageFiles);
+      const merged = await mergeBooks([a.book.bookId, b.book.bookId, c.book.bookId]);
+      expect(merged!.pages.map((p) => p.filename)).toEqual(['img.jpg', 'img-1.jpg', 'img-2.jpg']);
+    });
+
+    it('leaves filenames unchanged when there are no collisions', async () => {
+      const a = makeBook({ pages: [makePage(0, 'cover.jpg')] });
+      const b = makeBook({ pages: [makePage(0, 'page01.jpg')] });
+      await saveBook(a.book, a.pageFiles);
+      await saveBook(b.book, b.pageFiles);
+      const merged = await mergeBooks([a.book.bookId, b.book.bookId]);
+      expect(merged!.pages.map((p) => p.filename)).toEqual(['cover.jpg', 'page01.jpg']);
+    });
+
+    it('reindexes merged pages to 0..N-1', async () => {
+      const a = makeBook({ pages: [makePage(0, 'a.jpg'), makePage(1, 'b.jpg')] });
+      const b = makeBook({ pages: [makePage(0, 'c.jpg')] });
+      await saveBook(a.book, a.pageFiles);
+      await saveBook(b.book, b.pageFiles);
+      const merged = await mergeBooks([a.book.bookId, b.book.bookId]);
+      expect(merged!.pages.map((p) => p.index)).toEqual([0, 1, 2]);
+    });
+
+    it('defaults metadata to first book metadata when omitted', async () => {
+      const a = makeBook({ pages: [makePage(0, 'a.jpg')], metadata: { title: 'First' } });
+      const b = makeBook({ pages: [makePage(0, 'b.jpg')], metadata: { title: 'Second' } });
+      await saveBook(a.book, a.pageFiles);
+      await saveBook(b.book, b.pageFiles);
+      const merged = await mergeBooks([a.book.bookId, b.book.bookId]);
+      expect(merged!.metadata).toEqual({ title: 'First' });
+    });
+
+    it('uses provided metadata object when given', async () => {
+      const a = makeBook({ pages: [makePage(0, 'a.jpg')], metadata: { title: 'First' } });
+      const b = makeBook({ pages: [makePage(0, 'b.jpg')] });
+      await saveBook(a.book, a.pageFiles);
+      await saveBook(b.book, b.pageFiles);
+      const merged = await mergeBooks([a.book.bookId, b.book.bookId], { title: 'Merged' });
+      expect(merged!.metadata).toEqual({ title: 'Merged' });
+    });
+
+    it('uses null metadata when explicitly passed null', async () => {
+      const a = makeBook({ pages: [makePage(0, 'a.jpg')], metadata: { title: 'First' } });
+      const b = makeBook({ pages: [makePage(0, 'b.jpg')] });
+      await saveBook(a.book, a.pageFiles);
+      await saveBook(b.book, b.pageFiles);
+      const merged = await mergeBooks([a.book.bookId, b.book.bookId], null);
+      expect(merged!.metadata).toBeNull();
+    });
+
+    it('assigns a new bookId not matching any source book', async () => {
+      const a = makeBook({ pages: [makePage(0, 'a.jpg')] });
+      const b = makeBook({ pages: [makePage(0, 'b.jpg')] });
+      await saveBook(a.book, a.pageFiles);
+      await saveBook(b.book, b.pageFiles);
+      const merged = await mergeBooks([a.book.bookId, b.book.bookId]);
+      expect(merged!.bookId).not.toBe(a.book.bookId);
+      expect(merged!.bookId).not.toBe(b.book.bookId);
+    });
+
+    it('writes page files to disk under the new bookId', async () => {
+      const a = makeBook({ pages: [makePage(0, 'a.jpg')] });
+      const b = makeBook({ pages: [makePage(0, 'b.jpg')] });
+      await saveBook(a.book, a.pageFiles);
+      await saveBook(b.book, b.pageFiles);
+      const merged = await mergeBooks([a.book.bookId, b.book.bookId]);
+      expect(fs.existsSync(getPagePath(merged!.bookId, 'a.jpg'))).toBe(true);
+      expect(fs.existsSync(getPagePath(merged!.bookId, 'b.jpg'))).toBe(true);
+    });
+
+    it('leaves source books unmodified after merge', async () => {
+      const a = makeBook({ pages: [makePage(0, 'a.jpg'), makePage(1, 'b.jpg')] });
+      const b = makeBook({ pages: [makePage(0, 'c.jpg')] });
+      await saveBook(a.book, a.pageFiles);
+      await saveBook(b.book, b.pageFiles);
+      await mergeBooks([a.book.bookId, b.book.bookId]);
+      expect((await getBook(a.book.bookId))!.pages).toHaveLength(2);
+      expect((await getBook(b.book.bookId))!.pages).toHaveLength(1);
+    });
+
+    it('returns undefined for an unknown bookId', async () => {
+      const a = makeBook({ pages: [makePage(0, 'a.jpg')] });
+      await saveBook(a.book, a.pageFiles);
+      expect(await mergeBooks([a.book.bookId, randomUUID()])).toBeUndefined();
     });
   });
 

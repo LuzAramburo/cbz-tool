@@ -1,14 +1,15 @@
-import type { BookSummary } from '../types/cbz';
-import { getPageImageUrl } from '../clients/booksClient';
-import TrashIcon from './icons/TrashIcon';
+import type { BookSummary } from '../../types/cbz';
+import { getPageImageUrl } from '../../clients/booksClient';
+import TrashIcon from '../icons/TrashIcon';
 
 interface BookCardProps {
   book: BookSummary;
   onSelect: (bookId: string) => void;
   onDelete: (bookId: string, title: string) => void;
+  compact?: boolean;
 }
 
-export default function BookCard({ book, onSelect, onDelete }: BookCardProps) {
+export default function BookCard({ book, onSelect, onDelete, compact }: BookCardProps) {
   const title = book.title || 'Untitled';
 
   return (
@@ -17,11 +18,11 @@ export default function BookCard({ book, onSelect, onDelete }: BookCardProps) {
         onClick={() => onSelect(book.bookId)}
         className="cursor-pointer flex items-stretch flex-1 min-w-0 text-left"
       >
-        <div className="w-20 h-28 shrink-0 bg-gray-200 dark:bg-gray-800">
+        <div className={`w-20 shrink-0 bg-gray-200 dark:bg-gray-800 relative${compact ? '' : ' h-28'}`}>
           <img
             src={getPageImageUrl(book.bookId, book.coverPageIndex, '')}
             alt={`Cover of ${title}`}
-            className="w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover"
           />
         </div>
         <div className="flex flex-col justify-center px-3 py-2 min-w-0">
