@@ -32,9 +32,9 @@ export default function EditorView() {
   useEffect(() => {
     const id = new URLSearchParams(window.location.search).get('open');
     if (!id) return;
-    window.history.replaceState(null, '', '/editor');
     void openBook(id);
-  }, [openBook]); // triggered by ?open= from "Open in Editor" on merge page; replaceState cleans URL so re-runs are no-ops
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // mount only — openBook is stable at this point; URL intentionally kept so reload reopens the book
 
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [addPagesModalOpen, setAddPagesModalOpen] = useState(false);
@@ -87,6 +87,7 @@ export default function EditorView() {
   async function handleSelectBook(bookId: string) {
     setLibraryModalOpen(false);
     await openBook(bookId);
+    window.history.replaceState(null, '', `/editor?open=${bookId}`);
   }
 
   function handleDeleteBook(bookId: string, title: string) {
