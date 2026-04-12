@@ -5,7 +5,7 @@ import Modal from '../modals/Modal.tsx';
 interface BookMetadataProps {
   metadata: Record<string, string>;
   onMetadataChange: (metadata: Record<string, string>) => void;
-  onSave?: () => void;
+  onSave?: () => Promise<void>;
   saving?: boolean;
 }
 
