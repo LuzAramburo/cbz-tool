@@ -63,6 +63,7 @@ packages/
 - `routes/cbz.ts` — All book endpoints mounted at `/api/books`:
   - `GET /` — list all books → `BookSummary[]`
   - `POST /upload` — multer `single('file')` → parse CBZ → save to disk → `UploadResponse`
+  - `POST /merge` — body `{ bookIds: string[], metadata? }` → merge books in order → `UploadResponse`; must be declared BEFORE `GET /:bookId` (else "merge" is captured as a bookId param)
   - `GET /:bookId` — single book details → `UploadResponse`
   - `GET /:bookId/page/:index` — serve page image via `sendFile` from disk
   - `POST /:bookId/pages` — multer `array('files')`, body `insertAt` → add pages → `{ pageCount, pages }`
@@ -85,8 +86,10 @@ packages/
 ### UI internals (`packages/ui/src/`)
 - `views/HomeView.tsx` — feature launcher home page (square cards per feature)
 - `views/EditorView.tsx` — full upload/edit flow (book state, modals, scroll behavior)
-- `views/MergeView.tsx` — merge books page (stub, to be implemented)
-- `hooks/useCbzUpload.ts` — manages upload state (`book`, `pendingMetadata`, `loading`, `downloading`, `saving`, `error`); exposes `upload`, `openBook` (fetches existing book by ID), `removePage`, `addPages`, `movePage`, `deleteBook`, `setMetadata`, `saveMetadata`, and `downloadBook` (PATCHes `pendingMetadata` to server first, then fetches `/download`)
+- `views/MergeView.tsx` — merge books page: library grid with selection order, metadata pre-fill from first selected book, merge + download result
+- `hooks/useBookOperations.ts` — shared base hook for `upload` (returns `UploadResponse`) and `remove` (deletes by bookId); takes a `setError` callback so callers unify error state; used by both `useCbzUpload` and `useMergeBooks`
+- `hooks/useCbzUpload.ts` — editor hook; wraps `useBookOperations` for upload/delete, adds `openBook`, `removePage`, `addPages`, `movePage`, `saveMetadata`, `downloadBook` (patches metadata first)
+- `hooks/useMergeBooks.ts` — merge hook; wraps `useBookOperations`, adds `listBooks` (with refresh), `merge`, `downloadMerged`, `mergedBook` state
 - `clients/booksClient.ts` — typed fetch wrappers for all `/api/books` endpoints; shared `apiFetch<T>()` helper for error handling
 - `components/` is organised into subfolders by responsibility:
   - `layout/` — app shell: `NavHeader.tsx`, `ActionBar.tsx`, `ToggleThemeButton.tsx`
@@ -120,3 +123,4 @@ packages/
 - **ESM + dotenv hoisting**: Static `import` statements are hoisted before any code runs, so `process.env` values set by `dotenv.config()` arrive too late for module-level constants. Always use `await import('./module.js')` (dynamic import) for server modules that read env vars at load time — see `bin.ts` and `desktop/index.js`.
 - **Two server entry points**: `npm run dev:web` goes through `packages/server/bin.ts`; `npm run dev` (Electron) goes through `packages/desktop/index.js`. Any env/startup logic (e.g. dotenv) must be in **both**.
 - **Vite/Express startup race**: In `dev:web`, Vite opens the browser before Express is ready. UI fetches to `/api/*` on mount will get `ECONNREFUSED` and should include retry logic rather than failing silently once.
+- **`BookMetadata` type vs component name clash**: `types/cbz` exports a `BookMetadata` type and `components/editor/BookMetadata.tsx` is a component of the same name. Importing both in the same file causes `TS2300`. Fix: alias the component — `import BookMetadataPanel from '../components/editor/BookMetadata'`.
