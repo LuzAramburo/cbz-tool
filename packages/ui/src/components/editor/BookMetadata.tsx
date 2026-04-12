@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import CloseIcon from '../icons/CloseIcon.tsx';
 import Modal from '../modals/Modal.tsx';
 
@@ -21,6 +21,19 @@ export default function BookMetadata({
   const [newKey, setNewKey] = useState('');
   const [newValue, setNewValue] = useState('');
   const [confirmDeleteKey, setConfirmDeleteKey] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (!saved) return;
+    const timer = setTimeout(() => setSaved(false), 2500);
+    return () => clearTimeout(timer);
+  }, [saved]);
+
+  async function handleSave() {
+    if (!onSave) return;
+    await onSave();
+    setSaved(true);
+  }
 
   function handleAddConfirm() {
     const trimmed = newKey.trim().toLowerCase();
@@ -104,12 +117,17 @@ export default function BookMetadata({
               </button>
               {onSave && (
                 <button
-                  onClick={onSave}
+                  onClick={handleSave}
                   disabled={saving}
                   className="cursor-pointer flex items-center gap-1.5 text-sm text-blue-400 hover:text-blue-300 border border-blue-400 hover:border-blue-300 rounded-lg px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {saving ? 'Saving...' : 'Save metadata'}
                 </button>
+              )}
+              {saved && (
+                <span className="flex items-center gap-1 text-sm text-green-500">
+                  Saved metadata successfully
+                </span>
               )}
             </div>
           </div>
