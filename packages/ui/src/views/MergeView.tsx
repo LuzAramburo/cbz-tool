@@ -31,7 +31,7 @@ export default function MergeView() {
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [pendingMetadata, setPendingMetadata] = useState<BookMetadata | null>(null);
-  const [metadataLoading, setMetadataLoading] = useState(false);
+  const [loadedMetadataForId, setLoadedMetadataForId] = useState<string | null>(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [pendingDeleteBook, setPendingDeleteBook] = useState<{
     bookId: string;
@@ -39,22 +39,20 @@ export default function MergeView() {
   } | null>(null);
 
   const firstId = selectedIds[0];
+  const metadataLoading = !!firstId && loadedMetadataForId !== firstId;
+
   useEffect(() => {
-    if (!firstId) {
-      setPendingMetadata(null);
-      return;
-    }
+    if (!firstId) return;
     let cancelled = false;
-    setMetadataLoading(true);
     getBook(firstId)
       .then((data) => {
         if (!cancelled) {
           setPendingMetadata(data.metadata);
-          setMetadataLoading(false);
+          setLoadedMetadataForId(firstId);
         }
       })
       .catch(() => {
-        if (!cancelled) setMetadataLoading(false);
+        if (!cancelled) setLoadedMetadataForId(firstId);
       });
     return () => {
       cancelled = true;
