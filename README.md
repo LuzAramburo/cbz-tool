@@ -5,15 +5,21 @@ A tool for editing CBZ (Comic Book Zip) files. Upload a CBZ, edit its pages and 
 Available as a desktop app (Electron), a self-hosted web app (Docker), or a local dev server.
 
 ## Features
+
+**Editor**
 - Upload a CBZ via file picker or drag and drop
 - Browse and reopen books from a persistent library
 - View all pages as a responsive image grid
 - Reorder pages by moving them to any position
 - Delete individual pages
-- Manage book library
 - Add new pages (JPG, PNG, WEBP) at any position
 - Edit embedded ComicInfo.xml metadata — add, edit, or remove individual fields
 - Download the modified CBZ with changes applied
+
+**Merge**
+- Select two or more books from the library and set the merge order
+- Customize the merged book's metadata before combining
+- Download the result or open it directly in the editor
 
 ---
 
