@@ -3,6 +3,7 @@
 import type { components } from './openapi';
 
 export type Config = components['schemas']['Config'];
+export type BookStatus = components['schemas']['BookStatus'];
 export type BookSummary = components['schemas']['BookSummary'];
 export type PageInfo = components['schemas']['PageInfo'];
 export type BookMetadata = components['schemas']['BookMetadata'];

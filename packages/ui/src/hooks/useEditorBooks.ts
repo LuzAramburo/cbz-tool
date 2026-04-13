@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import type { UploadResponse } from '../types/cbz';
+import type { UploadResponse, BookStatus } from '../types/cbz';
 import * as api from '../clients/booksClient';
 import { useBookOperations } from './useBookOperations';
 
 interface UseEditorBooks {
   upload: (file: File) => Promise<boolean>;
   openBook: (bookId: string) => Promise<void>;
+  fetchBookStatus: (bookId: string) => Promise<void>;
   removePage: (index: number) => Promise<void>;
   addPages: (files: File[], insertAt: number) => Promise<void>;
   movePage: (index: number, toIndex: number) => Promise<void>;
@@ -20,6 +21,7 @@ interface UseEditorBooks {
   downloading: boolean;
   saving: boolean;
   error: string | null;
+  bookStatus: BookStatus | null;
 }
 
 export function useEditorBooks(): UseEditorBooks {
@@ -29,6 +31,7 @@ export function useEditorBooks(): UseEditorBooks {
   const [downloading, setDownloading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [bookStatus, setBookStatus] = useState<BookStatus | null>(null);
   const ops = useBookOperations(setError);
 
   function setMetadata(metadata: Record<string, string> | null) {
@@ -43,6 +46,15 @@ export function useEditorBooks(): UseEditorBooks {
       return true;
     }
     return false;
+  }
+
+  async function fetchBookStatus(bookId: string) {
+    try {
+      const data = await api.getBookStatus(bookId);
+      setBookStatus(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    }
   }
 
   async function openBook(bookId: string) {
@@ -136,6 +148,7 @@ export function useEditorBooks(): UseEditorBooks {
   return {
     upload,
     openBook,
+    fetchBookStatus,
     removePage,
     addPages,
     movePage,
@@ -150,5 +163,6 @@ export function useEditorBooks(): UseEditorBooks {
     downloading,
     saving,
     error,
+    bookStatus,
   };
 }

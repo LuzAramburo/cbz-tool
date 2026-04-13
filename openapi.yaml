@@ -166,6 +166,27 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /api/books/{bookId}/status:
+    get:
+      summary: Get book status
+      operationId: getBookStatus
+      tags: [books]
+      parameters:
+        - $ref: '#/components/parameters/bookId'
+      responses:
+        '200':
+          description: Book status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookStatus'
+        '404':
+          description: Book not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /api/books/{bookId}/download:
     get:
       summary: Download the book as a CBZ file
@@ -539,6 +560,14 @@ components:
           oneOf:
             - $ref: '#/components/schemas/BookMetadata'
             - type: 'null'
+
+    BookStatus:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          example: ready
 
     Error:
       type: object

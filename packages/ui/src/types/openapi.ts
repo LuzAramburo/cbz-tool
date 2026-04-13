@@ -90,6 +90,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/books/{bookId}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get book status */
+        get: operations["getBookStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/books/{bookId}/download": {
         parameters: {
             query?: never;
@@ -214,6 +231,10 @@ export interface components {
         };
         MetadataResponse: {
             metadata: components["schemas"]["BookMetadata"] | null;
+        };
+        BookStatus: {
+            /** @example ready */
+            status: string;
         };
         Error: {
             error: string;
@@ -419,6 +440,38 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Book not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getBookStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Unique book identifier */
+                bookId: components["parameters"]["bookId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Book status */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookStatus"];
+                };
             };
             /** @description Book not found */
             404: {

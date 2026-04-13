@@ -6,6 +6,7 @@ type BookSummary = components['schemas']['BookSummary'];
 type BookMetadata = components['schemas']['BookMetadata'];
 type PageListResponse = components['schemas']['PageListResponse'];
 type MetadataResponse = components['schemas']['MetadataResponse'];
+type BookStatus = components['schemas']['BookStatus'];
 
 const client = createClient<paths>({ baseUrl: '' });
 
@@ -29,6 +30,10 @@ async function multipartPost<T>(url: string, formData: FormData): Promise<T> {
 
 export function getPageImageUrl(bookId: string, pageIndex: number, filename: string): string {
   return `/api/books/${bookId}/page/${pageIndex}?v=${encodeURIComponent(filename)}`;
+}
+
+export async function getBookStatus(bookId: string): Promise<BookStatus> {
+  return unwrap(await client.GET('/api/books/{bookId}/status', { params: { path: { bookId } } }));
 }
 
 export async function listBooks(): Promise<BookSummary[]> {
