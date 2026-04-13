@@ -5,6 +5,7 @@
     "packages/*"
   ],
   "scripts": {
+    "codegen": "openapi-typescript openapi.yaml -o packages/ui/src/types/openapi.ts",
     "dev": "npm run build -w packages/server && cross-env NODE_ENV=development concurrently \"npm run dev -w packages/ui\" \"npm run dev -w packages/desktop\"",
     "dev:web": "cross-env NODE_ENV=development concurrently \"npm run dev -w packages/ui\" \"npm run dev -w packages/server\"",
     "build": "npm run build -w packages/ui && docker build -t luzaramburo/cbz-tool:1.0.0 -t luzaramburo/cbz-tool:latest .",

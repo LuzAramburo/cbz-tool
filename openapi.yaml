@@ -1,0 +1,548 @@
+openapi: 3.1.0
+info:
+  title: CBZ Tool API
+  version: 1.1.0
+  description: API for uploading, editing, merging, and downloading CBZ comic book archives.
+
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+
+tags:
+  - name: config
+    description: Server configuration
+  - name: books
+    description: Book library management
+  - name: pages
+    description: Page-level operations within a book
+  - name: metadata
+    description: Book metadata operations
+
+paths:
+  /api/config:
+    get:
+      summary: Get server configuration
+      operationId: getConfig
+      tags: [config]
+      responses:
+        '200':
+          description: Server configuration values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Config'
+
+  /api/books:
+    get:
+      summary: List all books
+      operationId: listBooks
+      tags: [books]
+      responses:
+        '200':
+          description: Array of book summaries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BookSummary'
+
+  /api/books/upload:
+    post:
+      summary: Upload a CBZ file
+      operationId: uploadBook
+      tags: [books]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The .cbz file to upload
+      responses:
+        '200':
+          description: Book parsed and saved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResponse'
+        '400':
+          description: No file provided or failed to parse CBZ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: File exceeds the configured size limit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/books/merge:
+    post:
+      summary: Merge two or more books into a new book
+      operationId: mergeBooks
+      tags: [books]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [bookIds]
+              properties:
+                bookIds:
+                  type: array
+                  minItems: 2
+                  uniqueItems: true
+                  items:
+                    type: string
+                  description: Ordered list of book IDs to merge
+                metadata:
+                  oneOf:
+                    - $ref: '#/components/schemas/BookMetadata'
+                    - type: 'null'
+                  description: Optional metadata for the merged book. Omit to inherit from the first book.
+      responses:
+        '200':
+          description: Books merged successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResponse'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: One or more books not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/books/{bookId}:
+    get:
+      summary: Get book details
+      operationId: getBook
+      tags: [books]
+      parameters:
+        - $ref: '#/components/parameters/bookId'
+      responses:
+        '200':
+          description: Book details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResponse'
+        '404':
+          description: Book not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: Delete a book
+      operationId: deleteBook
+      tags: [books]
+      parameters:
+        - $ref: '#/components/parameters/bookId'
+      responses:
+        '204':
+          description: Book deleted successfully
+        '404':
+          description: Book not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/books/{bookId}/download:
+    get:
+      summary: Download the book as a CBZ file
+      operationId: downloadBook
+      tags: [books]
+      parameters:
+        - $ref: '#/components/parameters/bookId'
+      responses:
+        '200':
+          description: CBZ archive file
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              description: 'attachment; filename="Series #N - Title.cbz"'
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Book not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/books/{bookId}/page/{index}:
+    get:
+      summary: Get a page image
+      operationId: getPage
+      tags: [pages]
+      parameters:
+        - $ref: '#/components/parameters/bookId'
+        - $ref: '#/components/parameters/pageIndex'
+      responses:
+        '200':
+          description: Page image
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/webp:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Book or page not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    patch:
+      summary: Move a page to a new position
+      operationId: movePage
+      tags: [pages]
+      parameters:
+        - $ref: '#/components/parameters/bookId'
+        - $ref: '#/components/parameters/pageIndex'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [toIndex]
+              properties:
+                toIndex:
+                  type: integer
+                  minimum: 0
+                  description: Destination index (0-based)
+      responses:
+        '200':
+          description: Page moved; updated page list returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageListResponse'
+        '400':
+          description: Index out of range
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Book not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: Delete a page
+      operationId: deletePage
+      tags: [pages]
+      parameters:
+        - $ref: '#/components/parameters/bookId'
+        - $ref: '#/components/parameters/pageIndex'
+      responses:
+        '200':
+          description: Page deleted; updated page list returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageListResponse'
+        '404':
+          description: Book or page not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/books/{bookId}/pages:
+    post:
+      summary: Add pages to a book
+      operationId: addPages
+      tags: [pages]
+      parameters:
+        - $ref: '#/components/parameters/bookId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [files]
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: Image files to add (jpg/png/webp)
+                insertAt:
+                  type: integer
+                  minimum: 0
+                  description: Position to insert at (default appends to end)
+      responses:
+        '200':
+          description: Pages added; updated page list returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageListResponse'
+        '400':
+          description: No files provided, unsupported file type, or insertAt out of range
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Book not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/books/{bookId}/metadata:
+    patch:
+      summary: Replace all metadata
+      operationId: replaceMetadata
+      tags: [metadata]
+      parameters:
+        - $ref: '#/components/parameters/bookId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [metadata]
+              properties:
+                metadata:
+                  oneOf:
+                    - $ref: '#/components/schemas/BookMetadata'
+                    - type: 'null'
+      responses:
+        '200':
+          description: Metadata replaced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetadataResponse'
+        '400':
+          description: Invalid metadata value
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Book not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/books/{bookId}/metadata/{key}:
+    put:
+      summary: Set a single metadata key
+      operationId: setMetadataKey
+      tags: [metadata]
+      parameters:
+        - $ref: '#/components/parameters/bookId'
+        - $ref: '#/components/parameters/metadataKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [value]
+              properties:
+                value:
+                  type: string
+      responses:
+        '200':
+          description: Metadata key set
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetadataResponse'
+        '400':
+          description: value is not a string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Book not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: Remove a single metadata key
+      operationId: deleteMetadataKey
+      tags: [metadata]
+      parameters:
+        - $ref: '#/components/parameters/bookId'
+        - $ref: '#/components/parameters/metadataKey'
+      responses:
+        '200':
+          description: Metadata key removed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetadataResponse'
+        '404':
+          description: Book not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  parameters:
+    bookId:
+      name: bookId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Unique book identifier
+
+    pageIndex:
+      name: index
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 0
+      description: Zero-based page index
+
+    metadataKey:
+      name: key
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Metadata field name (e.g. title, series, number)
+
+  schemas:
+    Config:
+      type: object
+      required: [maxFileSizeMb]
+      properties:
+        maxFileSizeMb:
+          type: integer
+          description: Maximum upload file size in megabytes
+
+    BookSummary:
+      type: object
+      required: [bookId, title, series, number, pageCount, coverPageIndex]
+      properties:
+        bookId:
+          type: string
+        title:
+          type: string
+          nullable: true
+        series:
+          type: string
+          nullable: true
+        number:
+          type: string
+          nullable: true
+        pageCount:
+          type: integer
+          minimum: 0
+        coverPageIndex:
+          type: integer
+          minimum: 0
+
+    PageInfo:
+      type: object
+      required: [index, filename]
+      properties:
+        index:
+          type: integer
+          minimum: 0
+        filename:
+          type: string
+
+    BookMetadata:
+      type: object
+      additionalProperties:
+        type: string
+      description: Arbitrary key/value pairs from ComicInfo.xml (e.g. title, series, number, summary)
+
+    UploadResponse:
+      type: object
+      required: [bookId, pageCount, pages, metadata]
+      properties:
+        bookId:
+          type: string
+        pageCount:
+          type: integer
+          minimum: 0
+        pages:
+          type: array
+          items:
+            $ref: '#/components/schemas/PageInfo'
+        metadata:
+          oneOf:
+            - $ref: '#/components/schemas/BookMetadata'
+            - type: 'null'
+
+    PageListResponse:
+      type: object
+      required: [pageCount, pages]
+      properties:
+        pageCount:
+          type: integer
+          minimum: 0
+        pages:
+          type: array
+          items:
+            $ref: '#/components/schemas/PageInfo'
+
+    MetadataResponse:
+      type: object
+      required: [metadata]
+      properties:
+        metadata:
+          oneOf:
+            - $ref: '#/components/schemas/BookMetadata'
+            - type: 'null'
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
