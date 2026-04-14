@@ -87,6 +87,18 @@ export default function BookLibrary({ onSelect, onDelete, refreshKey, onEmpty, o
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-400">Library</h2>
           <div className="flex items-center gap-2">
+            {selectMode && (
+              <button
+                onClick={() =>
+                  selectedIds.length === books.length
+                    ? setSelectedIds([])
+                    : setSelectedIds(books.map((b) => b.bookId))
+                }
+                className="cursor-pointer px-4 py-2 rounded-lg text-sm font-medium border border-gray-400 dark:border-gray-500 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                {selectedIds.length === books.length ? 'Deselect All' : 'Select All'}
+              </button>
+            )}
             {selectMode && selectedIds.length > 0 && (
               <button
                 onClick={() => setConfirmOpen(true)}
