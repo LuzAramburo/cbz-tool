@@ -25,6 +25,7 @@ export default function EditorView() {
     book,
     pendingMetadata,
     refreshKey,
+    uploading,
     loading,
     downloading,
     saving,
@@ -125,7 +126,7 @@ export default function EditorView() {
         <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">Edit Book</h1>
         {!book ? (
           <>
-            <FileUpload onUpload={handleUpload} loading={loading} />
+            <FileUpload onUpload={handleUpload} loading={uploading} />
             <BookLibrary
               onSelect={handleSelectBook}
               onDelete={handleDeleteBook}

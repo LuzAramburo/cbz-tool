@@ -62,7 +62,7 @@ export default function FileUpload({ onUpload, loading }: FileUploadProps) {
         className={`cursor-pointer px-6 py-2 rounded-lg text-white font-medium transition-colors ${loading ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'}`}
       >
         {loading && <LoadingIcon />}
-        {loading ? 'Uploading...' : 'Open CBZ'}
+        {loading ? 'Uploading...' : 'Upload CBZ'}
         <input
           type="file"
           accept=".cbz"
