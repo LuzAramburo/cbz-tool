@@ -62,7 +62,7 @@ packages/
 - `index.ts` — Express app factory; `GET /api/config` returns `{ maxFileSizeMb }`; mounts the book router at `/api/books`; serves static UI in prod
 - `routes/cbz.ts` — All book endpoints mounted at `/api/books`:
   - `GET /` — list all books → `BookSummary[]`
-  - `POST /upload` — multer `single('file')` → parse CBZ → save to disk → `UploadResponse`
+  - `POST /upload` — multer `array('files')` → parse each CBZ → `BulkUploadResponse { succeeded: UploadResponse[], failed: { filename, error }[] }`; UI opens book only if exactly 1 succeeded
   - `POST /merge` — body `{ bookIds: string[], metadata? }` → merge books in order → `UploadResponse`; must be declared BEFORE `GET /:bookId` (else "merge" is captured as a bookId param)
   - `GET /:bookId` — single book details → `UploadResponse`
   - `GET /:bookId/page/:index` — serve page image via `sendFile` from disk
@@ -87,8 +87,8 @@ packages/
 - `views/HomeView.tsx` — feature launcher home page (square cards per feature)
 - `views/EditorView.tsx` — full upload/edit flow (book state, modals, scroll behavior)
 - `views/MergeView.tsx` — merge books page: library grid with selection order, metadata pre-fill from first selected book, merge + download result
-- `hooks/useBookOperations.ts` — shared base hook for `upload` (returns `UploadResponse`) and `remove` (deletes by bookId); takes a `setError` callback so callers unify error state; used by both `useCbzUpload` and `useMergeBooks`
-- `hooks/useCbzUpload.ts` — editor hook; wraps `useBookOperations` for upload/delete, adds `openBook`, `removePage`, `addPages`, `movePage`, `saveMetadata`, `downloadBook` (patches metadata first)
+- `hooks/useBookOperations.ts` — shared base hook for `upload` (returns `BulkUploadResponse`) and `remove` (deletes by bookId); takes a `setError` callback so callers unify error state; used by both `useEditorBooks` and `useMergeBooks`
+- `hooks/useEditorBooks.ts` — editor hook; wraps `useBookOperations` for upload/delete, adds `openBook`, `removePage`, `addPages`, `movePage`, `saveMetadata`, `downloadBook` (patches metadata first); owns `refreshKey` state and calls `refresh()` after every mutation
 - `hooks/useMergeBooks.ts` — merge hook; wraps `useBookOperations`, adds `listBooks` (with refresh), `merge`, `downloadMerged`, `mergedBook` state
 - `clients/booksClient.ts` — typed fetch wrappers for all `/api/books` endpoints; shared `apiFetch<T>()` helper for error handling
 - `components/` is organised into subfolders by responsibility:
@@ -104,7 +104,7 @@ packages/
 - `components/editor/PageGrid.tsx` — responsive image grid with move and delete modals; owns all page-interaction state (`pendingIndex`, `movingIndex`, `moveToSource`)
 - `components/modals/UploadBookModal.tsx` — wraps `FileUpload` in a modal; uses `handleUploadAndClose` in `EditorView.tsx` so the modal closes only on successful upload
 - `components/modals/AddPagesModal.tsx` — stages image files (jpg/png/webp), picks insert position, calls `addPages`; filters unsupported formats on select/drop
-- Image `src` URLs include `?v={filename}` as a cache-buster so the browser refetches after pages are renumbered server-side
+- Image `src` URLs include `?v={refreshKey}` as a cache-buster; `refreshKey` is an integer counter in `useEditorBooks`/`useMergeBooks` that increments after every mutation — call `refresh()` after ALL mutations or covers will stay stale
 - Modals lock `document.body` scroll on mount via a `useEffect` cleanup pattern
 
 ### Testing (`packages/server/tests/`)
