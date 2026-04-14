@@ -23,6 +23,7 @@ export default function EditorView() {
     setMetadata,
     book,
     pendingMetadata,
+    refreshKey,
     loading,
     downloading,
     saving,
@@ -39,7 +40,6 @@ export default function EditorView() {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [addPagesModalOpen, setAddPagesModalOpen] = useState(false);
   const [libraryModalOpen, setLibraryModalOpen] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
   const [maxFileSizeMb, setMaxFileSizeMb] = useState(50);
   const [pendingDeleteBook, setPendingDeleteBook] = useState<{
     bookId: string;
@@ -85,9 +85,6 @@ export default function EditorView() {
     if (openedBookId) {
       window.history.replaceState(null, '', `/editor?open=${openedBookId}`);
     }
-    if (anySucceeded && !openedBookId) {
-      setRefreshKey((k) => k + 1);
-    }
     return { openedBookId, anySucceeded };
   }
 
@@ -110,7 +107,6 @@ export default function EditorView() {
     if (!pendingDeleteBook) return;
     setDeleting(true);
     await deleteBook(pendingDeleteBook.bookId);
-    setRefreshKey((k) => k + 1);
     setDeleting(false);
     setPendingDeleteBook(null);
   }

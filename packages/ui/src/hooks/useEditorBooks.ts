@@ -20,6 +20,7 @@ interface UseEditorBooks {
   setMetadata: (metadata: Record<string, string> | null) => void;
   book: UploadResponse | null;
   pendingMetadata: Record<string, string> | null;
+  refreshKey: number;
   uploading: boolean;
   loading: boolean;
   downloading: boolean;
@@ -30,11 +31,16 @@ interface UseEditorBooks {
 export function useEditorBooks(): UseEditorBooks {
   const [book, setBook] = useState<UploadResponse | null>(null);
   const [pendingMetadata, setPendingMetadata] = useState<Record<string, string> | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const ops = useBookOperations(setError);
+
+  function refresh() {
+    setRefreshKey((k) => k + 1);
+  }
 
   function setMetadata(metadata: Record<string, string> | null) {
     setPendingMetadata(metadata);
@@ -56,6 +62,8 @@ export function useEditorBooks(): UseEditorBooks {
       const lines = data.failed.map((f: BulkUploadResponse['failed'][number]) => `${f.filename}: ${f.error}`).join('\n');
       setError(data.succeeded.length > 0 ? `Some files failed:\n${lines}` : lines);
     }
+
+    if (data.succeeded.length > 1) refresh();
 
     return { openedBookId, anySucceeded: data.succeeded.length > 0 };
   }
@@ -110,9 +118,12 @@ export function useEditorBooks(): UseEditorBooks {
 
   async function deleteBook(bookId: string) {
     const success = await ops.remove(bookId);
-    if (success && book?.bookId === bookId) {
-      setBook(null);
-      setPendingMetadata(null);
+    if (success) {
+      if (book?.bookId === bookId) {
+        setBook(null);
+        setPendingMetadata(null);
+      }
+      refresh();
     }
   }
 
@@ -160,6 +171,7 @@ export function useEditorBooks(): UseEditorBooks {
     setMetadata,
     book,
     pendingMetadata,
+    refreshKey,
     uploading: ops.uploading,
     loading,
     downloading,
