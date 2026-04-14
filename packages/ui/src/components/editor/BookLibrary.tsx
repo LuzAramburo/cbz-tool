@@ -29,7 +29,7 @@ export default function BookLibrary({ onSelect, onDelete, refreshKey, onEmpty, o
     listBooks()
       .then((data) => {
         if (!cancelled) {
-          setBooks([...data].sort((a, b) => (a.title ?? '').localeCompare(b.title ?? '')));
+          setBooks([...data].sort((a, b) => (a.title ?? '').localeCompare(b.title ?? '', undefined, { numeric: true })));
           if (data.length === 0) onEmptyRef.current?.();
         }
       })
