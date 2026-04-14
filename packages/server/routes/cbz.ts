@@ -17,7 +17,7 @@ import {
   listBooks,
   mergeBooks,
 } from '../services/cbzStore.js';
-import type { Book, BookSummary, BookMetadata, PageData, UploadResponse } from '../types/cbz.js';
+import type { Book, BookSummary, BookMetadata, PageData, UploadResponse, BulkUploadResponse } from '../types/cbz.js';
 
 const router = Router();
 const MAX_FILE_SIZE_BYTES = parseInt(process.env['MAX_FILE_SIZE_MB'] ?? '50', 10) * 1024 * 1024;
@@ -39,39 +39,48 @@ router.get('/', (_req: Request, res: Response) => {
   res.json(summaries);
 });
 
-router.post('/upload', upload.single('file'), async (req: Request, res: Response) => {
-  if (!req.file) {
-    res.status(400).json({ error: 'No file provided' });
+router.post('/upload', upload.array('files'), async (req: Request, res: Response) => {
+  const files = req.files as Express.Multer.File[] | undefined;
+  if (!files || files.length === 0) {
+    res.status(400).json({ error: 'No files provided' });
     return;
   }
 
-  try {
-    const parsed = await parseCbz(req.file.buffer);
+  const results = await Promise.allSettled(
+    files.map(async (file) => {
+      const parsed = await parseCbz(file.buffer);
+      const book: Book = {
+        bookId: parsed.bookId,
+        pages: parsed.pages.map((p, index) => ({
+          index,
+          filename: p.filename,
+          mimeType: p.mimeType,
+        })),
+        metadata: parsed.metadata,
+      };
+      await saveBook(book, parsed.pages);
+      return {
+        bookId: book.bookId,
+        pageCount: book.pages.length,
+        pages: book.pages.map(({ index, filename }) => ({ index, filename })),
+        metadata: book.metadata,
+      } satisfies UploadResponse;
+    }),
+  );
 
-    const book: Book = {
-      bookId: parsed.bookId,
-      pages: parsed.pages.map((p, index) => ({
-        index,
-        filename: p.filename,
-        mimeType: p.mimeType,
-      })),
-      metadata: parsed.metadata,
-    };
+  const response: BulkUploadResponse = { succeeded: [], failed: [] };
+  results.forEach((result, i) => {
+    if (result.status === 'fulfilled') {
+      response.succeeded.push(result.value);
+    } else {
+      response.failed.push({
+        filename: files[i]!.originalname,
+        error: result.reason instanceof Error ? result.reason.message : String(result.reason),
+      });
+    }
+  });
 
-    await saveBook(book, parsed.pages);
-
-    const response: UploadResponse = {
-      bookId: book.bookId,
-      pageCount: book.pages.length,
-      pages: book.pages.map(({ index, filename }) => ({ index, filename })),
-      metadata: book.metadata,
-    };
-
-    res.json(response);
-  } catch (err) {
-    console.error('Failed to parse CBZ:', err);
-    res.status(400).json({ error: 'Failed to parse CBZ file' });
-  }
+  res.json(response);
 });
 
 router.post('/merge', async (req: Request, res: Response) => {
