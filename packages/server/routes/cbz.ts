@@ -17,7 +17,7 @@ import {
   listBooks,
   mergeBooks,
 } from '../services/cbzStore.js';
-import type { Book, BookSummary, BookMetadata, PageData, UploadResponse, BulkUploadResponse } from '../types/cbz.js';
+import type { Book, BookSummary, BookMetadata, PageData, UploadResponse, BulkUploadResponse, BulkDeleteResponse } from '../types/cbz.js';
 
 const router = Router();
 const MAX_FILE_SIZE_BYTES = parseInt(process.env['MAX_FILE_SIZE_MB'] ?? '50', 10) * 1024 * 1024;
@@ -132,6 +132,41 @@ router.post('/merge', async (req: Request, res: Response) => {
     pages: newBook.pages.map(({ index, filename }) => ({ index, filename })),
     metadata: newBook.metadata,
   };
+  res.json(response);
+});
+
+router.post('/delete', async (req: Request, res: Response) => {
+  const { bookIds } = req.body as { bookIds: unknown };
+
+  if (!Array.isArray(bookIds) || bookIds.length === 0) {
+    res.status(400).json({ error: 'bookIds must be a non-empty array' });
+    return;
+  }
+  for (let i = 0; i < bookIds.length; i++) {
+    if (typeof bookIds[i] !== 'string' || !bookIds[i]) {
+      res.status(400).json({ error: `bookIds contains an invalid entry at index ${i}` });
+      return;
+    }
+  }
+
+  const results = await Promise.allSettled(
+    (bookIds as string[]).map(async (id) => {
+      const book = await getBook(id);
+      if (!book) throw new Error('not found');
+      await deleteBook(id);
+      return id;
+    }),
+  );
+
+  const response: BulkDeleteResponse = { deleted: [], notFound: [] };
+  results.forEach((result, i) => {
+    if (result.status === 'fulfilled') {
+      response.deleted.push(result.value);
+    } else {
+      response.notFound.push((bookIds as string[])[i]!);
+    }
+  });
+
   res.json(response);
 });
 
