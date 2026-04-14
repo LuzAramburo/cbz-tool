@@ -50,7 +50,7 @@ export default function BookLibrary({ onSelect, onDelete, refreshKey, onEmpty }:
       <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-3">Library</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {books.map((book) => (
-          <BookCard key={book.bookId} book={book} onSelect={onSelect} onDelete={onDelete} />
+          <BookCard key={book.bookId} book={book} onSelect={onSelect} onDelete={onDelete} refreshKey={refreshKey} />
         ))}
       </div>
     </div>

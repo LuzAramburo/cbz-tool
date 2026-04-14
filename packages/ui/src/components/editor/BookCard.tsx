@@ -7,9 +7,10 @@ interface BookCardProps {
   onSelect: (bookId: string) => void;
   onDelete: (bookId: string, title: string) => void;
   compact?: boolean;
+  refreshKey?: number;
 }
 
-export default function BookCard({ book, onSelect, onDelete, compact }: BookCardProps) {
+export default function BookCard({ book, onSelect, onDelete, compact, refreshKey }: BookCardProps) {
   const title = book.title || 'Untitled';
 
   return (
@@ -20,7 +21,7 @@ export default function BookCard({ book, onSelect, onDelete, compact }: BookCard
       >
         <div className={`w-20 shrink-0 bg-gray-200 dark:bg-gray-800 relative${compact ? '' : ' h-28'}`}>
           <img
-            src={getPageImageUrl(book.bookId, book.coverPageIndex, '')}
+            src={getPageImageUrl(book.bookId, book.coverPageIndex, String(refreshKey ?? 0))}
             alt={`Cover of ${title}`}
             className="absolute inset-0 w-full h-full object-cover"
           />

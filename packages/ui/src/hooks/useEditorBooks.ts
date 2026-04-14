@@ -63,7 +63,7 @@ export function useEditorBooks(): UseEditorBooks {
       setError(data.succeeded.length > 0 ? `Some files failed:\n${lines}` : lines);
     }
 
-    if (data.succeeded.length > 1) refresh();
+    if (data.succeeded.length > 0) refresh();
 
     return { openedBookId, anySucceeded: data.succeeded.length > 0 };
   }
@@ -87,6 +87,7 @@ export function useEditorBooks(): UseEditorBooks {
     try {
       const data = await api.deletePage(book.bookId, index);
       setBook((prev) => (prev ? { ...prev, pageCount: data.pageCount, pages: data.pages } : prev));
+      refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     }
@@ -99,6 +100,7 @@ export function useEditorBooks(): UseEditorBooks {
     try {
       const data = await api.addPages(book.bookId, files, insertAt);
       setBook((prev) => (prev ? { ...prev, pageCount: data.pageCount, pages: data.pages } : prev));
+      refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
@@ -111,6 +113,7 @@ export function useEditorBooks(): UseEditorBooks {
     try {
       const data = await api.movePage(book.bookId, index, toIndex);
       setBook((prev) => (prev ? { ...prev, pageCount: data.pageCount, pages: data.pages } : prev));
+      refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     }
