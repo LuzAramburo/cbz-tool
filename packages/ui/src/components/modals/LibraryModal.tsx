@@ -7,12 +7,26 @@ interface LibraryModalProps {
   onDelete: (bookId: string, title: string) => void;
   refreshKey?: number;
   onEmpty?: () => void;
+  onBulkDelete?: (deletedIds: string[]) => void;
 }
 
-export default function LibraryModal({ onClose, onSelect, onDelete, refreshKey, onEmpty }: LibraryModalProps) {
+export default function LibraryModal({
+  onClose,
+  onSelect,
+  onDelete,
+  refreshKey,
+  onEmpty,
+  onBulkDelete,
+}: LibraryModalProps) {
   return (
     <Modal title="Open from Library" onClose={onClose} size="xl">
-      <BookLibrary onSelect={onSelect} onDelete={onDelete} refreshKey={refreshKey} onEmpty={onEmpty} />
+      <BookLibrary
+        onSelect={onSelect}
+        onDelete={onDelete}
+        refreshKey={refreshKey}
+        onEmpty={onEmpty}
+        onBulkDelete={onBulkDelete}
+      />
     </Modal>
   );
 }

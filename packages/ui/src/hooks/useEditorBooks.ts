@@ -15,6 +15,7 @@ interface UseEditorBooks {
   addPages: (files: File[], insertAt: number) => Promise<void>;
   movePage: (index: number, toIndex: number) => Promise<void>;
   deleteBook: (bookId: string) => Promise<void>;
+  clearBook: () => void;
   downloadBook: () => void;
   saveMetadata: () => Promise<void>;
   setMetadata: (metadata: Record<string, string> | null) => void;
@@ -130,6 +131,11 @@ export function useEditorBooks(): UseEditorBooks {
     }
   }
 
+  function clearBook() {
+    setBook(null);
+    setPendingMetadata(null);
+  }
+
   async function saveMetadata() {
     if (!book) return;
     setSaving(true);
@@ -169,6 +175,7 @@ export function useEditorBooks(): UseEditorBooks {
     addPages,
     movePage,
     deleteBook,
+    clearBook,
     downloadBook,
     saveMetadata,
     setMetadata,

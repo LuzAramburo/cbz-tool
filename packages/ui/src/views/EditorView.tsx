@@ -18,6 +18,7 @@ export default function EditorView() {
     addPages,
     movePage,
     deleteBook,
+    clearBook,
     downloadBook,
     saveMetadata,
     setMetadata,
@@ -103,6 +104,13 @@ export default function EditorView() {
     setPendingDeleteBook({ bookId, title });
   }
 
+  function handleBulkDelete(deletedIds: string[]) {
+    if (book && deletedIds.includes(book.bookId)) {
+      clearBook();
+      window.history.replaceState(null, '', '/editor');
+    }
+  }
+
   async function confirmDeleteBook() {
     if (!pendingDeleteBook) return;
     setDeleting(true);
@@ -122,6 +130,7 @@ export default function EditorView() {
               onSelect={handleSelectBook}
               onDelete={handleDeleteBook}
               refreshKey={refreshKey}
+              onBulkDelete={handleBulkDelete}
             />
           </>
         ) : (
@@ -173,6 +182,7 @@ export default function EditorView() {
           onDelete={handleDeleteBook}
           refreshKey={refreshKey}
           onEmpty={() => setLibraryModalOpen(false)}
+          onBulkDelete={handleBulkDelete}
         />
       )}
 

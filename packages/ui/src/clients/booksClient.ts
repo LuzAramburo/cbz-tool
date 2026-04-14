@@ -1,4 +1,4 @@
-import type { UploadResponse, BulkUploadResponse, BookMetadata, BookSummary } from '../types/cbz';
+import type { UploadResponse, BulkUploadResponse, BulkDeleteResponse, BookMetadata, BookSummary } from '../types/cbz';
 
 type PagesResponse = Pick<UploadResponse, 'pageCount' | 'pages'>;
 type MetadataResponse = { metadata: BookMetadata | null };
@@ -54,6 +54,14 @@ export async function patchMetadata(bookId: string, metadata: BookMetadata | nul
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ metadata }),
+  });
+}
+
+export async function bulkDeleteBooks(bookIds: string[]): Promise<BulkDeleteResponse> {
+  return apiFetch<BulkDeleteResponse>('/api/books/delete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ bookIds }),
   });
 }
 
