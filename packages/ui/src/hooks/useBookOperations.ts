@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import type { UploadResponse } from '../types/cbz';
+import type { BulkUploadResponse } from '../types/cbz';
 import { uploadBook, deleteBook } from '../clients/booksClient';
 
 interface UseBookOperations {
   uploading: boolean;
   deleting: boolean;
-  upload: (file: File) => Promise<UploadResponse | undefined>;
+  upload: (files: File[]) => Promise<BulkUploadResponse | undefined>;
   remove: (bookId: string) => Promise<boolean>;
 }
 
@@ -15,11 +15,11 @@ export function useBookOperations(
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  async function upload(file: File): Promise<UploadResponse | undefined> {
+  async function upload(files: File[]): Promise<BulkUploadResponse | undefined> {
     setUploading(true);
     setError(null);
     try {
-      return await uploadBook(file);
+      return await uploadBook(files);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {

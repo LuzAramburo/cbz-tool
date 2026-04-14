@@ -23,9 +23,9 @@ export function useMergeBooks() {
 
   function refresh() { setRefreshKey((k) => k + 1); }
 
-  async function upload(file: File): Promise<boolean> {
-    const result = await ops.upload(file);
-    if (result !== undefined) { refresh(); return true; }
+  async function upload(files: File[]): Promise<boolean> {
+    const result = await ops.upload(files);
+    if (result && result.succeeded.length > 0) { refresh(); return true; }
     return false;
   }
 

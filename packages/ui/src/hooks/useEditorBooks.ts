@@ -1,10 +1,15 @@
 import { useState } from 'react';
-import type { UploadResponse } from '../types/cbz';
+import type { UploadResponse, BulkUploadResponse } from '../types/cbz';
 import * as api from '../clients/booksClient';
 import { useBookOperations } from './useBookOperations';
 
+export interface UploadResult {
+  openedBookId: string | null;
+  anySucceeded: boolean;
+}
+
 interface UseEditorBooks {
-  upload: (file: File) => Promise<boolean>;
+  upload: (files: File[]) => Promise<UploadResult>;
   openBook: (bookId: string) => Promise<void>;
   removePage: (index: number) => Promise<void>;
   addPages: (files: File[], insertAt: number) => Promise<void>;
@@ -35,14 +40,24 @@ export function useEditorBooks(): UseEditorBooks {
     setPendingMetadata(metadata);
   }
 
-  async function upload(file: File): Promise<boolean> {
-    const data = await ops.upload(file);
-    if (data) {
-      setBook(data);
-      setPendingMetadata(data.metadata);
-      return true;
+  async function upload(files: File[]): Promise<UploadResult> {
+    const data = await ops.upload(files);
+    if (!data) return { openedBookId: null, anySucceeded: false };
+
+    let openedBookId: string | null = null;
+    if (data.succeeded.length === 1) {
+      const only = data.succeeded[0] as UploadResponse;
+      setBook(only);
+      setPendingMetadata(only.metadata);
+      openedBookId = only.bookId;
     }
-    return false;
+
+    if (data.failed.length > 0) {
+      const lines = data.failed.map((f: BulkUploadResponse['failed'][number]) => `${f.filename}: ${f.error}`).join('\n');
+      setError(data.succeeded.length > 0 ? `Some files failed:\n${lines}` : lines);
+    }
+
+    return { openedBookId, anySucceeded: data.succeeded.length > 0 };
   }
 
   async function openBook(bookId: string) {

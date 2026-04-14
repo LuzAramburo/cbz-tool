@@ -3,7 +3,7 @@ import FileUpload from '../editor/FileUpload';
 
 interface UploadBookModalProps {
   onClose: () => void;
-  onUpload: (file: File) => void;
+  onUpload: (files: File[]) => void;
   loading: boolean;
 }
 

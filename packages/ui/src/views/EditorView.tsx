@@ -80,8 +80,20 @@ export default function EditorView() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  async function handleUploadAndClose(file: File) {
-    if (await upload(file)) setUploadModalOpen(false);
+  async function handleUpload(files: File[]) {
+    const { openedBookId, anySucceeded } = await upload(files);
+    if (openedBookId) {
+      window.history.replaceState(null, '', `/editor?open=${openedBookId}`);
+    }
+    if (anySucceeded && !openedBookId) {
+      setRefreshKey((k) => k + 1);
+    }
+    return { openedBookId, anySucceeded };
+  }
+
+  async function handleUploadAndClose(files: File[]) {
+    const { anySucceeded } = await handleUpload(files);
+    if (anySucceeded) setUploadModalOpen(false);
   }
 
   async function handleSelectBook(bookId: string) {
@@ -109,7 +121,7 @@ export default function EditorView() {
         <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">Edit Book</h1>
         {!book ? (
           <>
-            <FileUpload onUpload={upload} loading={loading} />
+            <FileUpload onUpload={handleUpload} loading={loading} />
             <BookLibrary
               onSelect={handleSelectBook}
               onDelete={handleDeleteBook}
