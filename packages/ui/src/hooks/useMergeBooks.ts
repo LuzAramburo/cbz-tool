@@ -17,7 +17,7 @@ export function useMergeBooks() {
     let cancelled = false;
     listBooks()
       .then((data) => {
-        if (!cancelled) setBooks(data);
+        if (!cancelled) setBooks([...data].sort((a, b) => (a.title ?? '').localeCompare(b.title ?? '', undefined, { numeric: true })));
       })
       .catch(() => {
         if (!cancelled) setBooks([]);
