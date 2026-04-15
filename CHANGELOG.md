@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-04-15
+
 ### Added
 - Bulk upload: multiple CBZ files can be uploaded at once; each file succeeds or fails independently
 - Bulk delete: "Select for Bulk Delete" mode in the library with "Select All / Deselect All" and a confirmation prompt before deletion
