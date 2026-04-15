@@ -1,14 +1,15 @@
 # CBZ Tool
 
-A tool for editing CBZ (Comic Book Zip) files. Upload a CBZ, edit its pages and metadata, then download the result.
+A tool for editing CBZ (Comic Book Zip) files. Upload one or more CBZs, edit pages and metadata, then download the result.
 
 Available as a desktop app (Electron), a self-hosted web app (Docker), or a local dev server.
 
 ## Features
 
 **Editor**
-- Upload a CBZ via file picker or drag and drop
-- Browse and reopen books from a persistent library
+- Upload one or more CBZ files at once via file picker or drag and drop
+- Browse and reopen books from a persistent library, sorted by title
+- Bulk delete books from the library
 - View all pages as a responsive image grid
 - Reorder pages by moving them to any position
 - Delete individual pages
@@ -112,7 +113,10 @@ npm run package                       # Build Electron installer
 
 ## Publishing
 
+See `RELEASING.md` for the full release checklist.
+
 ```bash
 npm run build                         # build UI + bake into Docker image
-docker push LuzAramburo/cbz-tool:latest
+docker push luzaramburo/cbz-tool:<version>
+docker push luzaramburo/cbz-tool:latest
 ```
