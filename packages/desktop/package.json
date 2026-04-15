@@ -26,7 +26,11 @@
     "files": [
       "index.js",
       "node_modules/**",
-      "!node_modules/.cache/**"
+      "!node_modules/.cache/**",
+      "!node_modules/@cbz-tool/server/data/**",
+      "!node_modules/@cbz-tool/server/coverage/**",
+      "!node_modules/@cbz-tool/server/tests/**",
+      "!node_modules/@cbz-tool/server/*.ts"
     ],
     "win": {
       "target": "nsis",
