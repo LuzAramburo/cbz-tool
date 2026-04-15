@@ -2,7 +2,7 @@ import { useState } from 'react';
 import LoadingIcon from '../icons/LoadingIcon.tsx';
 
 interface FileUploadProps {
-  onUpload: (file: File) => void;
+  onUpload: (files: File[]) => void;
   loading: boolean;
 }
 
@@ -11,10 +11,10 @@ export default function FileUpload({ onUpload, loading }: FileUploadProps) {
   const [formatError, setFormatError] = useState<string | null>(null);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (file) {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length > 0) {
       setFormatError(null);
-      onUpload(file);
+      onUpload(files);
     }
     e.target.value = '';
   }
@@ -23,14 +23,15 @@ export default function FileUpload({ onUpload, loading }: FileUploadProps) {
     e.preventDefault();
     setDragging(false);
     if (loading) return;
-    const file = e.dataTransfer.files[0];
-    if (!file) return;
-    if (!file.name.toLowerCase().endsWith('.cbz')) {
-      setFormatError(`"${file.name}" is not a CBZ file.`);
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length === 0) return;
+    const invalid = files.filter((f) => !f.name.toLowerCase().endsWith('.cbz'));
+    if (invalid.length > 0) {
+      setFormatError(`Not a CBZ file: ${invalid.map((f) => f.name).join(', ')}`);
       return;
     }
     setFormatError(null);
-    onUpload(file);
+    onUpload(files);
   }
 
   function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
@@ -54,17 +55,18 @@ export default function FileUpload({ onUpload, loading }: FileUploadProps) {
       onDragLeave={handleDragLeave}
     >
       <p className="text-gray-500 dark:text-gray-400 text-sm">
-        {dragging ? 'Drop CBZ file here' : 'Drag & drop a CBZ file, or click to select'}
+        {dragging ? 'Drop CBZ files here' : 'Drag & drop CBZ files, or click to select'}
       </p>
       {formatError && <p className="text-red-500 text-xs">{formatError}</p>}
       <label
         className={`cursor-pointer px-6 py-2 rounded-lg text-white font-medium transition-colors ${loading ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'}`}
       >
         {loading && <LoadingIcon />}
-        {loading ? 'Uploading...' : 'Open CBZ'}
+        {loading ? 'Uploading...' : 'Upload CBZ'}
         <input
           type="file"
           accept=".cbz"
+          multiple
           className="hidden"
           onChange={handleChange}
           disabled={loading}

@@ -18,11 +18,14 @@ export default function EditorView() {
     addPages,
     movePage,
     deleteBook,
+    clearBook,
     downloadBook,
     saveMetadata,
     setMetadata,
     book,
     pendingMetadata,
+    refreshKey,
+    uploading,
     loading,
     downloading,
     saving,
@@ -39,7 +42,6 @@ export default function EditorView() {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [addPagesModalOpen, setAddPagesModalOpen] = useState(false);
   const [libraryModalOpen, setLibraryModalOpen] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
   const [maxFileSizeMb, setMaxFileSizeMb] = useState(50);
   const [pendingDeleteBook, setPendingDeleteBook] = useState<{
     bookId: string;
@@ -80,8 +82,17 @@ export default function EditorView() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  async function handleUploadAndClose(file: File) {
-    if (await upload(file)) setUploadModalOpen(false);
+  async function handleUpload(files: File[]) {
+    const { openedBookId, anySucceeded } = await upload(files);
+    if (openedBookId) {
+      window.history.replaceState(null, '', `/editor?open=${openedBookId}`);
+    }
+    return { openedBookId, anySucceeded };
+  }
+
+  async function handleUploadAndClose(files: File[]) {
+    const { anySucceeded } = await handleUpload(files);
+    if (anySucceeded) setUploadModalOpen(false);
   }
 
   async function handleSelectBook(bookId: string) {
@@ -94,11 +105,17 @@ export default function EditorView() {
     setPendingDeleteBook({ bookId, title });
   }
 
+  function handleBulkDelete(deletedIds: string[]) {
+    if (book && deletedIds.includes(book.bookId)) {
+      clearBook();
+      window.history.replaceState(null, '', '/editor');
+    }
+  }
+
   async function confirmDeleteBook() {
     if (!pendingDeleteBook) return;
     setDeleting(true);
     await deleteBook(pendingDeleteBook.bookId);
-    setRefreshKey((k) => k + 1);
     setDeleting(false);
     setPendingDeleteBook(null);
   }
@@ -109,11 +126,12 @@ export default function EditorView() {
         <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">Edit Book</h1>
         {!book ? (
           <>
-            <FileUpload onUpload={upload} loading={loading} />
+            <FileUpload onUpload={handleUpload} loading={uploading} />
             <BookLibrary
               onSelect={handleSelectBook}
               onDelete={handleDeleteBook}
               refreshKey={refreshKey}
+              onBulkDelete={handleBulkDelete}
             />
           </>
         ) : (
@@ -165,6 +183,7 @@ export default function EditorView() {
           onDelete={handleDeleteBook}
           refreshKey={refreshKey}
           onEmpty={() => setLibraryModalOpen(false)}
+          onBulkDelete={handleBulkDelete}
         />
       )}
 

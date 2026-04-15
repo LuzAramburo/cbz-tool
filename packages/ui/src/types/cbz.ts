@@ -12,6 +12,16 @@ export interface UploadResponse {
   metadata: BookMetadata | null;
 }
 
+export interface BulkUploadResponse {
+  succeeded: UploadResponse[];
+  failed: Array<{ filename: string; error: string }>;
+}
+
+export interface BulkDeleteResponse {
+  deleted: string[];
+  notFound: string[];
+}
+
 export interface BookSummary {
   bookId: string;
   title: string | null;

@@ -1,4 +1,4 @@
-import type { UploadResponse, BookMetadata, BookSummary } from '../types/cbz';
+import type { UploadResponse, BulkUploadResponse, BulkDeleteResponse, BookMetadata, BookSummary } from '../types/cbz';
 
 type PagesResponse = Pick<UploadResponse, 'pageCount' | 'pages'>;
 type MetadataResponse = { metadata: BookMetadata | null };
@@ -24,10 +24,10 @@ export async function getBook(bookId: string): Promise<UploadResponse> {
   return apiFetch<UploadResponse>(`/api/books/${bookId}`);
 }
 
-export async function uploadBook(file: File): Promise<UploadResponse> {
+export async function uploadBook(files: File[]): Promise<BulkUploadResponse> {
   const formData = new FormData();
-  formData.append('file', file);
-  return apiFetch<UploadResponse>('/api/books/upload', { method: 'POST', body: formData });
+  files.forEach((f) => formData.append('files', f));
+  return apiFetch<BulkUploadResponse>('/api/books/upload', { method: 'POST', body: formData });
 }
 
 export async function deletePage(bookId: string, index: number): Promise<PagesResponse> {
@@ -54,6 +54,14 @@ export async function patchMetadata(bookId: string, metadata: BookMetadata | nul
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ metadata }),
+  });
+}
+
+export async function bulkDeleteBooks(bookIds: string[]): Promise<BulkDeleteResponse> {
+  return apiFetch<BulkDeleteResponse>('/api/books/delete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ bookIds }),
   });
 }
 

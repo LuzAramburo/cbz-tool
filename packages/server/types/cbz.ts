@@ -38,3 +38,13 @@ export interface BookSummary {
   pageCount: number;
   coverPageIndex: number;
 }
+
+export interface BulkUploadResponse {
+  succeeded: UploadResponse[];
+  failed: Array<{ filename: string; error: string }>;
+}
+
+export interface BulkDeleteResponse {
+  deleted: string[];
+  notFound: string[];
+}

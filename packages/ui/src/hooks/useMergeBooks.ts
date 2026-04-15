@@ -16,16 +16,27 @@ export function useMergeBooks() {
   useEffect(() => {
     let cancelled = false;
     listBooks()
-      .then((data) => { if (!cancelled) setBooks(data); })
-      .catch(() => { if (!cancelled) setBooks([]); });
-    return () => { cancelled = true; };
+      .then((data) => {
+        if (!cancelled) setBooks([...data].sort((a, b) => (a.title ?? '').localeCompare(b.title ?? '', undefined, { numeric: true })));
+      })
+      .catch(() => {
+        if (!cancelled) setBooks([]);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [refreshKey]);
 
-  function refresh() { setRefreshKey((k) => k + 1); }
+  function refresh() {
+    setRefreshKey((k) => k + 1);
+  }
 
-  async function upload(file: File): Promise<boolean> {
-    const result = await ops.upload(file);
-    if (result !== undefined) { refresh(); return true; }
+  async function upload(files: File[]): Promise<boolean> {
+    const result = await ops.upload(files);
+    if (result && result.succeeded.length > 0) {
+      refresh();
+      return true;
+    }
     return false;
   }
 
@@ -80,6 +91,5 @@ export function useMergeBooks() {
     merge,
     downloadMerged,
     dismissMergedBook: () => setMergedBook(null),
-    refresh,
   };
 }

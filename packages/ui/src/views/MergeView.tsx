@@ -76,8 +76,8 @@ export default function MergeView() {
     setPendingDeleteBook(null);
   }
 
-  async function handleUploadAndClose(file: File) {
-    if (await upload(file)) setUploadModalOpen(false);
+  async function handleUploadAndClose(files: File[]) {
+    if (await upload(files)) setUploadModalOpen(false);
   }
 
   async function handleMerge() {
