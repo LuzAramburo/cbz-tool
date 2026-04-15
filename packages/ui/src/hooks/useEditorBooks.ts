@@ -76,6 +76,7 @@ export function useEditorBooks(): UseEditorBooks {
       const data = await api.getBook(bookId);
       setBook(data);
       setPendingMetadata(data.metadata);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
