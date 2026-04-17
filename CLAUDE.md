@@ -54,12 +54,12 @@ packages/
 
 ### Environment variables
 - `DATA_DIR` — directory for persistent book storage (default: `./data`). Each book gets `DATA_DIR/bookId/manifest.json` + `DATA_DIR/bookId/pages/`.
-- `MAX_FILE_SIZE_MB` — multer upload size limit (default: `50`). Used by both server (multer) and UI (via `GET /api/config`).
+- `MAX_FILE_SIZE_MB` — multer upload size limit (default: `100`). Used by both server (multer) and UI (via `GET /api/config`).
 - `NODE_ENV` — `development` vs production (controls static file serving, Vite proxy)
 
 ### Server internals (`packages/server/`)
 - `index.ts` — Express app factory; `GET /api/config` returns `{ maxFileSizeMb }`; mounts the book router at `/api/books`; serves static UI in prod
-- `routes/cbz.ts` — All book endpoints mounted at `/api/books`:
+- `routes/cbz.ts` — Thin router: multer setup, route-to-controller wiring, and the multer error handler. All book endpoints mounted at `/api/books`:
   - `GET /` — list all books → `BookSummary[]`
   - `POST /upload` — multer `array('files')` → parse each CBZ → `BulkUploadResponse { succeeded: UploadResponse[], failed: { filename, error }[] }`; UI opens book only if exactly 1 succeeded
   - `POST /merge` — body `{ bookIds: string[], metadata? }` → merge books in order → `UploadResponse`; must be declared BEFORE `GET /:bookId` (else "merge" is captured as a bookId param)
@@ -73,6 +73,9 @@ packages/
   - `DELETE /:bookId/metadata/:key` — remove key → `{ metadata }`
   - `GET /:bookId/download` — rebuild ZIP with JSZip, re-embed `ComicInfo.xml`; filename: `Series #N - Title.cbz`
   - `DELETE /:bookId` — delete book from disk and cache → 204
+- `controllers/books.ts` — handlers for book-level operations: `getBooks`, `uploadBooks`, `mergeBook`, `bulkDeleteBooks`, `getBookById`, `downloadBook`, `deleteBookById`
+- `controllers/pages.ts` — handlers for page operations: `getPage`, `addPagesToBook`, `moveBookPage`, `deleteBookPage`
+- `controllers/metadata.ts` — handlers for metadata operations: `patchMetadata`, `setMetadataKey`, `deleteMetadataKey`
 - `services/cbzParser.ts` — Core logic: reads a ZIP buffer with yauzl, filters images (jpg/png/webp), natural-sorts pages, parses `ComicInfo.xml` with fast-xml-parser. `getMime`, `isImageEntry`, and `parseMetadata` are exported for unit testing.
 - `services/cbzStore.ts` — Persistent store backed by disk (`DATA_DIR`) with an in-memory `Map<bookId, Book>` cache. `initStore(dir)` creates the data directory and loads existing manifests on startup. Pages are stored as individual files on disk; `getPagePath(bookId, filename)` resolves the full path for `sendFile`. `addPages` splices entries at `insertAt` and resolves filename collisions via `uniqueFilename`; `movePage` splices the page out and re-inserts at `toIndex`; `updateMetadata`/`setMetadataProperty`/`removeMetadataProperty` mutate metadata; all page `index` fields are rewritten after every mutation. Every mutation writes an updated `manifest.json` to disk.
 
@@ -123,4 +126,5 @@ packages/
 - **ESM + dotenv hoisting**: Static `import` statements are hoisted before any code runs, so `process.env` values set by `dotenv.config()` arrive too late for module-level constants. Always use `await import('./module.js')` (dynamic import) for server modules that read env vars at load time — see `bin.ts` and `desktop/index.js`.
 - **Two server entry points**: `npm run dev:web` goes through `packages/server/bin.ts`; `npm run dev` (Electron) goes through `packages/desktop/index.js`. Any env/startup logic (e.g. dotenv) must be in **both**.
 - **Vite/Express startup race**: In `dev:web`, Vite opens the browser before Express is ready. UI fetches to `/api/*` on mount will get `ECONNREFUSED` and should include retry logic rather than failing silently once.
+- **Electron version bumps**: `packages/desktop/package.json` has the version in **two** places — `devDependencies.electron` and `build.electronVersion`. Both must be updated together.
 - **`BookMetadata` type vs component name clash**: `types/cbz` exports a `BookMetadata` type and `components/editor/BookMetadata.tsx` is a component of the same name. Importing both in the same file causes `TS2300`. Fix: alias the component — `import BookMetadataPanel from '../components/editor/BookMetadata'`.
