@@ -12,7 +12,6 @@ npm run dev:web      # Browser only — runs Vite + Express (no Electron)
 
 ### Build & Package
 ```bash
-npm run build        # Build UI locally + build/tag the Docker image (for publishing)
 npm run package      # Build UI + server, then produce Electron installer via electron-builder
 ```
 
@@ -114,7 +113,7 @@ packages/
 
 ### Deployment targets
 - **Electron**: `npm run dev` / `npm run package` → NSIS installer in `packages/desktop/release/`
-- **Docker**: self-hosters just run `docker compose up` — the multi-stage `Dockerfile` builds the UI and server internally with no local build step required. `npm run build` is for building/tagging the image to publish.
+- **Docker**: self-hosters just run `docker compose up` — the multi-stage `Dockerfile` builds the UI and server internally with no local build step required. Publishing is automated: pushing a `v*.*.*` tag triggers the `docker-publish` GitHub Actions workflow, which builds and pushes both the versioned tag and `latest` to Docker Hub.
 - Code signing is disabled for local builds (`CSC_IDENTITY_AUTO_DISCOVERY=false`)
 - **Releasing**: follow `RELEASING.md` — update `CHANGELOG.md`, bump version in all three `package.json` files, build Docker, package Electron, commit, tag, push.
 
