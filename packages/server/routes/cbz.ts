@@ -20,7 +20,7 @@ import {
 import type { Book, BookSummary, BookMetadata, PageData, UploadResponse, BulkUploadResponse, BulkDeleteResponse } from '../types/cbz.js';
 
 const router = Router();
-const MAX_FILE_SIZE_BYTES = parseInt(process.env['MAX_FILE_SIZE_MB'] ?? '50', 10) * 1024 * 1024;
+const MAX_FILE_SIZE_BYTES = parseInt(process.env['MAX_FILE_SIZE_MB'] ?? '100', 10) * 1024 * 1024;
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: MAX_FILE_SIZE_BYTES },

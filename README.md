@@ -69,7 +69,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - MAX_FILE_SIZE_MB=50  # default is 50
+      - MAX_FILE_SIZE_MB=100  # default is 100
       - DATA_DIR=/app/data
     volumes:
       - app-data:/app/data   # persist library across restarts
@@ -80,7 +80,7 @@ volumes:
 
 | Variable | Default | Description |
 |---|---|---|
-| `MAX_FILE_SIZE_MB` | `50` | Maximum upload size in MB. Reflected in both the server limit and the UI hint. |
+| `MAX_FILE_SIZE_MB` | `100` | Maximum upload size in MB. Reflected in both the server limit and the UI hint. |
 | `DATA_DIR` | `./data` | Directory where books are stored on disk. Mount a volume here to persist your library. |
 
 ## Desktop app (Electron)
