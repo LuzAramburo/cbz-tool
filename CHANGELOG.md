@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- GitHub Actions workflow (`docker-publish.yml`) automatically builds and pushes the Docker image to Docker Hub on `v*.*.*` tags
+
+### Changed
+- Default `MAX_FILE_SIZE_MB` raised from 50 to 100
+- Electron updated to 41.2.1 (Chromium 146, V8 14.6, Node 24.14.0)
+
 ## [1.2.0] - 2026-04-15
 
 ### Added
