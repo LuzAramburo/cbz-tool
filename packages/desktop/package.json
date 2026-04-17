@@ -13,12 +13,12 @@
     "@cbz-tool/server": "*"
   },
   "devDependencies": {
-    "electron": "^38.8.4",
+    "electron": "41.2.1",
     "electron-builder": "^26.8.1"
   },
   "build": {
     "appId": "com.luzaramburo.cbz-tool",
-    "electronVersion": "38.8.4",
+    "electronVersion": "41.2.1",
     "productName": "CBZ Tool",
     "directories": {
       "output": "release"
