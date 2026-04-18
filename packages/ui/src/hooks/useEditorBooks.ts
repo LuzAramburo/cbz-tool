@@ -12,6 +12,7 @@ interface UseEditorBooks {
   upload: (files: File[]) => Promise<UploadResult>;
   openBook: (bookId: string) => Promise<void>;
   removePage: (index: number) => Promise<void>;
+  removePages: (indices: number[]) => Promise<void>;
   addPages: (files: File[], insertAt: number) => Promise<void>;
   movePage: (index: number, toIndex: number) => Promise<void>;
   deleteBook: (bookId: string) => Promise<void>;
@@ -88,6 +89,17 @@ export function useEditorBooks(): UseEditorBooks {
     if (!book) return;
     try {
       const data = await api.deletePage(book.bookId, index);
+      setBook((prev) => (prev ? { ...prev, pageCount: data.pageCount, pages: data.pages } : prev));
+      refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    }
+  }
+
+  async function removePages(indices: number[]) {
+    if (!book) return;
+    try {
+      const data = await api.deletePages(book.bookId, indices);
       setBook((prev) => (prev ? { ...prev, pageCount: data.pageCount, pages: data.pages } : prev));
       refresh();
     } catch (err) {
@@ -173,6 +185,7 @@ export function useEditorBooks(): UseEditorBooks {
     upload,
     openBook,
     removePage,
+    removePages,
     addPages,
     movePage,
     deleteBook,

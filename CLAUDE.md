@@ -12,7 +12,6 @@ npm run dev:web      # Browser only — runs Vite + Express (no Electron)
 
 ### Build & Package
 ```bash
-npm run build        # Build UI locally + build/tag the Docker image (for publishing)
 npm run package      # Build UI + server, then produce Electron installer via electron-builder
 ```
 
@@ -55,12 +54,12 @@ packages/
 
 ### Environment variables
 - `DATA_DIR` — directory for persistent book storage (default: `./data`). Each book gets `DATA_DIR/bookId/manifest.json` + `DATA_DIR/bookId/pages/`.
-- `MAX_FILE_SIZE_MB` — multer upload size limit (default: `50`). Used by both server (multer) and UI (via `GET /api/config`).
+- `MAX_FILE_SIZE_MB` — multer upload size limit (default: `100`). Used by both server (multer) and UI (via `GET /api/config`).
 - `NODE_ENV` — `development` vs production (controls static file serving, Vite proxy)
 
 ### Server internals (`packages/server/`)
 - `index.ts` — Express app factory; `GET /api/config` returns `{ maxFileSizeMb }`; mounts the book router at `/api/books`; serves static UI in prod
-- `routes/cbz.ts` — All book endpoints mounted at `/api/books`:
+- `routes/cbz.ts` — Thin router: multer setup, route-to-controller wiring, and the multer error handler. All book endpoints mounted at `/api/books`:
   - `GET /` — list all books → `BookSummary[]`
   - `POST /upload` — multer `array('files')` → parse each CBZ → `BulkUploadResponse { succeeded: UploadResponse[], failed: { filename, error }[] }`; UI opens book only if exactly 1 succeeded
   - `POST /merge` — body `{ bookIds: string[], metadata? }` → merge books in order → `UploadResponse`; must be declared BEFORE `GET /:bookId` (else "merge" is captured as a bookId param)
@@ -74,6 +73,9 @@ packages/
   - `DELETE /:bookId/metadata/:key` — remove key → `{ metadata }`
   - `GET /:bookId/download` — rebuild ZIP with JSZip, re-embed `ComicInfo.xml`; filename: `Series #N - Title.cbz`
   - `DELETE /:bookId` — delete book from disk and cache → 204
+- `controllers/books.ts` — handlers for book-level operations: `getBooks`, `uploadBooks`, `mergeBook`, `bulkDeleteBooks`, `getBookById`, `downloadBook`, `deleteBookById`
+- `controllers/pages.ts` — handlers for page operations: `getPage`, `addPagesToBook`, `moveBookPage`, `deleteBookPage`
+- `controllers/metadata.ts` — handlers for metadata operations: `patchMetadata`, `setMetadataKey`, `deleteMetadataKey`
 - `services/cbzParser.ts` — Core logic: reads a ZIP buffer with yauzl, filters images (jpg/png/webp), natural-sorts pages, parses `ComicInfo.xml` with fast-xml-parser. `getMime`, `isImageEntry`, and `parseMetadata` are exported for unit testing.
 - `services/cbzStore.ts` — Persistent store backed by disk (`DATA_DIR`) with an in-memory `Map<bookId, Book>` cache. `initStore(dir)` creates the data directory and loads existing manifests on startup. Pages are stored as individual files on disk; `getPagePath(bookId, filename)` resolves the full path for `sendFile`. `addPages` splices entries at `insertAt` and resolves filename collisions via `uniqueFilename`; `movePage` splices the page out and re-inserts at `toIndex`; `updateMetadata`/`setMetadataProperty`/`removeMetadataProperty` mutate metadata; all page `index` fields are rewritten after every mutation. Every mutation writes an updated `manifest.json` to disk.
 
@@ -104,7 +106,7 @@ packages/
 - `components/editor/PageGrid.tsx` — responsive image grid with move and delete modals; owns all page-interaction state (`pendingIndex`, `movingIndex`, `moveToSource`)
 - `components/modals/UploadBookModal.tsx` — wraps `FileUpload` in a modal; uses `handleUploadAndClose` in `EditorView.tsx` so the modal closes only on successful upload
 - `components/modals/AddPagesModal.tsx` — stages image files (jpg/png/webp), picks insert position, calls `addPages`; filters unsupported formats on select/drop
-- Image `src` URLs include `?v={refreshKey}` as a cache-buster; `refreshKey` is an integer counter in `useEditorBooks`/`useMergeBooks` that increments after every mutation — call `refresh()` after ALL mutations or covers will stay stale
+- **Cache-busting for images**: use content-derived values (filename), never `refreshKey`, as the `?v=` cache-buster. `refreshKey` resets to 0 on every fresh component mount (e.g. HomeView), so `?v=0` can be served from browser cache with stale content. `PageThumbnail` uses `page.filename`; `BookCard` uses `book.coverFilename` (the actual filename of page 0, returned by `GET /api/books`). `refreshKey` is still needed to trigger `BookLibrary` re-fetches via its `useEffect([refreshKey])` — just never as the `?v=` value in an `<img src>`.
 - Modals lock `document.body` scroll on mount via a `useEffect` cleanup pattern
 
 ### Testing (`packages/server/tests/`)
@@ -114,7 +116,7 @@ packages/
 
 ### Deployment targets
 - **Electron**: `npm run dev` / `npm run package` → NSIS installer in `packages/desktop/release/`
-- **Docker**: self-hosters just run `docker compose up` — the multi-stage `Dockerfile` builds the UI and server internally with no local build step required. `npm run build` is for building/tagging the image to publish.
+- **Docker**: self-hosters just run `docker compose up` — the multi-stage `Dockerfile` builds the UI and server internally with no local build step required. Publishing is automated: pushing a `v*.*.*` tag triggers the `docker-publish` GitHub Actions workflow, which builds and pushes both the versioned tag and `latest` to Docker Hub.
 - Code signing is disabled for local builds (`CSC_IDENTITY_AUTO_DISCOVERY=false`)
 - **Releasing**: follow `RELEASING.md` — update `CHANGELOG.md`, bump version in all three `package.json` files, build Docker, package Electron, commit, tag, push.
 
@@ -124,4 +126,5 @@ packages/
 - **ESM + dotenv hoisting**: Static `import` statements are hoisted before any code runs, so `process.env` values set by `dotenv.config()` arrive too late for module-level constants. Always use `await import('./module.js')` (dynamic import) for server modules that read env vars at load time — see `bin.ts` and `desktop/index.js`.
 - **Two server entry points**: `npm run dev:web` goes through `packages/server/bin.ts`; `npm run dev` (Electron) goes through `packages/desktop/index.js`. Any env/startup logic (e.g. dotenv) must be in **both**.
 - **Vite/Express startup race**: In `dev:web`, Vite opens the browser before Express is ready. UI fetches to `/api/*` on mount will get `ECONNREFUSED` and should include retry logic rather than failing silently once.
+- **Electron version bumps**: `packages/desktop/package.json` has the version in **two** places — `devDependencies.electron` and `build.electronVersion`. Both must be updated together.
 - **`BookMetadata` type vs component name clash**: `types/cbz` exports a `BookMetadata` type and `components/editor/BookMetadata.tsx` is a component of the same name. Importing both in the same file causes `TS2300`. Fix: alias the component — `import BookMetadataPanel from '../components/editor/BookMetadata'`.

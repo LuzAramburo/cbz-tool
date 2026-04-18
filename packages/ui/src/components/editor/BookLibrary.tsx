@@ -13,7 +13,13 @@ interface BookLibraryProps {
   onBulkDelete?: (deletedIds: string[]) => void;
 }
 
-export default function BookLibrary({ onSelect, onDelete, refreshKey, onEmpty, onBulkDelete }: BookLibraryProps) {
+export default function BookLibrary({
+  onSelect,
+  onDelete,
+  refreshKey,
+  onEmpty,
+  onBulkDelete,
+}: BookLibraryProps) {
   const [books, setBooks] = useState<BookSummary[] | null>(null);
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -29,7 +35,11 @@ export default function BookLibrary({ onSelect, onDelete, refreshKey, onEmpty, o
     listBooks()
       .then((data) => {
         if (!cancelled) {
-          setBooks([...data].sort((a, b) => (a.title ?? '').localeCompare(b.title ?? '', undefined, { numeric: true })));
+          setBooks(
+            [...data].sort((a, b) =>
+              (a.title ?? '').localeCompare(b.title ?? '', undefined, { numeric: true })
+            )
+          );
           if (data.length === 0) onEmptyRef.current?.();
         }
       })
@@ -48,7 +58,7 @@ export default function BookLibrary({ onSelect, onDelete, refreshKey, onEmpty, o
 
   function toggleSelect(bookId: string) {
     setSelectedIds((ids) =>
-      ids.includes(bookId) ? ids.filter((id) => id !== bookId) : [...ids, bookId],
+      ids.includes(bookId) ? ids.filter((id) => id !== bookId) : [...ids, bookId]
     );
   }
 
@@ -94,24 +104,21 @@ export default function BookLibrary({ onSelect, onDelete, refreshKey, onEmpty, o
                     ? setSelectedIds([])
                     : setSelectedIds(books.map((b) => b.bookId))
                 }
-                className="cursor-pointer px-4 py-2 rounded-lg text-sm font-medium border border-gray-400 dark:border-gray-500 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="btn btn-md btn-outline-gray"
               >
                 {selectedIds.length === books.length ? 'Deselect All' : 'Select All'}
               </button>
             )}
             {selectMode && selectedIds.length > 0 && (
-              <button
-                onClick={() => setConfirmOpen(true)}
-                className="cursor-pointer px-4 py-2 rounded-lg text-sm font-medium bg-red-600 hover:bg-red-700 text-white transition-colors"
-              >
+              <button onClick={() => setConfirmOpen(true)} className="btn btn-md btn-danger">
                 Delete ({selectedIds.length})
               </button>
             )}
             <button
               onClick={toggleSelectMode}
-              className={`cursor-pointer px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${selectMode ? 'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40' : 'border-red-500 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20'}`}
+              className={`btn btn-md ${selectMode ? 'btn-outline-red-active' : 'btn-outline-red'}`}
             >
-              {selectMode ? 'Cancel' : 'Select for Bulk Delete'}
+              {selectMode ? 'Cancel' : 'Bulk delete books'}
             </button>
           </div>
         </div>
@@ -122,7 +129,6 @@ export default function BookLibrary({ onSelect, onDelete, refreshKey, onEmpty, o
               book={book}
               onSelect={onSelect}
               onDelete={onDelete}
-              refreshKey={refreshKey}
               selected={selectedIds.includes(book.bookId)}
               onToggleSelect={selectMode ? toggleSelect : undefined}
             />
@@ -144,7 +150,8 @@ export default function BookLibrary({ onSelect, onDelete, refreshKey, onEmpty, o
           }}
         >
           <p className="text-sm text-gray-700 dark:text-gray-300">
-            Are you sure you want to delete {selectedIds.length} {selectedIds.length === 1 ? 'book' : 'books'}?
+            Are you sure you want to delete {selectedIds.length}{' '}
+            {selectedIds.length === 1 ? 'book' : 'books'}?
           </p>
         </Modal>
       )}

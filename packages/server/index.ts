@@ -13,7 +13,7 @@ export function start(port = 3000): Server {
   app.use(express.json());
 
   app.get('/api/config', (_req, res) => {
-    res.json({ maxFileSizeMb: parseInt(process.env['MAX_FILE_SIZE_MB'] ?? '50', 10) });
+    res.json({ maxFileSizeMb: parseInt(process.env['MAX_FILE_SIZE_MB'] ?? '100', 10) });
   });
 
   app.use('/api/books', cbzRouter);

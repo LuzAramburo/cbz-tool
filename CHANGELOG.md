@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-04-17
+
+### Added
+- GitHub Actions workflow (`docker-publish.yml`) automatically builds and pushes the Docker image to Docker Hub on `v*.*.*` tags
+- Book library displayed on the home page; clicking a book opens it directly in the editor
+- Bulk delete pages: "Bulk delete pages" mode in the editor selects multiple pages at once and removes them in a single operation
+
+### Fixed
+- Book cover images now update correctly after deleting the first page, for real this time, I think.
+
+### Changed
+- Default `MAX_FILE_SIZE_MB` raised from 50 to 100
+- Electron updated to 41.2.1 (Chromium 146, V8 14.6, Node 24.14.0)
+
 ## [1.2.0] - 2026-04-15
 
 ### Added

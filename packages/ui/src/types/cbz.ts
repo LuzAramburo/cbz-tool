@@ -29,4 +29,5 @@ export interface BookSummary {
   number: string | null;
   pageCount: number;
   coverPageIndex: number;
+  coverFilename: string;
 }

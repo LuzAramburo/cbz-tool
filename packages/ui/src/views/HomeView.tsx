@@ -1,6 +1,10 @@
+import { useState } from 'react';
 import { useLocation } from 'wouter';
 import PencilIcon from '../components/icons/PencilIcon';
 import MergeIcon from '../components/icons/MergeIcon';
+import BookLibrary from '../components/editor/BookLibrary';
+import Modal from '../components/modals/Modal';
+import { deleteBook } from '../clients/booksClient';
 
 const FEATURES = [
   {
@@ -19,9 +23,24 @@ const FEATURES = [
 
 export default function HomeView() {
   const [, navigate] = useLocation();
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [pendingDelete, setPendingDelete] = useState<{ bookId: string; title: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  async function confirmDelete() {
+    if (!pendingDelete) return;
+    setDeleting(true);
+    try {
+      await deleteBook(pendingDelete.bookId);
+      setRefreshKey((k) => k + 1);
+      setPendingDelete(null);
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   return (
-    <main className="flex flex-col items-center justify-center px-6 py-20 gap-12">
+    <main className="flex flex-col items-center px-6 py-20 gap-12">
       <div className="text-center">
         <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
           What would you like to do?
@@ -44,6 +63,34 @@ export default function HomeView() {
           </button>
         ))}
       </div>
+
+      <div className="w-full max-w-4xl">
+        <BookLibrary
+          onSelect={(bookId) => navigate(`/editor?open=${bookId}`)}
+          onDelete={(bookId, title) => setPendingDelete({ bookId, title })}
+          onBulkDelete={() => setRefreshKey((k) => k + 1)}
+          refreshKey={refreshKey}
+        />
+      </div>
+
+      {pendingDelete && (
+        <Modal
+          title="Delete Book"
+          onClose={() => setPendingDelete(null)}
+          size="sm"
+          footer={{
+            confirmLabel: 'Delete',
+            onConfirm: confirmDelete,
+            danger: true,
+            loading: deleting,
+            loadingLabel: 'Deleting...',
+          }}
+        >
+          <p className="text-sm text-gray-700 dark:text-gray-300">
+            Are you sure you want to delete &ldquo;{pendingDelete.title}&rdquo;?
+          </p>
+        </Modal>
+      )}
     </main>
   );
 }
