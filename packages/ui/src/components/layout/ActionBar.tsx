@@ -25,7 +25,7 @@ export default function ActionBar({
       <button
         onClick={onUploadClick}
         disabled={loading}
-        className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:shadow-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center"
+        className="btn btn-md btn-primary hover:shadow-md flex items-center"
       >
         <UploadIcon />
         Upload New Book
@@ -33,7 +33,7 @@ export default function ActionBar({
       <button
         onClick={onLibraryClick}
         disabled={loading}
-        className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:shadow-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center"
+        className="btn btn-md btn-primary hover:shadow-md flex items-center"
       >
         <svg className="inline-block mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
           <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
@@ -44,7 +44,7 @@ export default function ActionBar({
       <button
         onClick={onAddPagesClick}
         disabled={loading}
-        className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center"
+        className="btn btn-md btn-primary hover:shadow-md flex items-center"
       >
         <AddIcon />
         Add Pages
@@ -52,7 +52,7 @@ export default function ActionBar({
       <button
         onClick={onDownloadClick}
         disabled={loading || downloading}
-        className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center"
+        className="btn btn-md btn-primary hover:shadow-md flex items-center"
       >
         {downloading ? <LoadingIcon /> : <DownloadIcon />}
         {downloading ? 'Downloading…' : 'Download Book'}

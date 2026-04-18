@@ -63,18 +63,14 @@ export default function Modal({
           >
             <button
               onClick={onClose}
-              className="cursor-pointer px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+              className="btn btn-md btn-ghost-gray"
             >
               Cancel
             </button>
             <button
               onClick={footer.onConfirm}
               disabled={footer.disabled || footer.loading}
-              className={`cursor-pointer px-4 py-2 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center ${
-                footer.danger
-                  ? 'bg-red-500 hover:bg-red-600'
-                  : 'bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300'
-              }`}
+              className={`btn btn-md flex items-center ${footer.danger ? 'btn-danger' : 'btn-primary'}`}
             >
               {footer.loading && <LoadingIcon />}
               {footer.loading ? (footer.loadingLabel ?? footer.confirmLabel) : footer.confirmLabel}

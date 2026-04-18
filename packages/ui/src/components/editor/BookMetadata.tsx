@@ -110,7 +110,7 @@ export default function BookMetadata({
             <div className="col-span-full pt-1 flex items-center gap-4">
               <button
                 onClick={() => setAddModalOpen(true)}
-                className="cursor-pointer flex items-center gap-1.5 text-sm text-blue-400 hover:text-blue-300 border border-blue-400 hover:border-blue-300 rounded-lg px-4 py-2 transition-colors"
+                className="btn btn-md btn-outline-blue flex items-center gap-1.5"
               >
                 <span className="text-lg leading-none">+</span>
                 Add property
@@ -119,7 +119,7 @@ export default function BookMetadata({
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="cursor-pointer flex items-center gap-1.5 text-sm text-blue-400 hover:text-blue-300 border border-blue-400 hover:border-blue-300 rounded-lg px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="btn btn-md btn-outline-blue flex items-center gap-1.5"
                 >
                   {saving ? 'Saving...' : 'Save metadata'}
                 </button>

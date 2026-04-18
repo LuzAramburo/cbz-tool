@@ -135,7 +135,7 @@ export default function AddPagesModal({
             {stagedFiles.length > 1 && (
               <button
                 onClick={() => setStagedFiles([])}
-                className="cursor-pointer text-xs text-red-500 hover:text-red-700 transition-colors"
+                className="btn btn-ghost-red text-xs"
               >
                 Clear all
               </button>

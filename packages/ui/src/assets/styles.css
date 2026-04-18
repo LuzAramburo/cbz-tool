@@ -1,2 +1,29 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
+
+@layer components {
+  /* Base shared by all standard buttons */
+  .btn {
+    @apply cursor-pointer text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Sizes */
+  .btn-sm { @apply px-3 py-1.5; }
+  .btn-md { @apply px-4 py-2; }
+  .btn-lg { @apply px-6 py-2.5; }
+
+  /* Solid */
+  .btn-primary { @apply bg-blue-600 text-white hover:bg-blue-700; }
+  .btn-danger  { @apply bg-red-600  text-white hover:bg-red-700;  }
+
+  /* Outline */
+  .btn-outline-gray  { @apply border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800; }
+  .btn-outline-red   { @apply border border-red-500 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20; }
+  .btn-outline-red-active { @apply border border-red-500 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40; }
+  .btn-outline-blue  { @apply border border-blue-400 text-blue-400 hover:text-blue-300 hover:border-blue-300; }
+  .btn-outline-green { @apply border border-green-300 dark:border-green-700 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/40; }
+
+  /* Ghost (text-only, no border/bg) */
+  .btn-ghost-gray { @apply text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200; }
+  .btn-ghost-red  { @apply text-red-500 hover:text-red-700; }
+}

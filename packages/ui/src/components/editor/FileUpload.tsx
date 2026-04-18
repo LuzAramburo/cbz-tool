@@ -59,7 +59,7 @@ export default function FileUpload({ onUpload, loading }: FileUploadProps) {
       </p>
       {formatError && <p className="text-red-500 text-xs">{formatError}</p>}
       <label
-        className={`cursor-pointer px-6 py-2 rounded-lg text-white font-medium transition-colors ${loading ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'}`}
+        className={`btn btn-lg ${loading ? 'bg-blue-300 text-white cursor-not-allowed' : 'btn-primary'}`}
       >
         {loading && <LoadingIcon />}
         {loading ? 'Uploading...' : 'Upload CBZ'}
