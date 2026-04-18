@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-04-17
+
 ### Added
 - GitHub Actions workflow (`docker-publish.yml`) automatically builds and pushes the Docker image to Docker Hub on `v*.*.*` tags
 - Book library displayed on the home page; clicking a book opens it directly in the editor
