@@ -118,6 +118,23 @@ export async function removePage(bookId: string, index: number): Promise<Book | 
   return book;
 }
 
+export async function removePages(bookId: string, indices: number[]): Promise<Book | undefined> {
+  const book = cache.get(bookId);
+  if (!book) return undefined;
+
+  const sorted = [...indices].sort((a, b) => b - a);
+  for (const index of sorted) {
+    const [removed] = book.pages.splice(index, 1);
+    if (removed) {
+      await fsp.rm(getPagePath(bookId, removed.filename), { force: true });
+    }
+  }
+
+  reindex(book.pages);
+  await writeManifest(book);
+  return book;
+}
+
 export async function addPages(
   bookId: string,
   insertAt: number,

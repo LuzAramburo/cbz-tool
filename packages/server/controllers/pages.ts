@@ -3,6 +3,7 @@ import { isImageEntry, getMime } from '../services/cbzParser.js';
 import {
   getBook,
   removePage,
+  removePages,
   addPages,
   movePage,
   getPagePath,
@@ -96,6 +97,34 @@ export async function moveBookPage(req: Request, res: Response): Promise<void> {
   }
 
   const updated = (await movePage(bookId, fromIndex, toIndex))!;
+  res.json({
+    pageCount: updated.pages.length,
+    pages: updated.pages.map(({ index: i, filename }) => ({ index: i, filename })),
+  });
+}
+
+export async function deleteBookPages(req: Request, res: Response): Promise<void> {
+  const bookId = req.params['bookId'] as string;
+  const book = await getBook(bookId);
+  if (!book) {
+    res.status(404).json({ error: 'Book not found' });
+    return;
+  }
+
+  const { indices } = req.body as { indices?: unknown };
+  if (!Array.isArray(indices) || indices.length === 0) {
+    res.status(400).json({ error: 'indices must be a non-empty array' });
+    return;
+  }
+
+  for (const idx of indices) {
+    if (typeof idx !== 'number' || !Number.isInteger(idx) || idx < 0 || idx >= book.pages.length) {
+      res.status(400).json({ error: `Index out of range: ${idx}` });
+      return;
+    }
+  }
+
+  const updated = (await removePages(bookId, indices as number[]))!;
   res.json({
     pageCount: updated.pages.length,
     pages: updated.pages.map(({ index: i, filename }) => ({ index: i, filename })),

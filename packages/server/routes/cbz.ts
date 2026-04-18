@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 import { getBooks, uploadBooks, mergeBook, bulkDeleteBooks, getBookById, downloadBook, deleteBookById } from '../controllers/books.js';
-import { getPage, addPagesToBook, moveBookPage, deleteBookPage } from '../controllers/pages.js';
+import { getPage, addPagesToBook, moveBookPage, deleteBookPage, deleteBookPages } from '../controllers/pages.js';
 import { setMetadataKey, deleteMetadataKey, patchMetadata } from '../controllers/metadata.js';
 
 const router = Router();
@@ -19,6 +19,7 @@ router.get('/:bookId', getBookById);
 router.get('/:bookId/page/:index', getPage);
 router.post('/:bookId/pages', upload.array('files'), addPagesToBook);
 router.patch('/:bookId/page/:index', moveBookPage);
+router.delete('/:bookId/pages', deleteBookPages);
 router.delete('/:bookId/page/:index', deleteBookPage);
 router.get('/:bookId/download', downloadBook);
 router.put('/:bookId/metadata/:key', setMetadataKey);
