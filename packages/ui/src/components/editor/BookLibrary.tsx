@@ -129,7 +129,6 @@ export default function BookLibrary({
               book={book}
               onSelect={onSelect}
               onDelete={onDelete}
-              refreshKey={refreshKey}
               selected={selectedIds.includes(book.bookId)}
               onToggleSelect={selectMode ? toggleSelect : undefined}
             />

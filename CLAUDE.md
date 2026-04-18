@@ -106,7 +106,7 @@ packages/
 - `components/editor/PageGrid.tsx` — responsive image grid with move and delete modals; owns all page-interaction state (`pendingIndex`, `movingIndex`, `moveToSource`)
 - `components/modals/UploadBookModal.tsx` — wraps `FileUpload` in a modal; uses `handleUploadAndClose` in `EditorView.tsx` so the modal closes only on successful upload
 - `components/modals/AddPagesModal.tsx` — stages image files (jpg/png/webp), picks insert position, calls `addPages`; filters unsupported formats on select/drop
-- Image `src` URLs include `?v={refreshKey}` as a cache-buster; `refreshKey` is an integer counter in `useEditorBooks`/`useMergeBooks` that increments after every mutation — call `refresh()` after ALL mutations or covers will stay stale
+- **Cache-busting for images**: use content-derived values (filename), never `refreshKey`, as the `?v=` cache-buster. `refreshKey` resets to 0 on every fresh component mount (e.g. HomeView), so `?v=0` can be served from browser cache with stale content. `PageThumbnail` uses `page.filename`; `BookCard` uses `book.coverFilename` (the actual filename of page 0, returned by `GET /api/books`). `refreshKey` is still needed to trigger `BookLibrary` re-fetches via its `useEffect([refreshKey])` — just never as the `?v=` value in an `<img src>`.
 - Modals lock `document.body` scroll on mount via a `useEffect` cleanup pattern
 
 ### Testing (`packages/server/tests/`)

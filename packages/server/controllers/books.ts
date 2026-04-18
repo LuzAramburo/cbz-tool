@@ -41,6 +41,7 @@ export function getBooks(_req: Request, res: Response): void {
     number: book.metadata?.['number'] ?? null,
     pageCount: book.pages.length,
     coverPageIndex: 0,
+    coverFilename: book.pages[0]?.filename ?? '',
   }));
   res.json(summaries);
 }

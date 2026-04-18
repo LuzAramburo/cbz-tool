@@ -7,12 +7,11 @@ interface BookCardProps {
   onSelect: (bookId: string) => void;
   onDelete: (bookId: string, title: string) => void;
   compact?: boolean;
-  refreshKey?: number;
   selected?: boolean;
   onToggleSelect?: (bookId: string) => void;
 }
 
-export default function BookCard({ book, onSelect, onDelete, compact, refreshKey, selected, onToggleSelect }: BookCardProps) {
+export default function BookCard({ book, onSelect, onDelete, compact, selected, onToggleSelect }: BookCardProps) {
   const title = book.title || 'Untitled';
   const selectMode = !!onToggleSelect;
 
@@ -26,7 +25,7 @@ export default function BookCard({ book, onSelect, onDelete, compact, refreshKey
       >
         <div className={`w-20 shrink-0 bg-gray-200 dark:bg-gray-800 relative${compact ? '' : ' h-28'}`}>
           <img
-            src={getPageImageUrl(book.bookId, book.coverPageIndex, String(refreshKey ?? 0))}
+            src={getPageImageUrl(book.bookId, book.coverPageIndex, book.coverFilename)}
             alt={`Cover of ${title}`}
             className="absolute inset-0 w-full h-full object-cover"
           />
