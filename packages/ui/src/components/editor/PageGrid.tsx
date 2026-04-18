@@ -7,14 +7,20 @@ interface PageGridProps {
   book: UploadResponse;
   onRemovePage: (index: number) => Promise<void>;
   onMovePage: (index: number, toIndex: number) => Promise<void>;
+  onRemovePages?: (indices: number[]) => Promise<void>;
 }
 
-export default function PageGrid({ book, onRemovePage, onMovePage }: PageGridProps) {
+export default function PageGrid({ book, onRemovePage, onMovePage, onRemovePages }: PageGridProps) {
   const [pendingIndex, setPendingIndex] = useState<number | null>(null);
   const [removing, setRemoving] = useState(false);
   const [movingIndex, setMovingIndex] = useState<number | null>(null);
   const [moveToSource, setMoveToSource] = useState<number | null>(null);
   const [moveToValue, setMoveToValue] = useState('');
+
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
+  const [confirmBulkOpen, setConfirmBulkOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   function openMoveTo(index: number) {
     setMoveToSource(index);
@@ -42,6 +48,27 @@ export default function PageGrid({ book, onRemovePage, onMovePage }: PageGridPro
     setMovingIndex(null);
   }
 
+  function toggleSelectMode() {
+    setSelectMode((v) => !v);
+    setSelectedIndices([]);
+  }
+
+  function toggleSelect(index: number) {
+    setSelectedIndices((prev) =>
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
+    );
+  }
+
+  async function handleConfirmBulkDelete() {
+    if (!onRemovePages) return;
+    setBulkDeleting(true);
+    await onRemovePages(selectedIndices);
+    setBulkDeleting(false);
+    setConfirmBulkOpen(false);
+    setSelectedIndices([]);
+    setSelectMode(false);
+  }
+
   const parsedTarget = parseInt(moveToValue, 10);
   const isValidTarget =
     moveToSource !== null &&
@@ -50,8 +77,38 @@ export default function PageGrid({ book, onRemovePage, onMovePage }: PageGridPro
     parsedTarget <= book.pageCount &&
     parsedTarget - 1 !== moveToSource;
 
+  const allSelected = selectedIndices.length === book.pages.length;
+
   return (
     <>
+      {onRemovePages && (
+        <div className="flex items-center gap-2">
+          {selectMode && (
+            <button
+              onClick={() =>
+                allSelected
+                  ? setSelectedIndices([])
+                  : setSelectedIndices(book.pages.map((p) => p.index))
+              }
+              className="btn btn-md btn-outline-gray"
+            >
+              {allSelected ? 'Deselect All' : 'Select All'}
+            </button>
+          )}
+          {selectMode && selectedIndices.length > 0 && (
+            <button onClick={() => setConfirmBulkOpen(true)} className="btn btn-md btn-danger">
+              Delete ({selectedIndices.length})
+            </button>
+          )}
+          <button
+            onClick={toggleSelectMode}
+            className={`btn btn-md ${selectMode ? 'btn-outline-red-active' : 'btn-outline-red'}`}
+          >
+            {selectMode ? 'Cancel' : 'Bulk delete pages'}
+          </button>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {book.pages.map((page) => (
           <PageThumbnail
@@ -63,6 +120,8 @@ export default function PageGrid({ book, onRemovePage, onMovePage }: PageGridPro
             setPendingIndex={setPendingIndex}
             handleMove={handleMove}
             openMoveTo={openMoveTo}
+            selected={selectMode ? selectedIndices.includes(page.index) : undefined}
+            onToggleSelect={selectMode ? toggleSelect : undefined}
           />
         ))}
       </div>
@@ -105,6 +164,23 @@ export default function PageGrid({ book, onRemovePage, onMovePage }: PageGridPro
           }}
         >
           <p className="text-sm text-gray-500 dark:text-gray-400">This action can't be undone.</p>
+        </Modal>
+      )}
+
+      {confirmBulkOpen && (
+        <Modal
+          title={`Delete ${selectedIndices.length} page${selectedIndices.length !== 1 ? 's' : ''}?`}
+          onClose={() => setConfirmBulkOpen(false)}
+          size="sm"
+          footer={{
+            confirmLabel: 'Delete',
+            onConfirm: handleConfirmBulkDelete,
+            danger: true,
+            loading: bulkDeleting,
+            loadingLabel: 'Deleting...',
+          }}
+        >
+          <p className="text-sm text-gray-700 dark:text-gray-300">This action can't be undone.</p>
         </Modal>
       )}
     </>

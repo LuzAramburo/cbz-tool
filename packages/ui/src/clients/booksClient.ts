@@ -34,6 +34,14 @@ export async function deletePage(bookId: string, index: number): Promise<PagesRe
   return apiFetch<PagesResponse>(`/api/books/${bookId}/page/${index}`, { method: 'DELETE' });
 }
 
+export async function deletePages(bookId: string, indices: number[]): Promise<PagesResponse> {
+  return apiFetch<PagesResponse>(`/api/books/${bookId}/pages`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ indices }),
+  });
+}
+
 export async function addPages(bookId: string, files: File[], insertAt: number): Promise<PagesResponse> {
   const formData = new FormData();
   files.forEach((f) => formData.append('files', f));

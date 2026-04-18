@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - GitHub Actions workflow (`docker-publish.yml`) automatically builds and pushes the Docker image to Docker Hub on `v*.*.*` tags
 - Book library displayed on the home page; clicking a book opens it directly in the editor
+- Bulk delete pages: "Bulk delete pages" mode in the editor selects multiple pages at once and removes them in a single operation
 
 ### Changed
 - Default `MAX_FILE_SIZE_MB` raised from 50 to 100

@@ -18,7 +18,7 @@ export default function BookCard({ book, onSelect, onDelete, compact, refreshKey
 
   return (
     <div
-      className={`group flex items-stretch bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-lg overflow-hidden hover:shadow-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-all relative${selected ? ' ring-2 ring-red-500' : ''}`}
+      className={`group flex items-stretch bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-lg overflow-hidden hover:shadow-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-all relative${selected ? ' ring-2 ring-blue-500' : ''}`}
     >
       <button
         onClick={() => selectMode ? onToggleSelect(book.bookId) : onSelect(book.bookId)}
@@ -31,10 +31,16 @@ export default function BookCard({ book, onSelect, onDelete, compact, refreshKey
             className="absolute inset-0 w-full h-full object-cover"
           />
           {selectMode && (
-            <div className={`absolute top-1 left-1 w-5 h-5 rounded border-2 flex items-center justify-center ${selected ? 'bg-red-500 border-red-500' : 'bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600'}`}>
+            <div
+              className={`absolute top-1.5 left-1.5 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
+                selected
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-black/70 text-white/60 group-hover:bg-black/90'
+              }`}
+            >
               {selected && (
-                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 12 12">
-                  <path d="M10 3L5 8.5 2 5.5l-1 1 4 4 6-7z" />
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               )}
             </div>

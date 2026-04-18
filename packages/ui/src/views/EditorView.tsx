@@ -15,6 +15,7 @@ export default function EditorView() {
     upload,
     openBook,
     removePage,
+    removePages,
     addPages,
     movePage,
     deleteBook,
@@ -163,7 +164,7 @@ export default function EditorView() {
                 saving={saving}
               />
             )}
-            <PageGrid book={book} onRemovePage={removePage} onMovePage={movePage} />
+            <PageGrid book={book} onRemovePage={removePage} onMovePage={movePage} onRemovePages={removePages} />
           </div>
         )}
       </main>
