@@ -14,7 +14,8 @@ export async function getOrCreateThumbnail(bookId: string, filename: string): Pr
   }
   await ensureThumbnailsDir(bookId);
   const tmpPath = `${thumbPath}.tmp`;
-  await sharp(getPagePath(bookId, filename))
+  const data = await fsp.readFile(getPagePath(bookId, filename));
+  await sharp(data)
     .resize({ width: THUMBNAIL_WIDTH, withoutEnlargement: true })
     .jpeg({ quality: 80 })
     .toFile(tmpPath);
@@ -23,5 +24,15 @@ export async function getOrCreateThumbnail(bookId: string, filename: string): Pr
 }
 
 export async function deleteThumbnail(bookId: string, filename: string): Promise<void> {
-  await fsp.rm(getThumbnailPath(bookId, filename), { force: true });
+  const thumbPath = getThumbnailPath(bookId, filename);
+  for (let i = 0; i < 5; i++) {
+    try {
+      await fsp.rm(thumbPath, { force: true });
+      return;
+    } catch (err: unknown) {
+      const code = (err as NodeJS.ErrnoException).code;
+      if (code !== 'EBUSY' || i === 4) throw err;
+      await new Promise((r) => setTimeout(r, 100));
+    }
+  }
 }

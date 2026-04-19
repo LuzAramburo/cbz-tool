@@ -129,12 +129,15 @@ export async function removePage(bookId: string, index: number): Promise<Book | 
   if (!book) return undefined;
 
   const [removed] = book.pages.splice(index, 1);
-  if (removed) {
-    await rmRetry(getPagePath(bookId, removed.filename));
-  }
-
   reindex(book.pages);
   await writeManifest(book);
+
+  if (removed) {
+    rmRetry(getPagePath(bookId, removed.filename)).catch((err) =>
+      console.error('[removePage] file delete failed:', err)
+    );
+  }
+
   return book;
 }
 
@@ -143,15 +146,21 @@ export async function removePages(bookId: string, indices: number[]): Promise<Bo
   if (!book) return undefined;
 
   const sorted = [...indices].sort((a, b) => b - a);
+  const removed: PageEntry[] = [];
   for (const index of sorted) {
-    const [removed] = book.pages.splice(index, 1);
-    if (removed) {
-      await rmRetry(getPagePath(bookId, removed.filename));
-    }
+    const [page] = book.pages.splice(index, 1);
+    if (page) removed.push(page);
   }
 
   reindex(book.pages);
   await writeManifest(book);
+
+  for (const page of removed) {
+    rmRetry(getPagePath(bookId, page.filename)).catch((err) =>
+      console.error('[removePages] file delete failed:', err)
+    );
+  }
+
   return book;
 }
 
