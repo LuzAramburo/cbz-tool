@@ -12,7 +12,7 @@ Available as a desktop app (Electron), a self-hosted web app (Docker), or a loca
 - Bulk delete books from the library
 - View all pages as a responsive image grid
 - Reorder pages by moving them to any position
-- Delete individual pages
+- Delete individual pages or bulk-delete multiple pages at once
 - Add new pages (JPG, PNG, WEBP) at any position
 - Edit embedded ComicInfo.xml metadata — add, edit, or remove individual fields
 - Download the modified CBZ with changes applied
