@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Full-size page viewer: click the zoom icon on any thumbnail to open an image lightbox with prev/next navigation and keyboard arrow key support
 - Server-side thumbnail generation for the page grid and library covers — images are resized to 300 px wide JPEG and cached on disk, significantly reducing load times for large CBZ files
 - Electron production builds no longer occupy any TCP port — Express now listens on a named pipe (Windows) or Unix socket (Mac/Linux) and the renderer uses a custom `cbz://` protocol; dev mode remains on TCP and is configurable via a `PORT` environment variable
 

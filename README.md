@@ -11,6 +11,7 @@ Available as a desktop app (Electron), a self-hosted web app (Docker), or a loca
 - Browse and reopen books from a persistent library, sorted by title
 - Bulk delete books from the library
 - View all pages as a responsive image grid with fast-loading thumbnails
+- Zoom into any page at full resolution with a keyboard-navigable image viewer
 - Reorder pages by moving them to any position
 - Delete individual pages or bulk-delete multiple pages at once
 - Add new pages (JPG, PNG, WEBP) at any position
