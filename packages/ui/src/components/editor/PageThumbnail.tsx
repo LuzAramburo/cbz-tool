@@ -4,6 +4,7 @@ import ArrowLeftIcon from '../icons/ArrowLeftIcon.tsx';
 import ArrowRightIcon from '../icons/ArrowRightIcon.tsx';
 import SwitchArrowsIcon from '../icons/SwitchIcon.tsx';
 import TrashIcon from '../icons/TrashIcon.tsx';
+import ZoomInIcon from '../icons/ZoomInIcon.tsx';
 import { getPageThumbnailUrl } from '../../clients/booksClient';
 
 type Props = {
@@ -14,6 +15,7 @@ type Props = {
   setPendingIndex: (index: number | null) => void;
   handleMove: (index: number, toIndex: number) => Promise<void>;
   openMoveTo: (index: number) => void;
+  onZoom: (index: number) => void;
   selected?: boolean;
   onToggleSelect?: (index: number) => void;
 };
@@ -26,6 +28,7 @@ export default function PageThumbnail({
   handleMove,
   openMoveTo,
   setPendingIndex,
+  onZoom,
   selected,
   onToggleSelect,
 }: Props) {
@@ -92,6 +95,13 @@ export default function PageThumbnail({
               title="Move to position"
             >
               <SwitchArrowsIcon />
+            </button>
+            <button
+              onClick={() => onZoom(page.index)}
+              className="cursor-pointer text-white hover:text-cyan-300 hover:bg-black/50 rounded-sm transition-colors"
+              title="View full size"
+            >
+              <ZoomInIcon />
             </button>
             <button
               onClick={() => setPendingIndex(page.index)}

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { UploadResponse } from '../../types/cbz';
 import PageThumbnail from './PageThumbnail.tsx';
 import Modal from '../modals/Modal.tsx';
+import ZoomModal from '../modals/ZoomModal.tsx';
 
 interface PageGridProps {
   book: UploadResponse;
@@ -17,6 +18,7 @@ export default function PageGrid({ book, onRemovePage, onMovePage, onRemovePages
   const [moveToSource, setMoveToSource] = useState<number | null>(null);
   const [moveToValue, setMoveToValue] = useState('');
 
+  const [zoomIndex, setZoomIndex] = useState<number | null>(null);
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
   const [confirmBulkOpen, setConfirmBulkOpen] = useState(false);
@@ -120,6 +122,7 @@ export default function PageGrid({ book, onRemovePage, onMovePage, onRemovePages
             setPendingIndex={setPendingIndex}
             handleMove={handleMove}
             openMoveTo={openMoveTo}
+            onZoom={setZoomIndex}
             selected={selectMode ? selectedIndices.includes(page.index) : undefined}
             onToggleSelect={selectMode ? toggleSelect : undefined}
           />
@@ -165,6 +168,16 @@ export default function PageGrid({ book, onRemovePage, onMovePage, onRemovePages
         >
           <p className="text-sm text-gray-500 dark:text-gray-400">This action can't be undone.</p>
         </Modal>
+      )}
+
+      {zoomIndex !== null && (
+        <ZoomModal
+          bookId={book.bookId}
+          bookTitle={book.metadata?.['title'] || book.metadata?.['series'] || ''}
+          pages={book.pages}
+          initialIndex={zoomIndex}
+          onClose={() => setZoomIndex(null)}
+        />
       )}
 
       {confirmBulkOpen && (
