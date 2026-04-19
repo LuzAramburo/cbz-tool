@@ -10,7 +10,7 @@ Available as a desktop app (Electron), a self-hosted web app (Docker), or a loca
 - Upload one or more CBZ files at once via file picker or drag and drop
 - Browse and reopen books from a persistent library, sorted by title
 - Bulk delete books from the library
-- View all pages as a responsive image grid
+- View all pages as a responsive image grid with fast-loading thumbnails
 - Reorder pages by moving them to any position
 - Delete individual pages or bulk-delete multiple pages at once
 - Add new pages (JPG, PNG, WEBP) at any position

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Server-side thumbnail generation for the page grid and library covers — images are resized to 300 px wide JPEG and cached on disk, significantly reducing load times for large CBZ files
+
+### Fixed
+- Server crash on Windows when deleting a page while a thumbnail was being generated for it (EBUSY file lock); the store now retries the file removal automatically
+
 ## [1.2.1] - 2026-04-17
 
 ### Added
