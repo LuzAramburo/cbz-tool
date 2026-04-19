@@ -4,7 +4,7 @@ import ArrowLeftIcon from '../icons/ArrowLeftIcon.tsx';
 import ArrowRightIcon from '../icons/ArrowRightIcon.tsx';
 import SwitchArrowsIcon from '../icons/SwitchIcon.tsx';
 import TrashIcon from '../icons/TrashIcon.tsx';
-import { getPageImageUrl } from '../../clients/booksClient';
+import { getPageThumbnailUrl } from '../../clients/booksClient';
 
 type Props = {
   page: PageInfo;
@@ -36,7 +36,7 @@ export default function PageThumbnail({
         onClick={onToggleSelect ? () => onToggleSelect(page.index) : undefined}
       >
         <img
-          src={getPageImageUrl(bookId, page.index, page.filename)}
+          src={getPageThumbnailUrl(bookId, page.index, page.filename)}
           alt={page.filename}
           className={`w-full rounded-lg object-cover shadow transition-opacity ${selected ? 'opacity-70' : ''}`}
           loading="lazy"
