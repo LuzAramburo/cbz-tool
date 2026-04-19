@@ -17,14 +17,16 @@
     "fast-xml-parser": "5.5.7",
     "jszip": "^3.10.1",
     "multer": "^2.1.1",
+    "sharp": "^0.34.5",
     "yauzl": "^3.2.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/jszip": "^3.4.0",
     "@types/multer": "^2.1.0",
-    "@types/yauzl": "^2.10.3",
     "@types/node": "^25.4.0",
+    "@types/sharp": "^0.31.1",
+    "@types/yauzl": "^2.10.3",
     "@vitest/coverage-v8": "^4.0.18",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
