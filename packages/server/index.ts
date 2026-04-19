@@ -8,7 +8,7 @@ export { initStore } from './services/cbzStore.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-export function start(port = 3000): Server {
+export function start(listen: number | string = 3000): Server {
   const app = express();
   app.use(express.json());
 
@@ -27,7 +27,8 @@ export function start(port = 3000): Server {
     });
   }
 
-  return app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
+  return app.listen(listen, () => {
+    const addr = typeof listen === 'number' ? `http://localhost:${listen}` : listen;
+    console.log(`Server running on ${addr}`);
   });
 }

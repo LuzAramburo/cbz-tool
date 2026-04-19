@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/api': 'http://localhost:3000', // forward API calls to Express
+      '/api': `http://localhost:${process.env['PORT'] ?? '3000'}`, // forward API calls to Express
     },
   },
   build: {

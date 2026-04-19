@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Server-side thumbnail generation for the page grid and library covers — images are resized to 300 px wide JPEG and cached on disk, significantly reducing load times for large CBZ files
+- Electron production builds no longer occupy any TCP port — Express now listens on a named pipe (Windows) or Unix socket (Mac/Linux) and the renderer uses a custom `cbz://` protocol; dev mode remains on TCP and is configurable via a `PORT` environment variable
+
+### Changed
+- `start()` in `packages/server` now accepts a string path (named pipe / Unix socket) in addition to a port number, enabling port-free operation in Electron
 
 ### Fixed
 - Server crash on Windows when deleting a page while a thumbnail was being generated for it (EBUSY file lock); the store now retries the file removal automatically
