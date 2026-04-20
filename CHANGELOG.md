@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `start()` in `packages/server` now accepts a string path (named pipe / Unix socket) in addition to a port number, enabling port-free operation in Electron
 
 ### Fixed
-- Server crash on Windows when deleting a page while a thumbnail was being generated for it (EBUSY file lock); the store now retries the file removal automatically
+- Server crash on Windows when deleting a page while a thumbnail was being generated for it (EBUSY file lock); thumbnail generation now reads the file into memory before processing so the file handle is released before sharp begins work
 
 ## [1.2.1] - 2026-04-17
 
