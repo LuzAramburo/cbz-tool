@@ -12,7 +12,7 @@ Available as a desktop app (Electron), a self-hosted web app (Docker), or a loca
 - Bulk delete books from the library
 - View all pages as a responsive image grid with fast-loading thumbnails
 - Zoom into any page at full resolution with a keyboard-navigable image viewer
-- Reorder pages by moving them to any position
+- Reorder pages by drag-and-drop (activate reorder mode, then drag any page to its new position) or by moving them to any position
 - Delete individual pages or bulk-delete multiple pages at once
 - Add new pages (JPG, PNG, WEBP) at any position
 - Edit embedded ComicInfo.xml metadata — add, edit, or remove individual fields
