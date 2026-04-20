@@ -4,10 +4,8 @@ import {
   DndContext,
   closestCenter,
   type DragEndEvent,
-  type DraggableAttributes,
-  type SyntheticListenerMap,
 } from '@dnd-kit/core';
-import { SortableContext, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { SortableContext, rectSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { UploadResponse, PageInfo } from '../../types/cbz';
 import PageThumbnail from './PageThumbnail.tsx';
@@ -54,8 +52,8 @@ function SortableThumbnail({ page, dragMode, ...rest }: SortableThumbnailProps) 
         {...rest}
         page={page}
         dragMode={dragMode}
-        dragListeners={dragMode ? (listeners as SyntheticListenerMap) : undefined}
-        dragAttributes={dragMode ? (attributes as DraggableAttributes) : undefined}
+        dragListeners={dragMode ? listeners : undefined}
+        dragAttributes={dragMode ? attributes : undefined}
         isDragging={isDragging}
       />
     </div>
@@ -68,6 +66,9 @@ export default function PageGrid({ book, onRemovePage, onMovePage, onRemovePages
   const [movingIndex, setMovingIndex] = useState<number | null>(null);
   const [moveToSource, setMoveToSource] = useState<number | null>(null);
   const [moveToValue, setMoveToValue] = useState('');
+
+  const [optimisticPages, setOptimisticPages] = useState<typeof book.pages | null>(null);
+  const displayedPages = optimisticPages ?? book.pages;
 
   const [zoomIndex, setZoomIndex] = useState<number | null>(null);
   const [dragMode, setDragMode] = useState(false);
@@ -135,9 +136,9 @@ export default function PageGrid({ book, onRemovePage, onMovePage, onRemovePages
     if (!over || active.id === over.id) return;
     const fromIndex = book.pages.findIndex((p) => p.filename === active.id);
     const toIndex = book.pages.findIndex((p) => p.filename === over.id);
-    if (fromIndex !== -1 && toIndex !== -1) {
-      handleMove(fromIndex, toIndex);
-    }
+    if (fromIndex === -1 || toIndex === -1) return;
+    setOptimisticPages(arrayMove(book.pages, fromIndex, toIndex));
+    handleMove(fromIndex, toIndex).finally(() => setOptimisticPages(null));
   }
 
   const parsedTarget = parseInt(moveToValue, 10);
@@ -187,9 +188,9 @@ export default function PageGrid({ book, onRemovePage, onMovePage, onRemovePages
       )}
 
       <DndContext onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
-        <SortableContext items={book.pages.map((p) => p.filename)} strategy={rectSortingStrategy}>
+        <SortableContext items={displayedPages.map((p) => p.filename)} strategy={rectSortingStrategy}>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {book.pages.map((page) => (
+            {displayedPages.map((page) => (
               <SortableThumbnail
                 key={page.filename}
                 page={page}

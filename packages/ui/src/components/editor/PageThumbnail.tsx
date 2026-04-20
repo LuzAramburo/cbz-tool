@@ -1,5 +1,8 @@
-import type { DraggableAttributes, SyntheticListenerMap } from '@dnd-kit/core';
+import type { useSortable } from '@dnd-kit/sortable';
 import LoadingIcon from '../icons/LoadingIcon.tsx';
+
+type DragListeners = ReturnType<typeof useSortable>['listeners'];
+type DragAttributes = ReturnType<typeof useSortable>['attributes'];
 import { PageInfo } from '../../types/cbz.ts';
 import ArrowLeftIcon from '../icons/ArrowLeftIcon.tsx';
 import ArrowRightIcon from '../icons/ArrowRightIcon.tsx';
@@ -21,8 +24,8 @@ type Props = {
   selected?: boolean;
   onToggleSelect?: (index: number) => void;
   dragMode?: boolean;
-  dragListeners?: SyntheticListenerMap;
-  dragAttributes?: DraggableAttributes;
+  dragListeners?: DragListeners;
+  dragAttributes?: DragAttributes;
   isDragging?: boolean;
 };
 
@@ -47,8 +50,10 @@ export default function PageThumbnail({
   return (
     <div className="flex flex-col gap-1">
       <div
-        className={`relative group ${onToggleSelect ? 'cursor-pointer' : ''} ${dragMode ? 'cursor-grab active:cursor-grabbing' : ''}`}
+        className={`relative group ${onToggleSelect ? 'cursor-pointer' : ''} ${dragMode ? 'cursor-grab active:cursor-grabbing touch-none' : ''}`}
         onClick={onToggleSelect ? () => onToggleSelect(page.index) : undefined}
+        {...(dragMode ? dragListeners : undefined)}
+        {...(dragMode ? dragAttributes : undefined)}
       >
         <img
           src={getPageThumbnailUrl(bookId, page.index, page.filename)}
@@ -78,12 +83,7 @@ export default function PageThumbnail({
           </div>
         )}
         {dragMode && (
-          <div
-            {...dragListeners}
-            {...dragAttributes}
-            className="absolute top-1.5 left-1.5 w-6 h-6 rounded flex items-center justify-center bg-black/60 text-white/80 hover:bg-black/80 hover:text-white transition-colors cursor-grab active:cursor-grabbing"
-            title="Drag to reorder"
-          >
+          <div className="absolute top-1.5 left-1.5 w-6 h-6 rounded flex items-center justify-center bg-black/60 text-white/80 pointer-events-none">
             <GripIcon size="sm" />
           </div>
         )}
