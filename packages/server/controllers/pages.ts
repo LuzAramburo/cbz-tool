@@ -8,6 +8,7 @@ import {
   movePage,
   getPagePath,
 } from '../services/cbzStore.js';
+import { getOrCreateThumbnail, deleteThumbnail } from '../services/thumbnailService.js';
 import type { PageData } from '../types/cbz.js';
 
 export async function getPage(req: Request, res: Response): Promise<void> {
@@ -26,8 +27,27 @@ export async function getPage(req: Request, res: Response): Promise<void> {
     return;
   }
 
+  res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
   res.setHeader('Content-Type', page.mimeType);
   res.sendFile(getPagePath(bookId, page.filename));
+}
+
+export async function getPageThumbnail(req: Request, res: Response): Promise<void> {
+  const bookId = req.params['bookId'] as string;
+  const book = await getBook(bookId);
+  if (!book) { res.status(404).json({ error: 'Book not found' }); return; }
+  const index = parseInt(req.params['index'] as string, 10);
+  const page = book.pages[index];
+  if (!page) { res.status(404).json({ error: 'Page not found' }); return; }
+  try {
+    const thumbPath = await getOrCreateThumbnail(bookId, page.filename);
+    res.setHeader('Content-Type', 'image/jpeg');
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    res.sendFile(thumbPath);
+  } catch (err) {
+    console.error(`[thumbnail] ${bookId}/${page.filename}:`, err);
+    res.status(500).json({ error: 'Failed to generate thumbnail' });
+  }
 }
 
 export async function addPagesToBook(req: Request, res: Response): Promise<void> {
@@ -124,11 +144,18 @@ export async function deleteBookPages(req: Request, res: Response): Promise<void
     }
   }
 
-  const updated = (await removePages(bookId, indices as number[]))!;
-  res.json({
-    pageCount: updated.pages.length,
-    pages: updated.pages.map(({ index: i, filename }) => ({ index: i, filename })),
-  });
+  try {
+    const filenames = (indices as number[]).map((i) => book.pages[i]!.filename);
+    const updated = (await removePages(bookId, indices as number[]))!;
+    await Promise.all(filenames.map((fn) => deleteThumbnail(bookId, fn)));
+    res.json({
+      pageCount: updated.pages.length,
+      pages: updated.pages.map(({ index: i, filename }) => ({ index: i, filename })),
+    });
+  } catch (err) {
+    console.error('[deleteBookPages]', err);
+    res.status(500).json({ error: 'Failed to delete pages' });
+  }
 }
 
 export async function deleteBookPage(req: Request, res: Response): Promise<void> {
@@ -147,9 +174,16 @@ export async function deleteBookPage(req: Request, res: Response): Promise<void>
     return;
   }
 
-  const updated = (await removePage(bookId, index))!;
-  res.json({
-    pageCount: updated.pages.length,
-    pages: updated.pages.map(({ index: i, filename }) => ({ index: i, filename })),
-  });
+  try {
+    const filename = book.pages[index]!.filename;
+    const updated = (await removePage(bookId, index))!;
+    await deleteThumbnail(bookId, filename);
+    res.json({
+      pageCount: updated.pages.length,
+      pages: updated.pages.map(({ index: i, filename }) => ({ index: i, filename })),
+    });
+  } catch (err) {
+    console.error('[deleteBookPage]', err);
+    res.status(500).json({ error: 'Failed to delete page' });
+  }
 }

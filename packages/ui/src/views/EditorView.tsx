@@ -164,7 +164,13 @@ export default function EditorView() {
                 saving={saving}
               />
             )}
-            <PageGrid book={book} onRemovePage={removePage} onMovePage={movePage} onRemovePages={removePages} />
+            {pendingMetadata && <hr className="border-gray-200 dark:border-gray-700 my-4" />}
+            <PageGrid
+              book={book}
+              onRemovePage={removePage}
+              onMovePage={movePage}
+              onRemovePages={removePages}
+            />
           </div>
         )}
       </main>

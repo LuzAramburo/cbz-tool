@@ -42,11 +42,32 @@ export function getPagePath(bookId: string, filename: string): string {
   return path.join(dataDir, bookId, 'pages', filename);
 }
 
+export function getThumbnailPath(bookId: string, filename: string): string {
+  return path.join(dataDir, bookId, 'thumbnails', `${filename}.jpg`);
+}
+
+export async function ensureThumbnailsDir(bookId: string): Promise<void> {
+  await fsp.mkdir(path.join(dataDir, bookId, 'thumbnails'), { recursive: true });
+}
+
 async function writeManifest(book: Book): Promise<void> {
   const target = manifestPath(book.bookId);
   const tmp = target + '.tmp';
   await fsp.writeFile(tmp, JSON.stringify(book, null, 2));
   await fsp.rename(tmp, target);
+}
+
+async function rmRetry(filePath: string, retries = 5, delayMs = 100): Promise<void> {
+  for (let i = 0; i < retries; i++) {
+    try {
+      await fsp.rm(filePath, { force: true });
+      return;
+    } catch (err: unknown) {
+      const code = (err as NodeJS.ErrnoException).code;
+      if (code !== 'EBUSY' || i === retries - 1) throw err;
+      await new Promise((r) => setTimeout(r, delayMs));
+    }
+  }
 }
 
 function reindex(pages: PageEntry[]): void {
@@ -108,13 +129,15 @@ export async function removePage(bookId: string, index: number): Promise<Book | 
   if (!book) return undefined;
 
   const [removed] = book.pages.splice(index, 1);
-  if (removed) {
-    const filePath = getPagePath(bookId, removed.filename);
-    await fsp.rm(filePath, { force: true });
-  }
-
   reindex(book.pages);
   await writeManifest(book);
+
+  if (removed) {
+    rmRetry(getPagePath(bookId, removed.filename)).catch((err) =>
+      console.error('[removePage] file delete failed:', err)
+    );
+  }
+
   return book;
 }
 
@@ -123,15 +146,21 @@ export async function removePages(bookId: string, indices: number[]): Promise<Bo
   if (!book) return undefined;
 
   const sorted = [...indices].sort((a, b) => b - a);
+  const removed: PageEntry[] = [];
   for (const index of sorted) {
-    const [removed] = book.pages.splice(index, 1);
-    if (removed) {
-      await fsp.rm(getPagePath(bookId, removed.filename), { force: true });
-    }
+    const [page] = book.pages.splice(index, 1);
+    if (page) removed.push(page);
   }
 
   reindex(book.pages);
   await writeManifest(book);
+
+  for (const page of removed) {
+    rmRetry(getPagePath(bookId, page.filename)).catch((err) =>
+      console.error('[removePages] file delete failed:', err)
+    );
+  }
+
   return book;
 }
 

@@ -36,7 +36,7 @@ COPY package.json .
 COPY package-lock.json .
 COPY packages/server/package.json ./packages/server/package.json
 
-RUN npm ci --workspace=packages/server --omit=dev --ignore-scripts
+RUN npm ci --workspace=packages/server --omit=dev
 
 COPY --from=server-builder /app/packages/server/dist ./packages/server/dist
 COPY --from=server-builder /app/packages/server/public ./packages/server/public

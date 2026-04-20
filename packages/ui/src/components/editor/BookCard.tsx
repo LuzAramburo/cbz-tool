@@ -1,5 +1,5 @@
 import type { BookSummary } from '../../types/cbz';
-import { getPageImageUrl } from '../../clients/booksClient';
+import { getPageThumbnailUrl } from '../../clients/booksClient';
 import TrashIcon from '../icons/TrashIcon';
 
 interface BookCardProps {
@@ -25,7 +25,7 @@ export default function BookCard({ book, onSelect, onDelete, compact, selected, 
       >
         <div className={`w-20 shrink-0 bg-gray-200 dark:bg-gray-800 relative${compact ? '' : ' h-28'}`}>
           <img
-            src={getPageImageUrl(book.bookId, book.coverPageIndex, book.coverFilename)}
+            src={getPageThumbnailUrl(book.bookId, book.coverPageIndex, book.coverFilename)}
             alt={`Cover of ${title}`}
             className="absolute inset-0 w-full h-full object-cover"
           />

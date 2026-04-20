@@ -5,7 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.3.0] - 2026-04-19
+
+### Added
+- Full-size page viewer: click the zoom icon on any thumbnail to open an image lightbox with prev/next navigation and keyboard arrow key support
+- Drag-and-drop page reordering: activate "Reorder pages" mode and drag thumbnails to rearrange them; moves are applied optimistically for instant feedback
+- Server-side thumbnail generation for the page grid and library covers — images are resized to 300 px wide JPEG and cached on disk, significantly reducing load times for large CBZ files
+- Electron production builds no longer occupy any TCP port — Express now listens on a named pipe (Windows) or Unix socket (Mac/Linux) and the renderer uses a custom `cbz://` protocol; dev mode remains on TCP and is configurable via a `PORT` environment variable
+
+### Changed
+- `start()` in `packages/server` now accepts a string path (named pipe / Unix socket) in addition to a port number, enabling port-free operation in Electron
+
+### Fixed
+- Server crash on Windows when deleting a page while a thumbnail was being generated for it (EBUSY file lock); thumbnail generation now reads the file into memory before processing so the file handle is released before sharp begins work
 
 ## [1.2.1] - 2026-04-17
 

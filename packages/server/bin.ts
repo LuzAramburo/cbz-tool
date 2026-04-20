@@ -10,4 +10,5 @@ const { initStore } = await import('./services/cbzStore.js');
 initStore(dataDir);
 
 const { start } = await import('./index.js');
-start();
+const port = parseInt(process.env['PORT'] ?? '3000', 10);
+start(port);

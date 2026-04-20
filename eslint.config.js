@@ -11,9 +11,9 @@ export default [
   // TypeScript rules for ui
   ...tseslint.configs.recommended,
 
-  // Node globals for desktop (Electron main process)
+  // Node globals for desktop (Electron main process) and Vite config
   {
-    files: ['packages/desktop/**/*.{js,ts}'],
+    files: ['packages/desktop/**/*.{js,ts}', 'packages/ui/vite.config.{js,ts}'],
     languageOptions: {
       globals: {
         ...globals.node,

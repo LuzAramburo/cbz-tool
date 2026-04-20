@@ -47,6 +47,7 @@ packages/
 ```
 
 ### Key architectural rules
+- **No `src/` in server** — TypeScript source files live directly under `packages/server/` (`services/`, `controllers/`, `routes/`, `types/`), not in a `src/` subdirectory.
 - **No business logic in `desktop/`** — it only imports `start()` from `@cbz-tool/server`, creates a `BrowserWindow`, and points it at either Vite (dev) or Express (prod).
 - **`server/public/`** is a build artifact (git-ignored) — Vite builds into it. The server serves it in production via `join(__dirname, '..', 'public')` (one level up from `dist/`).
 - **`server/dist/`** is also git-ignored — TypeScript compiles here. The server `"main"` points to `dist/index.js`.
@@ -64,7 +65,8 @@ packages/
   - `POST /upload` — multer `array('files')` → parse each CBZ → `BulkUploadResponse { succeeded: UploadResponse[], failed: { filename, error }[] }`; UI opens book only if exactly 1 succeeded
   - `POST /merge` — body `{ bookIds: string[], metadata? }` → merge books in order → `UploadResponse`; must be declared BEFORE `GET /:bookId` (else "merge" is captured as a bookId param)
   - `GET /:bookId` — single book details → `UploadResponse`
-  - `GET /:bookId/page/:index` — serve page image via `sendFile` from disk
+  - `GET /:bookId/page/:index` — serve full-size page image via `sendFile`; sets `Cache-Control: immutable`
+  - `GET /:bookId/page/:index/thumbnail` — serve 300 px wide JPEG thumbnail; generated on first request and cached to `{DATA_DIR}/{bookId}/thumbnails/`
   - `POST /:bookId/pages` — multer `array('files')`, body `insertAt` → add pages → `{ pageCount, pages }`
   - `PATCH /:bookId/page/:index` — body `{ toIndex }` → move page → `{ pageCount, pages }`
   - `DELETE /:bookId/page/:index` — remove page → `{ pageCount, pages }`
@@ -74,7 +76,8 @@ packages/
   - `GET /:bookId/download` — rebuild ZIP with JSZip, re-embed `ComicInfo.xml`; filename: `Series #N - Title.cbz`
   - `DELETE /:bookId` — delete book from disk and cache → 204
 - `controllers/books.ts` — handlers for book-level operations: `getBooks`, `uploadBooks`, `mergeBook`, `bulkDeleteBooks`, `getBookById`, `downloadBook`, `deleteBookById`
-- `controllers/pages.ts` — handlers for page operations: `getPage`, `addPagesToBook`, `moveBookPage`, `deleteBookPage`
+- `controllers/pages.ts` — handlers for page operations: `getPage`, `getPageThumbnail`, `addPagesToBook`, `moveBookPage`, `deleteBookPage`, `deleteBookPages`
+- `services/thumbnailService.ts` — `getOrCreateThumbnail` (lazy resize via sharp, disk-cached) and `deleteThumbnail`; thumbnails stored at `{DATA_DIR}/{bookId}/thumbnails/{filename}.jpg`
 - `controllers/metadata.ts` — handlers for metadata operations: `patchMetadata`, `setMetadataKey`, `deleteMetadataKey`
 - `services/cbzParser.ts` — Core logic: reads a ZIP buffer with yauzl, filters images (jpg/png/webp), natural-sorts pages, parses `ComicInfo.xml` with fast-xml-parser. `getMime`, `isImageEntry`, and `parseMetadata` are exported for unit testing.
 - `services/cbzStore.ts` — Persistent store backed by disk (`DATA_DIR`) with an in-memory `Map<bookId, Book>` cache. `initStore(dir)` creates the data directory and loads existing manifests on startup. Pages are stored as individual files on disk; `getPagePath(bookId, filename)` resolves the full path for `sendFile`. `addPages` splices entries at `insertAt` and resolves filename collisions via `uniqueFilename`; `movePage` splices the page out and re-inserts at `toIndex`; `updateMetadata`/`setMetadataProperty`/`removeMetadataProperty` mutate metadata; all page `index` fields are rewritten after every mutation. Every mutation writes an updated `manifest.json` to disk.
@@ -82,7 +85,7 @@ packages/
 ### Data flow
 1. On startup, `initStore(DATA_DIR)` scans for existing books (directories with `manifest.json`) and populates the in-memory cache
 2. UI uploads a `.cbz` file via `POST /api/books/upload` → server extracts ZIP → writes pages to disk + caches `Book` → returns page manifest
-3. UI renders `<img src="/api/books/:bookId/page/:index">` — server resolves the page file path via `getPagePath` and serves it with `res.sendFile`
+3. UI renders page thumbnails via `GET /api/books/:bookId/page/:index/thumbnail` (300 px JPEG, cached on disk); the full-size endpoint is used only for the download flow
 4. UI can also browse the library (`GET /api/books`) and open an existing book (`GET /api/books/:bookId`) without re-uploading
 
 ### UI internals (`packages/ui/src/`)
@@ -113,10 +116,12 @@ packages/
 - Uses **Vitest** with `pool: 'forks'` (required for NodeNext ESM)
 - `tests/helpers/makeZip.ts` — creates real in-memory ZIP buffers via jszip for `parseCbz` tests
 - No mocking of yauzl — tests use real ZIP buffers to catch actual parsing failures
+- `FAKE_JPEG` / `FAKE_PNG` in `makeZip.ts` are magic-byte stubs only — sharp cannot decode them. For image-processing tests generate a real buffer: `sharp({ create: { width: 10, height: 10, channels: 3, background: … } }).jpeg().toBuffer()`
+- Use `vi.spyOn(fsp, 'rm')` to simulate OS-level errors (EBUSY, ENOENT) that can't be reproduced with real files in tests
 
 ### Deployment targets
 - **Electron**: `npm run dev` / `npm run package` → NSIS installer in `packages/desktop/release/`
-- **Docker**: self-hosters just run `docker compose up` — the multi-stage `Dockerfile` builds the UI and server internally with no local build step required. Publishing is automated: pushing a `v*.*.*` tag triggers the `docker-publish` GitHub Actions workflow, which builds and pushes both the versioned tag and `latest` to Docker Hub.
+- **Docker**: self-hosters just run `docker compose up`; **local Docker testing**: `docker-compose.yml` uses `image:` with no `build:` key, so `docker compose up --build` pulls from Docker Hub and ignores local changes. To test the Dockerfile locally: `docker build -t cbz-tool-local . && docker run -p 3000:3000 -e DATA_DIR=/app/data cbz-tool-local` — the multi-stage `Dockerfile` builds the UI and server internally with no local build step required. Publishing is automated: pushing a `v*.*.*` tag triggers the `docker-publish` GitHub Actions workflow, which builds and pushes both the versioned tag and `latest` to Docker Hub.
 - Code signing is disabled for local builds (`CSC_IDENTITY_AUTO_DISCOVERY=false`)
 - **Releasing**: follow `RELEASING.md` — update `CHANGELOG.md`, bump version in all three `package.json` files, build Docker, package Electron, commit, tag, push.
 
@@ -127,4 +132,5 @@ packages/
 - **Two server entry points**: `npm run dev:web` goes through `packages/server/bin.ts`; `npm run dev` (Electron) goes through `packages/desktop/index.js`. Any env/startup logic (e.g. dotenv) must be in **both**.
 - **Vite/Express startup race**: In `dev:web`, Vite opens the browser before Express is ready. UI fetches to `/api/*` on mount will get `ECONNREFUSED` and should include retry logic rather than failing silently once.
 - **Electron version bumps**: `packages/desktop/package.json` has the version in **two** places — `devDependencies.electron` and `build.electronVersion`. Both must be updated together.
+- **Windows EBUSY on file delete**: `fsp.rm({ force: true })` suppresses `ENOENT` but not `EBUSY`. On Windows, an open file handle (e.g. sharp reading a page for thumbnail generation) causes `EBUSY` when a concurrent delete fires. Use a retry loop — see `rmRetry` in `cbzStore.ts`.
 - **`BookMetadata` type vs component name clash**: `types/cbz` exports a `BookMetadata` type and `components/editor/BookMetadata.tsx` is a component of the same name. Importing both in the same file causes `TS2300`. Fix: alias the component — `import BookMetadataPanel from '../components/editor/BookMetadata'`.

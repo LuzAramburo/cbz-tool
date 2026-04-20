@@ -16,6 +16,10 @@ export function getPageImageUrl(bookId: string, pageIndex: number, filename: str
   return `/api/books/${bookId}/page/${pageIndex}?v=${encodeURIComponent(filename)}`;
 }
 
+export function getPageThumbnailUrl(bookId: string, pageIndex: number, filename: string): string {
+  return `/api/books/${bookId}/page/${pageIndex}/thumbnail?v=${encodeURIComponent(filename)}`;
+}
+
 export async function listBooks(): Promise<BookSummary[]> {
   return apiFetch<BookSummary[]>('/api/books');
 }
