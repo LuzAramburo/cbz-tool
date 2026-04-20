@@ -1,5 +1,15 @@
 import { useState } from 'react';
-import type { UploadResponse } from '../../types/cbz';
+import type React from 'react';
+import {
+  DndContext,
+  closestCenter,
+  type DragEndEvent,
+  type DraggableAttributes,
+  type SyntheticListenerMap,
+} from '@dnd-kit/core';
+import { SortableContext, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import type { UploadResponse, PageInfo } from '../../types/cbz';
 import PageThumbnail from './PageThumbnail.tsx';
 import Modal from '../modals/Modal.tsx';
 import ZoomModal from '../modals/ZoomModal.tsx';
@@ -11,6 +21,47 @@ interface PageGridProps {
   onRemovePages?: (indices: number[]) => Promise<void>;
 }
 
+interface SortableThumbnailProps {
+  page: PageInfo;
+  bookId: string;
+  bookPageCount: number;
+  movingIndex: number | null;
+  setPendingIndex: (index: number | null) => void;
+  handleMove: (index: number, toIndex: number) => Promise<void>;
+  openMoveTo: (index: number) => void;
+  onZoom: (index: number) => void;
+  dragMode: boolean;
+  selected?: boolean;
+  onToggleSelect?: (index: number) => void;
+}
+
+function SortableThumbnail({ page, dragMode, ...rest }: SortableThumbnailProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: page.filename,
+    disabled: !dragMode,
+  });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : undefined,
+    position: isDragging ? 'relative' : undefined,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      <PageThumbnail
+        {...rest}
+        page={page}
+        dragMode={dragMode}
+        dragListeners={dragMode ? (listeners as SyntheticListenerMap) : undefined}
+        dragAttributes={dragMode ? (attributes as DraggableAttributes) : undefined}
+        isDragging={isDragging}
+      />
+    </div>
+  );
+}
+
 export default function PageGrid({ book, onRemovePage, onMovePage, onRemovePages }: PageGridProps) {
   const [pendingIndex, setPendingIndex] = useState<number | null>(null);
   const [removing, setRemoving] = useState(false);
@@ -19,6 +70,7 @@ export default function PageGrid({ book, onRemovePage, onMovePage, onRemovePages
   const [moveToValue, setMoveToValue] = useState('');
 
   const [zoomIndex, setZoomIndex] = useState<number | null>(null);
+  const [dragMode, setDragMode] = useState(false);
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
   const [confirmBulkOpen, setConfirmBulkOpen] = useState(false);
@@ -50,8 +102,15 @@ export default function PageGrid({ book, onRemovePage, onMovePage, onRemovePages
     setMovingIndex(null);
   }
 
+  function toggleDragMode() {
+    setDragMode((v) => !v);
+    setSelectMode(false);
+    setSelectedIndices([]);
+  }
+
   function toggleSelectMode() {
     setSelectMode((v) => !v);
+    setDragMode(false);
     setSelectedIndices([]);
   }
 
@@ -69,6 +128,16 @@ export default function PageGrid({ book, onRemovePage, onMovePage, onRemovePages
     setConfirmBulkOpen(false);
     setSelectedIndices([]);
     setSelectMode(false);
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const fromIndex = book.pages.findIndex((p) => p.filename === active.id);
+    const toIndex = book.pages.findIndex((p) => p.filename === over.id);
+    if (fromIndex !== -1 && toIndex !== -1) {
+      handleMove(fromIndex, toIndex);
+    }
   }
 
   const parsedTarget = parseInt(moveToValue, 10);
@@ -103,6 +172,12 @@ export default function PageGrid({ book, onRemovePage, onMovePage, onRemovePages
             </button>
           )}
           <button
+            onClick={toggleDragMode}
+            className={`btn btn-md ${dragMode ? 'btn-outline-blue-active' : 'btn-outline-blue'}`}
+          >
+            {dragMode ? 'Done reordering' : 'Reorder pages'}
+          </button>
+          <button
             onClick={toggleSelectMode}
             className={`btn btn-md ${selectMode ? 'btn-outline-red-active' : 'btn-outline-red'}`}
           >
@@ -111,23 +186,28 @@ export default function PageGrid({ book, onRemovePage, onMovePage, onRemovePages
         </div>
       )}
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        {book.pages.map((page) => (
-          <PageThumbnail
-            key={page.filename}
-            page={page}
-            bookId={book.bookId}
-            bookPageCount={book.pageCount}
-            movingIndex={movingIndex}
-            setPendingIndex={setPendingIndex}
-            handleMove={handleMove}
-            openMoveTo={openMoveTo}
-            onZoom={setZoomIndex}
-            selected={selectMode ? selectedIndices.includes(page.index) : undefined}
-            onToggleSelect={selectMode ? toggleSelect : undefined}
-          />
-        ))}
-      </div>
+      <DndContext onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
+        <SortableContext items={book.pages.map((p) => p.filename)} strategy={rectSortingStrategy}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {book.pages.map((page) => (
+              <SortableThumbnail
+                key={page.filename}
+                page={page}
+                bookId={book.bookId}
+                bookPageCount={book.pageCount}
+                movingIndex={movingIndex}
+                setPendingIndex={setPendingIndex}
+                handleMove={handleMove}
+                openMoveTo={openMoveTo}
+                onZoom={setZoomIndex}
+                dragMode={dragMode}
+                selected={selectMode ? selectedIndices.includes(page.index) : undefined}
+                onToggleSelect={selectMode ? toggleSelect : undefined}
+              />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
 
       {moveToSource !== null && (
         <Modal
@@ -173,7 +253,7 @@ export default function PageGrid({ book, onRemovePage, onMovePage, onRemovePages
       {zoomIndex !== null && (
         <ZoomModal
           bookId={book.bookId}
-          bookTitle={book.metadata?.['title'] || book.metadata?.['series'] || ''}
+          bookTitle={book.metadata?.['Title'] || book.metadata?.['Series'] || ''}
           pages={book.pages}
           initialIndex={zoomIndex}
           onClose={() => setZoomIndex(null)}

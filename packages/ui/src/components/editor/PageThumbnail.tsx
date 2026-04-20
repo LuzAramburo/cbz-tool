@@ -1,3 +1,4 @@
+import type { DraggableAttributes, SyntheticListenerMap } from '@dnd-kit/core';
 import LoadingIcon from '../icons/LoadingIcon.tsx';
 import { PageInfo } from '../../types/cbz.ts';
 import ArrowLeftIcon from '../icons/ArrowLeftIcon.tsx';
@@ -5,6 +6,7 @@ import ArrowRightIcon from '../icons/ArrowRightIcon.tsx';
 import SwitchArrowsIcon from '../icons/SwitchIcon.tsx';
 import TrashIcon from '../icons/TrashIcon.tsx';
 import ZoomInIcon from '../icons/ZoomInIcon.tsx';
+import GripIcon from '../icons/GripIcon.tsx';
 import { getPageThumbnailUrl } from '../../clients/booksClient';
 
 type Props = {
@@ -18,6 +20,10 @@ type Props = {
   onZoom: (index: number) => void;
   selected?: boolean;
   onToggleSelect?: (index: number) => void;
+  dragMode?: boolean;
+  dragListeners?: SyntheticListenerMap;
+  dragAttributes?: DraggableAttributes;
+  isDragging?: boolean;
 };
 
 export default function PageThumbnail({
@@ -31,17 +37,23 @@ export default function PageThumbnail({
   onZoom,
   selected,
   onToggleSelect,
+  dragMode,
+  dragListeners,
+  dragAttributes,
+  isDragging,
 }: Props) {
+  const inSpecialMode = onToggleSelect || dragMode;
+
   return (
     <div className="flex flex-col gap-1">
       <div
-        className={`relative group ${onToggleSelect ? 'cursor-pointer' : ''}`}
+        className={`relative group ${onToggleSelect ? 'cursor-pointer' : ''} ${dragMode ? 'cursor-grab active:cursor-grabbing' : ''}`}
         onClick={onToggleSelect ? () => onToggleSelect(page.index) : undefined}
       >
         <img
           src={getPageThumbnailUrl(bookId, page.index, page.filename)}
           alt={page.filename}
-          className={`w-full rounded-lg object-cover shadow transition-opacity ${selected ? 'opacity-70' : ''}`}
+          className={`w-full rounded-lg object-cover shadow transition-opacity ${selected || isDragging ? 'opacity-70' : ''}`}
           loading="lazy"
         />
         {onToggleSelect && (
@@ -65,12 +77,22 @@ export default function PageThumbnail({
             )}
           </div>
         )}
+        {dragMode && (
+          <div
+            {...dragListeners}
+            {...dragAttributes}
+            className="absolute top-1.5 left-1.5 w-6 h-6 rounded flex items-center justify-center bg-black/60 text-white/80 hover:bg-black/80 hover:text-white transition-colors cursor-grab active:cursor-grabbing"
+            title="Drag to reorder"
+          >
+            <GripIcon size="sm" />
+          </div>
+        )}
         {movingIndex === page.index && (
           <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/40">
             <LoadingIcon />
           </div>
         )}
-        {!onToggleSelect && (
+        {!inSpecialMode && (
           <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-3 rounded-b-lg bg-black/50 py-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
             <button
               onClick={() => handleMove(page.index, page.index - 1)}

@@ -9,7 +9,7 @@ import { getPageImageUrl } from '../../clients/booksClient.ts';
 function ZoomImage({ src, alt }: { src: string; alt: string }) {
   const [loaded, setLoaded] = useState(false);
   return (
-    <div className="relative flex items-center justify-center min-h-[50vh]">
+    <div className="relative flex items-center justify-center min-h-[50vh] max-w-xl mx-auto">
       {!loaded && (
         <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
           <LoadingIcon />
