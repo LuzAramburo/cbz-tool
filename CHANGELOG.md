@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [1.3.1] - 2026-04-20
+
+### Fixed
+- Electron crash ("Invalid response status code 204") when deleting a book; the custom `cbz://` protocol proxy now passes a null body for 204 responses, as required by the Fetch spec
+
 ## [1.3.0] - 2026-04-19
 
 ### Added
