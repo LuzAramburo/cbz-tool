@@ -75,13 +75,15 @@ async function proxyToSocket(request) {
       (proxyRes) => {
         const chunks = [];
         proxyRes.on('data', (c) => chunks.push(c));
-        proxyRes.on('end', () =>
+        proxyRes.on('end', () => {
+          const nullBodyStatus = proxyRes.statusCode === 101 || proxyRes.statusCode === 204 || proxyRes.statusCode === 205;
           resolve(
-            new Response(Buffer.concat(chunks), {
+            new Response(nullBodyStatus ? null : Buffer.concat(chunks), {
               status: proxyRes.statusCode,
               headers: proxyRes.headers,
             }),
-          ),
+          );
+        },
         );
       },
     );
