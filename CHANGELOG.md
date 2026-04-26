@@ -13,7 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Skeleton loader for the book library while books are loading
 
 ### Changed
-- Metadata keys are now normalised to lowercase on the server for all write operations (`PATCH /metadata`, `PUT /metadata/:key`, `DELETE /metadata/:key`), consistent with the parser behaviour on upload
+- Metadata keys are now normalized to lowercase on the server for all write operations (`PATCH /metadata`, `PUT /metadata/:key`, `DELETE /metadata/:key`), consistent with the parser behavior on upload
+- Fix test on server for Page file cleanup after removal is now fire-and-forget: the server responds as soon as the manifest is updated, and the file is deleted in the background
 
 ## [1.3.1] - 2026-04-20
 

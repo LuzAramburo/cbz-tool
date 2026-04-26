@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { randomUUID } from 'crypto';
 import fs from 'fs';
 import fsp from 'fs/promises';
@@ -125,7 +125,9 @@ describe('cbzStore', () => {
       const { book, pageFiles } = makeBook({ pages: [makePage(0, 'a.jpg'), makePage(1, 'b.jpg')] });
       await saveBook(book, pageFiles);
       await removePage(book.bookId, 0);
-      expect(fs.existsSync(getPagePath(book.bookId, 'a.jpg'))).toBe(false);
+      await vi.waitFor(() => {
+        expect(fs.existsSync(getPagePath(book.bookId, 'a.jpg'))).toBe(false);
+      });
     });
 
     it('persists the change so subsequent calls see the updated state', async () => {

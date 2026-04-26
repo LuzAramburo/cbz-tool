@@ -123,7 +123,9 @@ describe('removePage EBUSY retry', () => {
     const updated = await removePage(book.bookId, 0);
 
     expect(updated?.pages).toHaveLength(0);
-    await expect(fsp.access(pagePath)).rejects.toThrow();
+    await vi.waitFor(async () => {
+      await expect(fsp.access(pagePath)).rejects.toThrow();
+    });
     expect(calls).toBeGreaterThan(1);
   });
 });
