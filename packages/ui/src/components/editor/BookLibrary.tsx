@@ -2,8 +2,20 @@ import { useState, useEffect, useRef } from 'react';
 import type { BookSummary } from '../../types/cbz';
 import { listBooks, bulkDeleteBooks } from '../../clients/booksClient';
 import BookCard from './BookCard';
-import LoadingIcon from '../icons/LoadingIcon.tsx';
 import Modal from '../modals/Modal';
+
+function BookCardSkeleton() {
+  return (
+    <div className="flex items-stretch bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-lg overflow-hidden">
+      <div className="w-20 shrink-0 h-28 bg-gray-200 dark:bg-gray-700 animate-pulse" />
+      <div className="flex flex-col justify-center px-3 py-2 min-w-0 gap-2 flex-1">
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-3/4" />
+        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-1/2" />
+        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-1/4 mt-1" />
+      </div>
+    </div>
+  );
+}
 
 function groupBySeries(books: BookSummary[]): { series: string | null; books: BookSummary[] }[] {
   const map = new Map<string, BookSummary[]>();
@@ -111,8 +123,26 @@ export default function BookLibrary({
 
   if (books === null) {
     return (
-      <div className="flex justify-center py-8">
-        <LoadingIcon />
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-400">Library</h2>
+          <div className="flex items-center gap-2">
+            <select
+              disabled
+              value={groupBy}
+              className="btn btn-md btn-outline-gray opacity-50 cursor-not-allowed"
+            >
+              <option value="none">Group: None</option>
+              <option value="series">Group: Series</option>
+            </select>
+            <button disabled className="btn btn-md btn-outline-red opacity-50 cursor-not-allowed">
+              Bulk delete books
+            </button>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {Array.from({ length: 6 }, (_, i) => <BookCardSkeleton key={i} />)}
+        </div>
       </div>
     );
   }
