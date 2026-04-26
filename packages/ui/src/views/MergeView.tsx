@@ -11,19 +11,7 @@ import LoadingIcon from '../components/icons/LoadingIcon';
 import UploadIcon from '../components/icons/UploadIcon';
 import DownloadIcon from '../components/icons/DownloadIcon';
 import MergeIcon from '../components/icons/MergeIcon';
-
-function CompactBookCardSkeleton() {
-  return (
-    <div className="flex items-stretch bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-lg overflow-hidden">
-      <div className="w-20 shrink-0 bg-gray-200 dark:bg-gray-700 animate-pulse" />
-      <div className="flex flex-col justify-center px-3 py-2 min-w-0 gap-1.5 flex-1">
-        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-3/4" />
-        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-1/2" />
-        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-1/4 mt-1" />
-      </div>
-    </div>
-  );
-}
+import BookCardSkeleton from '../components/layout/BookCardSkeleton';
 
 export default function MergeView() {
   const [, navigate] = useLocation();
@@ -169,7 +157,7 @@ export default function MergeView() {
                 Click to select · click again to remove · selection order = merge order
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {Array.from({ length: 6 }, (_, i) => <CompactBookCardSkeleton key={i} />)}
+                {Array.from({ length: 6 }, (_, i) => <BookCardSkeleton key={i} compact />)}
               </div>
             </section>
             <div className="flex items-center gap-3">

@@ -2,20 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import type { BookSummary } from '../../types/cbz';
 import { listBooks, bulkDeleteBooks } from '../../clients/booksClient';
 import BookCard from './BookCard';
+import BookCardSkeleton from '../layout/BookCardSkeleton';
 import Modal from '../modals/Modal';
-
-function BookCardSkeleton() {
-  return (
-    <div className="flex items-stretch bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-lg overflow-hidden">
-      <div className="w-20 shrink-0 h-28 bg-gray-200 dark:bg-gray-700 animate-pulse" />
-      <div className="flex flex-col justify-center px-3 py-2 min-w-0 gap-2 flex-1">
-        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-3/4" />
-        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-1/2" />
-        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-1/4 mt-1" />
-      </div>
-    </div>
-  );
-}
 
 function groupBySeries(books: BookSummary[]): { series: string | null; books: BookSummary[] }[] {
   const map = new Map<string, BookSummary[]>();
