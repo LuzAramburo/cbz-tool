@@ -2,32 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import type { BookSummary } from '../../types/cbz';
 import { listBooks, bulkDeleteBooks } from '../../clients/booksClient';
 import BookCard from './BookCard';
-import BookCardSkeleton from '../layout/BookCardSkeleton';
+import LibrarySection from '../layout/LibrarySection';
 import Modal from '../modals/Modal';
-
-function groupBySeries(books: BookSummary[]): { series: string | null; books: BookSummary[] }[] {
-  const map = new Map<string, BookSummary[]>();
-  for (const book of books) {
-    const key = book.series ?? '';
-    if (!map.has(key)) map.set(key, []);
-    map.get(key)!.push(book);
-  }
-  for (const group of map.values()) {
-    group.sort((a, b) => {
-      const nA = parseFloat(a.number ?? '');
-      const nB = parseFloat(b.number ?? '');
-      if (!isNaN(nA) && !isNaN(nB) && nA !== nB) return nA - nB;
-      return (a.title ?? '').localeCompare(b.title ?? '', undefined, { numeric: true });
-    });
-  }
-  return [...map.entries()]
-    .sort(([a], [b]) => {
-      if (a === '') return 1;
-      if (b === '') return -1;
-      return a.localeCompare(b, undefined, { numeric: true });
-    })
-    .map(([series, books]) => ({ series: series || null, books }));
-}
 
 interface BookLibraryProps {
   onSelect: (bookId: string) => void;
@@ -45,10 +21,6 @@ export default function BookLibrary({
   onBulkDelete,
 }: BookLibraryProps) {
   const [books, setBooks] = useState<BookSummary[] | null>(null);
-  const [groupBy, setGroupBy] = useState<'none' | 'series'>(() => {
-    const stored = localStorage.getItem('library.groupBy');
-    return stored === 'series' ? 'series' : 'none';
-  });
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -109,62 +81,31 @@ export default function BookLibrary({
     }
   }
 
-  if (books === null) {
-    return (
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-400">Library</h2>
-          <div className="flex items-center gap-2">
-            <select
-              disabled
-              value={groupBy}
-              className="btn btn-md btn-outline-gray opacity-50 cursor-not-allowed"
-            >
-              <option value="none">Group: None</option>
-              <option value="series">Group: Series</option>
-            </select>
-            <button disabled className="btn btn-md btn-outline-red opacity-50 cursor-not-allowed">
-              Bulk delete books
-            </button>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {Array.from({ length: 6 }, (_, i) => <BookCardSkeleton key={i} />)}
-        </div>
-      </div>
-    );
-  }
-
-  if (books.length === 0) return null;
-
   return (
     <>
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-400">Library</h2>
-          <div className="flex items-center gap-2">
-            <select
-              value={groupBy}
-              onChange={(e) => {
-                const value = e.target.value as 'none' | 'series';
-                localStorage.setItem('library.groupBy', value);
-                setGroupBy(value);
-              }}
-              className="btn btn-md btn-outline-gray cursor-pointer"
-            >
-              <option value="none">Group: None</option>
-              <option value="series">Group: Series</option>
-            </select>
+      <LibrarySection
+        books={books}
+        renderCard={(book) => (
+          <BookCard
+            book={book}
+            onSelect={onSelect}
+            onDelete={onDelete}
+            selected={selectedIds.includes(book.bookId)}
+            onToggleSelect={selectMode ? toggleSelect : undefined}
+          />
+        )}
+        headerActions={
+          <>
             {selectMode && (
               <button
                 onClick={() =>
-                  selectedIds.length === books.length
+                  selectedIds.length === books?.length
                     ? setSelectedIds([])
-                    : setSelectedIds(books.map((b) => b.bookId))
+                    : setSelectedIds((books ?? []).map((b) => b.bookId))
                 }
                 className="btn btn-md btn-outline-gray"
               >
-                {selectedIds.length === books.length ? 'Deselect All' : 'Select All'}
+                {selectedIds.length === books?.length ? 'Deselect All' : 'Select All'}
               </button>
             )}
             {selectMode && selectedIds.length > 0 && (
@@ -178,43 +119,14 @@ export default function BookLibrary({
             >
               {selectMode ? 'Cancel' : 'Bulk delete books'}
             </button>
-          </div>
-        </div>
-        {groupBy === 'series' ? (
-          groupBySeries(books).map(({ series, books: group }) => (
-            <div key={series ?? '__unknown__'} className="mb-5">
-              <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-                {series ?? 'Unknown'}
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {group.map((book) => (
-                  <BookCard
-                    key={book.bookId}
-                    book={book}
-                    onSelect={onSelect}
-                    onDelete={onDelete}
-                    selected={selectedIds.includes(book.bookId)}
-                    onToggleSelect={selectMode ? toggleSelect : undefined}
-                  />
-                ))}
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {books.map((book) => (
-              <BookCard
-                key={book.bookId}
-                book={book}
-                onSelect={onSelect}
-                onDelete={onDelete}
-                selected={selectedIds.includes(book.bookId)}
-                onToggleSelect={selectMode ? toggleSelect : undefined}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+          </>
+        }
+        disabledHeaderActions={
+          <button disabled className="btn btn-md btn-outline-red opacity-50 cursor-not-allowed">
+            Bulk delete books
+          </button>
+        }
+      />
 
       {confirmOpen && (
         <Modal

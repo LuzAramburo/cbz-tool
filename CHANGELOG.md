@@ -8,9 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Group books by series in the library: a "Group: None / Group: Series" dropdown next to the bulk delete button organises the library into labelled sections sorted alphabetically by series name, with books within each group ordered by issue number then title; books with no series appear in an "Unknown" group at the end
-- The selected grouping is persisted in `localStorage` and restored across page navigation and app restarts
-- Skeleton loader for the book library: while books are loading, the header, a disabled group dropdown (showing the last-used value), a disabled bulk-delete button, and six pulsing placeholder cards are shown — eliminating the layout jump caused by the previous spinner
+- Group books by series in the library: a dropdown switches between a flat list and sections grouped by series name; books without a series appear under "Unknown"; works in both the Editor and Merge views
+- The selected grouping is remembered across navigation and app restarts
+- Skeleton loader for the book library while books are loading
 
 ### Changed
 - Metadata keys are now normalised to lowercase on the server for all write operations (`PATCH /metadata`, `PUT /metadata/:key`, `DELETE /metadata/:key`), consistent with the parser behaviour on upload

@@ -91,18 +91,19 @@ packages/
 ### UI internals (`packages/ui/src/`)
 - `views/HomeView.tsx` — feature launcher home page (square cards per feature)
 - `views/EditorView.tsx` — full upload/edit flow (book state, modals, scroll behavior)
-- `views/MergeView.tsx` — merge books page: library grid with selection order, metadata pre-fill from first selected book, merge + download result
+- `views/MergeView.tsx` — merge books page: instructions + Merge button above the library, library grid with selection order badges, metadata pre-fill from first selected book, merge + download result; uses `LibrarySection` directly (not via `BookLibrary`)
 - `hooks/useBookOperations.ts` — shared base hook for `upload` (returns `BulkUploadResponse`) and `remove` (deletes by bookId); takes a `setError` callback so callers unify error state; used by both `useEditorBooks` and `useMergeBooks`
 - `hooks/useEditorBooks.ts` — editor hook; wraps `useBookOperations` for upload/delete, adds `openBook`, `removePage`, `addPages`, `movePage`, `saveMetadata`, `downloadBook` (patches metadata first); owns `refreshKey` state and calls `refresh()` after every mutation
 - `hooks/useMergeBooks.ts` — merge hook; wraps `useBookOperations`, adds `listBooks` (with refresh), `merge`, `downloadMerged`, `mergedBook` state
 - `clients/booksClient.ts` — typed fetch wrappers for all `/api/books` endpoints; shared `apiFetch<T>()` helper for error handling
+- `utils/groupBooks.ts` — `groupBySeries(books)`: groups a `BookSummary[]` by `series`, sorts groups alphabetically (null series last as "Unknown"), sorts within each group by `number` then `title`
 - `components/` is organised into subfolders by responsibility:
-  - `layout/` — app shell: `NavHeader.tsx`, `ActionBar.tsx`, `ToggleThemeButton.tsx`
+  - `layout/` — app shell + shared library UI: `NavHeader.tsx`, `ActionBar.tsx`, `ToggleThemeButton.tsx`, `LibrarySection.tsx` (shared library scaffold: heading, group-by dropdown, skeleton, grid — used by `BookLibrary` and `MergeView`), `BookCardSkeleton.tsx` (skeleton card with `compact` prop matching `BookCard`)
   - `editor/` — components owned by EditorView: `FileUpload.tsx`, `BookLibrary.tsx`, `BookCard.tsx`, `BookMetadata.tsx`, `PageGrid.tsx`, `PageThumbnail.tsx`
   - `modals/` — modal system: `Modal.tsx`, `CloseButton.tsx`, `UploadBookModal.tsx`, `AddPagesModal.tsx`, `LibraryModal.tsx`
   - `icons/` — SVG icon components (see Icons gotcha below)
 - `components/editor/FileUpload.tsx` — file picker + drag-and-drop zone; validates `.cbz` extension on drop
-- `components/editor/BookLibrary.tsx` — fetches and displays library as a grid of `BookCard`s; accepts `onEmpty` callback for auto-closing modals when the last book is deleted; re-fetches on `refreshKey` change
+- `components/editor/BookLibrary.tsx` — fetches book list, owns `selectMode`/`selectedIds` state and bulk-delete logic; delegates all display (heading, group-by dropdown, skeleton, grid) to `LibrarySection`; accepts `onEmpty` callback for auto-closing modals when the last book is deleted; re-fetches on `refreshKey` change
 - `components/modals/LibraryModal.tsx` — wraps `BookLibrary` in a modal; threads `onEmpty` to auto-close
 - `components/editor/BookCard.tsx` — single book entry showing cover image, title, series/number, page count; hover reveals delete button
 - `components/editor/BookMetadata.tsx` — collapsible metadata panel with editable fields; `summary` key gets a `<textarea>`, all others `<input>`; calls `onMetadataChange(fullMetadataObject)` on every field change; supports add/delete of individual properties
@@ -134,3 +135,4 @@ packages/
 - **Electron version bumps**: `packages/desktop/package.json` has the version in **two** places — `devDependencies.electron` and `build.electronVersion`. Both must be updated together.
 - **Windows EBUSY on file delete**: `fsp.rm({ force: true })` suppresses `ENOENT` but not `EBUSY`. On Windows, an open file handle (e.g. sharp reading a page for thumbnail generation) causes `EBUSY` when a concurrent delete fires. Use a retry loop — see `rmRetry` in `cbzStore.ts`.
 - **`BookMetadata` type vs component name clash**: `types/cbz` exports a `BookMetadata` type and `components/editor/BookMetadata.tsx` is a component of the same name. Importing both in the same file causes `TS2300`. Fix: alias the component — `import BookMetadataPanel from '../components/editor/BookMetadata'`.
+- **Metadata keys are always lowercase**: `controllers/metadata.ts` normalizes all keys to lowercase on write (`patchMetadata`, `setMetadataKey`, `deleteMetadataKey`). When reading metadata from a CBZ, `cbzParser.ts` lowercases `ComicInfo.xml` attribute names. Always use lowercase keys (e.g. `'series'`, `'title'`) when accessing metadata in the UI.
