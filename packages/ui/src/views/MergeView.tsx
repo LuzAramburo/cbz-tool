@@ -5,6 +5,7 @@ import { getBook } from '../clients/booksClient';
 import { useMergeBooks } from '../hooks/useMergeBooks';
 import BookCard from '../components/editor/BookCard';
 import BookMetadataPanel from '../components/editor/BookMetadata';
+import LibrarySection from '../components/layout/LibrarySection';
 import UploadBookModal from '../components/modals/UploadBookModal';
 import Modal from '../components/modals/Modal';
 import LoadingIcon from '../components/icons/LoadingIcon';
@@ -146,11 +147,36 @@ export default function MergeView() {
           </div>
         )}
 
-        {books === null ? (
-          <div className="flex justify-center py-12">
-            <LoadingIcon />
+        {books?.length !== 0 && (
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              {books !== null && !canMerge && (
+                <p className="text-xs text-gray-400 dark:text-gray-500">
+                  {selectedIds.length === 1
+                    ? 'Select at least one more book'
+                    : 'Select books from the library'}
+                </p>
+              )}
+              <p className="text-xs text-gray-400 dark:text-gray-500">
+                Click to select · click again to remove · selection order = merge order
+              </p>
+            </div>
+            <div className="flex items-center gap-3 shrink-0">
+              <button
+                onClick={handleMerge}
+                disabled={!canMerge || merging || books === null}
+                className="btn btn-lg btn-primary flex items-center gap-2"
+              >
+                {merging ? <LoadingIcon /> : <MergeIcon className="w-4 h-4" />}
+                {merging
+                  ? 'Merging...'
+                  : `Merge${selectedIds.length >= 2 ? ` ${selectedIds.length}` : ''} Books`}
+              </button>
+            </div>
           </div>
-        ) : books.length === 0 ? (
+        )}
+
+        {books?.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
             <MergeIcon className="w-12 h-12 text-gray-300 dark:text-gray-600" />
             <p className="text-gray-500 dark:text-gray-400 text-sm">
@@ -158,50 +184,43 @@ export default function MergeView() {
             </p>
           </div>
         ) : (
-          <section className="flex flex-col gap-3">
-            <div className="flex items-baseline justify-between">
-              <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-400">
-                Library
-                {selectedIds.length > 0 && (
-                  <span className="ml-2 text-blue-500">{selectedIds.length} selected</span>
-                )}
-              </h2>
-              {selectedIds.length > 0 && (
-                <button
-                  onClick={() => setSelectedIds([])}
-                  className="btn btn-lg btn-outline-gray"
-                >
+          <LibrarySection
+            books={books}
+            compact
+            headingExtra={
+              selectedIds.length > 0 ? (
+                <span className="ml-2 text-blue-500">{selectedIds.length} selected</span>
+              ) : undefined
+            }
+            renderCard={(book) => {
+              const selectionIndex = selectedIds.indexOf(book.bookId);
+              const isSelected = selectionIndex !== -1;
+              return (
+                <div className="relative">
+                  {isSelected && (
+                    <div className="absolute top-1 left-1 z-10 w-5 h-5 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center font-bold pointer-events-none select-none">
+                      {selectionIndex + 1}
+                    </div>
+                  )}
+                  <div className={isSelected ? 'ring-2 ring-blue-500 rounded-lg' : ''}>
+                    <BookCard
+                      book={book}
+                      onSelect={handleBookSelect}
+                      onDelete={handleDeleteBook}
+                      compact
+                    />
+                  </div>
+                </div>
+              );
+            }}
+            headerActions={
+              selectedIds.length > 0 ? (
+                <button onClick={() => setSelectedIds([])} className="btn btn-lg btn-outline-gray">
                   Clear selection
                 </button>
-              )}
-            </div>
-            <p className="text-xs text-gray-400 dark:text-gray-500">
-              Click to select · click again to remove · selection order = merge order
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {books.map((book) => {
-                const selectionIndex = selectedIds.indexOf(book.bookId);
-                const isSelected = selectionIndex !== -1;
-                return (
-                  <div key={book.bookId} className="relative">
-                    {isSelected && (
-                      <div className="absolute top-1 left-1 z-10 w-5 h-5 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center font-bold pointer-events-none select-none">
-                        {selectionIndex + 1}
-                      </div>
-                    )}
-                    <div className={isSelected ? 'ring-2 ring-blue-500 rounded-lg' : ''}>
-                      <BookCard
-                        book={book}
-                        onSelect={handleBookSelect}
-                        onDelete={handleDeleteBook}
-                        compact
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
+              ) : undefined
+            }
+          />
         )}
 
         {selectedIds.length > 0 && (
@@ -220,28 +239,6 @@ export default function MergeView() {
               />
             )}
           </section>
-        )}
-
-        {books !== null && books.length > 0 && (
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleMerge}
-              disabled={!canMerge || merging}
-              className="btn btn-lg btn-primary flex items-center gap-2"
-            >
-              {merging ? <LoadingIcon /> : <MergeIcon className="w-4 h-4" />}
-              {merging
-                ? 'Merging...'
-                : `Merge${selectedIds.length >= 2 ? ` ${selectedIds.length}` : ''} Books`}
-            </button>
-            {!canMerge && (
-              <p className="text-xs text-gray-400 dark:text-gray-500">
-                {selectedIds.length === 1
-                  ? 'Select at least one more book'
-                  : 'Select books from the library above'}
-              </p>
-            )}
-          </div>
         )}
       </main>
 

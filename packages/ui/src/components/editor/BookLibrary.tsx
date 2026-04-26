@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import type { BookSummary } from '../../types/cbz';
 import { listBooks, bulkDeleteBooks } from '../../clients/booksClient';
 import BookCard from './BookCard';
-import LoadingIcon from '../icons/LoadingIcon.tsx';
+import LibrarySection from '../layout/LibrarySection';
 import Modal from '../modals/Modal';
 
 interface BookLibraryProps {
@@ -81,32 +81,31 @@ export default function BookLibrary({
     }
   }
 
-  if (books === null) {
-    return (
-      <div className="flex justify-center py-8">
-        <LoadingIcon />
-      </div>
-    );
-  }
-
-  if (books.length === 0) return null;
-
   return (
     <>
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-400">Library</h2>
-          <div className="flex items-center gap-2">
+      <LibrarySection
+        books={books}
+        renderCard={(book) => (
+          <BookCard
+            book={book}
+            onSelect={onSelect}
+            onDelete={onDelete}
+            selected={selectedIds.includes(book.bookId)}
+            onToggleSelect={selectMode ? toggleSelect : undefined}
+          />
+        )}
+        headerActions={
+          <>
             {selectMode && (
               <button
                 onClick={() =>
-                  selectedIds.length === books.length
+                  selectedIds.length === books?.length
                     ? setSelectedIds([])
-                    : setSelectedIds(books.map((b) => b.bookId))
+                    : setSelectedIds((books ?? []).map((b) => b.bookId))
                 }
                 className="btn btn-md btn-outline-gray"
               >
-                {selectedIds.length === books.length ? 'Deselect All' : 'Select All'}
+                {selectedIds.length === books?.length ? 'Deselect All' : 'Select All'}
               </button>
             )}
             {selectMode && selectedIds.length > 0 && (
@@ -120,21 +119,14 @@ export default function BookLibrary({
             >
               {selectMode ? 'Cancel' : 'Bulk delete books'}
             </button>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {books.map((book) => (
-            <BookCard
-              key={book.bookId}
-              book={book}
-              onSelect={onSelect}
-              onDelete={onDelete}
-              selected={selectedIds.includes(book.bookId)}
-              onToggleSelect={selectMode ? toggleSelect : undefined}
-            />
-          ))}
-        </div>
-      </div>
+          </>
+        }
+        disabledHeaderActions={
+          <button disabled className="btn btn-md btn-outline-red opacity-50 cursor-not-allowed">
+            Bulk delete books
+          </button>
+        }
+      />
 
       {confirmOpen && (
         <Modal

@@ -8,7 +8,8 @@ import {
 import type { BookMetadata } from '../types/cbz.js';
 
 export async function setMetadataKey(req: Request, res: Response): Promise<void> {
-  const { bookId, key } = req.params as { bookId: string; key: string };
+  const { bookId, key: rawKey } = req.params as { bookId: string; key: string };
+  const key = rawKey.toLowerCase();
   if (!(await getBook(bookId))) {
     res.status(404).json({ error: 'Book not found' });
     return;
@@ -23,7 +24,8 @@ export async function setMetadataKey(req: Request, res: Response): Promise<void>
 }
 
 export async function deleteMetadataKey(req: Request, res: Response): Promise<void> {
-  const { bookId, key } = req.params as { bookId: string; key: string };
+  const { bookId, key: rawKey } = req.params as { bookId: string; key: string };
+  const key = rawKey.toLowerCase();
   if (!(await getBook(bookId))) {
     res.status(404).json({ error: 'Book not found' });
     return;
@@ -45,6 +47,12 @@ export async function patchMetadata(req: Request, res: Response): Promise<void> 
     return;
   }
 
-  const updated = (await updateMetadata(bookId, metadata as BookMetadata | null))!;
+  const normalized: BookMetadata | null =
+    metadata == null
+      ? null
+      : Object.fromEntries(
+          Object.entries(metadata as BookMetadata).map(([k, v]) => [k.toLowerCase(), v])
+        );
+  const updated = (await updateMetadata(bookId, normalized))!;
   res.json({ metadata: updated.metadata });
 }

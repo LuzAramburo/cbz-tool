@@ -11,7 +11,14 @@ interface BookCardProps {
   onToggleSelect?: (bookId: string) => void;
 }
 
-export default function BookCard({ book, onSelect, onDelete, compact, selected, onToggleSelect }: BookCardProps) {
+export default function BookCard({
+  book,
+  onSelect,
+  onDelete,
+  compact,
+  selected,
+  onToggleSelect,
+}: BookCardProps) {
   const title = book.title || 'Untitled';
   const selectMode = !!onToggleSelect;
 
@@ -20,10 +27,12 @@ export default function BookCard({ book, onSelect, onDelete, compact, selected, 
       className={`group flex items-stretch bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-lg overflow-hidden hover:shadow-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-all relative${selected ? ' ring-2 ring-blue-500' : ''}`}
     >
       <button
-        onClick={() => selectMode ? onToggleSelect(book.bookId) : onSelect(book.bookId)}
+        onClick={() => (selectMode ? onToggleSelect(book.bookId) : onSelect(book.bookId))}
         className="cursor-pointer flex items-stretch flex-1 min-w-0 text-left"
       >
-        <div className={`w-20 shrink-0 bg-gray-200 dark:bg-gray-800 relative${compact ? '' : ' h-28'}`}>
+        <div
+          className={`w-20 shrink-0 bg-gray-200 dark:bg-gray-800 relative${compact ? ' min-h-18' : ' h-28'}`}
+        >
           <img
             src={getPageThumbnailUrl(book.bookId, book.coverPageIndex, book.coverFilename)}
             alt={`Cover of ${title}`}
@@ -38,7 +47,13 @@ export default function BookCard({ book, onSelect, onDelete, compact, selected, 
               }`}
             >
               {selected && (
-                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <svg
+                  className="w-3 h-3"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={3}
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               )}
