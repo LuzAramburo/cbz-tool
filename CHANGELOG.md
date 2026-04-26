@@ -7,14 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-04-26
+
 ### Added
 - Group books by series in the library: a dropdown switches between a flat list and sections grouped by series name; books without a series appear under "Unknown"; works in both the Editor and Merge views
 - The selected grouping is remembered across navigation and app restarts
 - Skeleton loader for the book library while books are loading
+- GitHub Actions CI workflow runs server tests on every pull request to `master`
 
 ### Changed
 - Metadata keys are now normalized to lowercase on the server for all write operations (`PATCH /metadata`, `PUT /metadata/:key`, `DELETE /metadata/:key`), consistent with the parser behavior on upload
-- Fix test on server for Page file cleanup after removal is now fire-and-forget: the server responds as soon as the manifest is updated, and the file is deleted in the background
+- Page file cleanup after removal is now fire-and-forget: the server responds as soon as the manifest is updated, and the file is deleted in the background
 
 ## [1.3.1] - 2026-04-20
 
