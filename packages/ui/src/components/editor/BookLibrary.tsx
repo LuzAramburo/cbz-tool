@@ -5,6 +5,30 @@ import BookCard from './BookCard';
 import LoadingIcon from '../icons/LoadingIcon.tsx';
 import Modal from '../modals/Modal';
 
+function groupBySeries(books: BookSummary[]): { series: string | null; books: BookSummary[] }[] {
+  const map = new Map<string, BookSummary[]>();
+  for (const book of books) {
+    const key = book.series ?? '';
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(book);
+  }
+  for (const group of map.values()) {
+    group.sort((a, b) => {
+      const nA = parseFloat(a.number ?? '');
+      const nB = parseFloat(b.number ?? '');
+      if (!isNaN(nA) && !isNaN(nB) && nA !== nB) return nA - nB;
+      return (a.title ?? '').localeCompare(b.title ?? '', undefined, { numeric: true });
+    });
+  }
+  return [...map.entries()]
+    .sort(([a], [b]) => {
+      if (a === '') return 1;
+      if (b === '') return -1;
+      return a.localeCompare(b, undefined, { numeric: true });
+    })
+    .map(([series, books]) => ({ series: series || null, books }));
+}
+
 interface BookLibraryProps {
   onSelect: (bookId: string) => void;
   onDelete: (bookId: string, title: string) => void;
@@ -21,6 +45,7 @@ export default function BookLibrary({
   onBulkDelete,
 }: BookLibraryProps) {
   const [books, setBooks] = useState<BookSummary[] | null>(null);
+  const [groupBy, setGroupBy] = useState<'none' | 'series'>('none');
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -97,6 +122,14 @@ export default function BookLibrary({
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-400">Library</h2>
           <div className="flex items-center gap-2">
+            <select
+              value={groupBy}
+              onChange={(e) => setGroupBy(e.target.value as 'none' | 'series')}
+              className="btn btn-md btn-outline-gray cursor-pointer"
+            >
+              <option value="none">Group: None</option>
+              <option value="series">Group: Series</option>
+            </select>
             {selectMode && (
               <button
                 onClick={() =>
@@ -122,18 +155,40 @@ export default function BookLibrary({
             </button>
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {books.map((book) => (
-            <BookCard
-              key={book.bookId}
-              book={book}
-              onSelect={onSelect}
-              onDelete={onDelete}
-              selected={selectedIds.includes(book.bookId)}
-              onToggleSelect={selectMode ? toggleSelect : undefined}
-            />
-          ))}
-        </div>
+        {groupBy === 'series' ? (
+          groupBySeries(books).map(({ series, books: group }) => (
+            <div key={series ?? '__unknown__'} className="mb-5">
+              <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
+                {series ?? 'Unknown'}
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {group.map((book) => (
+                  <BookCard
+                    key={book.bookId}
+                    book={book}
+                    onSelect={onSelect}
+                    onDelete={onDelete}
+                    selected={selectedIds.includes(book.bookId)}
+                    onToggleSelect={selectMode ? toggleSelect : undefined}
+                  />
+                ))}
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {books.map((book) => (
+              <BookCard
+                key={book.bookId}
+                book={book}
+                onSelect={onSelect}
+                onDelete={onDelete}
+                selected={selectedIds.includes(book.bookId)}
+                onToggleSelect={selectMode ? toggleSelect : undefined}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {confirmOpen && (
