@@ -12,6 +12,19 @@ import UploadIcon from '../components/icons/UploadIcon';
 import DownloadIcon from '../components/icons/DownloadIcon';
 import MergeIcon from '../components/icons/MergeIcon';
 
+function CompactBookCardSkeleton() {
+  return (
+    <div className="flex items-stretch bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-lg overflow-hidden">
+      <div className="w-20 shrink-0 bg-gray-200 dark:bg-gray-700 animate-pulse" />
+      <div className="flex flex-col justify-center px-3 py-2 min-w-0 gap-1.5 flex-1">
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-3/4" />
+        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-1/2" />
+        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-1/4 mt-1" />
+      </div>
+    </div>
+  );
+}
+
 export default function MergeView() {
   const [, navigate] = useLocation();
   const {
@@ -147,9 +160,31 @@ export default function MergeView() {
         )}
 
         {books === null ? (
-          <div className="flex justify-center py-12">
-            <LoadingIcon />
-          </div>
+          <>
+            <section className="flex flex-col gap-3">
+              <div className="flex items-baseline justify-between">
+                <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-400">Library</h2>
+              </div>
+              <p className="text-xs text-gray-400 dark:text-gray-500">
+                Click to select · click again to remove · selection order = merge order
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {Array.from({ length: 6 }, (_, i) => <CompactBookCardSkeleton key={i} />)}
+              </div>
+            </section>
+            <div className="flex items-center gap-3">
+              <button
+                disabled
+                className="btn btn-lg btn-primary flex items-center gap-2 opacity-50 cursor-not-allowed"
+              >
+                <MergeIcon className="w-4 h-4" />
+                Merge Books
+              </button>
+              <p className="text-xs text-gray-400 dark:text-gray-500">
+                Select books from the library above
+              </p>
+            </div>
+          </>
         ) : books.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
             <MergeIcon className="w-12 h-12 text-gray-300 dark:text-gray-600" />
