@@ -9,6 +9,7 @@ Available as a desktop app (Electron), a self-hosted web app (Docker), or a loca
 **Editor**
 - Upload one or more CBZ files at once via file picker or drag and drop
 - Browse and reopen books from a persistent library, sorted by title
+- Group the library by series — a dropdown switches between a flat title-sorted list and sections grouped by series name, with the selection remembered across sessions
 - Bulk delete books from the library
 - View all pages as a responsive image grid with fast-loading thumbnails
 - Zoom into any page at full resolution with a keyboard-navigable image viewer

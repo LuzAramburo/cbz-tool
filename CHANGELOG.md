@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Group books by series in the library: a "Group: None / Group: Series" dropdown next to the bulk delete button organises the library into labelled sections sorted alphabetically by series name, with books within each group ordered by issue number then title; books with no series appear in an "Unknown" group at the end
+- The selected grouping is persisted in `localStorage` and restored across page navigation and app restarts
+
+### Changed
+- Metadata keys are now normalised to lowercase on the server for all write operations (`PATCH /metadata`, `PUT /metadata/:key`, `DELETE /metadata/:key`), consistent with the parser behaviour on upload
+
 ## [1.3.1] - 2026-04-20
 
 ### Fixed

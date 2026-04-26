@@ -45,7 +45,10 @@ export default function BookLibrary({
   onBulkDelete,
 }: BookLibraryProps) {
   const [books, setBooks] = useState<BookSummary[] | null>(null);
-  const [groupBy, setGroupBy] = useState<'none' | 'series'>('none');
+  const [groupBy, setGroupBy] = useState<'none' | 'series'>(() => {
+    const stored = localStorage.getItem('library.groupBy');
+    return stored === 'series' ? 'series' : 'none';
+  });
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -124,7 +127,11 @@ export default function BookLibrary({
           <div className="flex items-center gap-2">
             <select
               value={groupBy}
-              onChange={(e) => setGroupBy(e.target.value as 'none' | 'series')}
+              onChange={(e) => {
+                const value = e.target.value as 'none' | 'series';
+                localStorage.setItem('library.groupBy', value);
+                setGroupBy(value);
+              }}
               className="btn btn-md btn-outline-gray cursor-pointer"
             >
               <option value="none">Group: None</option>
