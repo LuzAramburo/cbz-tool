@@ -1,5 +1,5 @@
 # Stage 1: Build the UI
-FROM node:20-alpine AS ui-builder
+FROM node:22-alpine AS ui-builder
 WORKDIR /app
 
 COPY package.json .
@@ -14,7 +14,7 @@ COPY packages/ui/ ./packages/ui/
 RUN npm run build -w packages/ui
 
 # Stage 2: Build the server
-FROM node:20-alpine AS server-builder
+FROM node:22-alpine AS server-builder
 WORKDIR /app
 
 COPY package.json .
@@ -29,7 +29,7 @@ COPY --from=ui-builder /app/packages/server/public ./packages/server/public
 RUN npm run build -w packages/server
 
 # Stage 3: Runtime
-FROM node:20-alpine
+FROM node:22-alpine
 WORKDIR /app
 
 COPY package.json .
