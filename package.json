@@ -15,6 +15,10 @@
     "format": "prettier --write packages",
     "format:check": "prettier --check packages"
   },
+  "engines": {
+    "node": ">=22",
+    "npm": ">=11"
+  },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
     "@types/eslint": "^9.6.1",
