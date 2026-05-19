@@ -19,7 +19,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci -w packages/server
 
       - name: Run server tests
         run: npm test -w packages/server
