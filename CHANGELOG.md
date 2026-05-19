@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-05-18
+
+### Changed
+- Node.js minimum version set to 22; npm minimum version set to 11 (enforced via `engines` field and `engine-strict=true` in `.npmrc`)
+- Dockerfile base image updated to `node:22-alpine`
+- `fast-xml-parser` updated to 5.7.2
+
 ## [1.4.0] - 2026-04-26
 
 ### Added
