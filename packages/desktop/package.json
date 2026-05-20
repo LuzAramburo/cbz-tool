@@ -9,8 +9,12 @@
     "dev": "nodemon --watch ../server --ext js --exec electron index.js",
     "package": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder"
   },
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=11"
+  },
   "dependencies": {
-    "@cbz-tool/server": "*"
+    "@cbz-tool/server": "workspace:*"
   },
   "devDependencies": {
     "electron": "41.2.1",

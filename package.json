@@ -1,14 +1,11 @@
 {
   "name": "cbz-tool",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
   "scripts": {
-    "dev": "npm run build -w packages/server && cross-env NODE_ENV=development concurrently \"npm run dev -w packages/ui\" \"npm run dev -w packages/desktop\"",
-    "dev:web": "cross-env NODE_ENV=development concurrently \"npm run dev -w packages/ui\" \"npm run dev -w packages/server\"",
-    "build": "npm run build -w packages/ui && node scripts/docker-build.mjs",
-    "package": "npm run build -w packages/ui && npm run build -w packages/server && npm run package -w packages/desktop",
+    "dev": "pnpm --filter @cbz-tool/server build && cross-env NODE_ENV=development concurrently \"pnpm --filter @cbz-tool/ui dev\" \"pnpm --filter @cbz-tool/desktop dev\"",
+    "dev:web": "cross-env NODE_ENV=development concurrently \"pnpm --filter @cbz-tool/ui dev\" \"pnpm --filter @cbz-tool/server dev\"",
+    "build": "pnpm --filter @cbz-tool/ui build && node scripts/docker-build.mjs",
+    "package": "pnpm --filter @cbz-tool/ui build && pnpm --filter @cbz-tool/server build && pnpm --filter @cbz-tool/desktop package",
     "publish": "docker push LuzAramburo/cbz-tool:latest",
     "lint": "eslint packages",
     "lint:fix": "eslint packages --fix",
@@ -17,7 +14,7 @@
   },
   "engines": {
     "node": ">=22",
-    "npm": ">=11"
+    "pnpm": ">=11"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
