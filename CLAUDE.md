@@ -32,7 +32,7 @@ pnpm format:check
 
 ### Single test file
 ```bash
-cd packages/server && npx vitest run tests/cbzParser.test.ts
+cd packages/server && pnpm exec vitest run tests/cbzParser.test.ts
 ```
 
 ## Architecture

@@ -12,7 +12,8 @@
     "test:coverage": "vitest run --coverage"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22",
+    "pnpm": ">=11"
   },
   "dependencies": {
     "dotenv": "^16.6.1",
