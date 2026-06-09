@@ -4,3 +4,5 @@ allowBuilds:
   electron: true
   electron-winstaller: true
   sharp: true
+minimumReleaseAgeExclude:
+  - tmp@0.2.6

@@ -20,17 +20,17 @@
     "@eslint/js": "^9.39.4",
     "@types/eslint": "^9.6.1",
     "@types/express": "^5.0.6",
-    "concurrently": "^8.0.0",
-    "cross-env": "^7.0.0",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
     "eslint": "^9.39.4",
-    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
-    "nodemon": "^3.0.0",
-    "prettier": "^3.8.1",
-    "typescript-eslint": "^8.56.1"
+    "nodemon": "^3.1.14",
+    "prettier": "^3.8.3",
+    "typescript-eslint": "^8.60.1"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.2.2",
-    "tailwindcss": "^4.2.2"
+    "@tailwindcss/vite": "^4.3.0",
+    "tailwindcss": "^4.3.0"
   }
 }
