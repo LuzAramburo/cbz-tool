@@ -6,33 +6,33 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Development
 ```bash
-npm run dev          # Electron desktop app (hot reload) — builds server first, then runs Vite + Electron
-npm run dev:web      # Browser only — runs Vite + Express (no Electron)
+pnpm dev          # Electron desktop app (hot reload) — builds server first, then runs Vite + Electron
+pnpm dev:web      # Browser only — runs Vite + Express (no Electron)
 ```
 
 ### Build & Package
 ```bash
-npm run package      # Build UI + server, then produce Electron installer via electron-builder
+pnpm package      # Build UI + server, then produce Electron installer via electron-builder
 ```
 
 ### Testing
 ```bash
-npm test -w packages/server          # Run all server unit tests (vitest)
-npm run test:watch -w packages/server  # Watch mode
-npm run test:coverage -w packages/server
+pnpm --filter @cbz-tool/server test          # Run all server unit tests (vitest)
+pnpm --filter @cbz-tool/server test:watch    # Watch mode
+pnpm --filter @cbz-tool/server test:coverage
 ```
 
 ### Code Quality
 ```bash
-npm run lint         # ESLint across all packages
-npm run lint:fix     # Auto-fix lint issues
-npm run format       # Prettier across all packages
-npm run format:check
+pnpm lint         # ESLint across all packages
+pnpm lint:fix     # Auto-fix lint issues
+pnpm format       # Prettier across all packages
+pnpm format:check
 ```
 
 ### Single test file
 ```bash
-cd packages/server && npx vitest run tests/cbzParser.test.ts
+cd packages/server && pnpm exec vitest run tests/cbzParser.test.ts
 ```
 
 ## Architecture

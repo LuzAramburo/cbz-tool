@@ -1,14 +1,11 @@
 {
   "name": "cbz-tool",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
   "scripts": {
-    "dev": "npm run build -w packages/server && cross-env NODE_ENV=development concurrently \"npm run dev -w packages/ui\" \"npm run dev -w packages/desktop\"",
-    "dev:web": "cross-env NODE_ENV=development concurrently \"npm run dev -w packages/ui\" \"npm run dev -w packages/server\"",
-    "build": "npm run build -w packages/ui && node scripts/docker-build.mjs",
-    "package": "npm run build -w packages/ui && npm run build -w packages/server && npm run package -w packages/desktop",
+    "dev": "pnpm --filter @cbz-tool/server build && cross-env NODE_ENV=development concurrently \"pnpm --filter @cbz-tool/ui dev\" \"pnpm --filter @cbz-tool/desktop dev\"",
+    "dev:web": "cross-env NODE_ENV=development concurrently \"pnpm --filter @cbz-tool/ui dev\" \"pnpm --filter @cbz-tool/server dev\"",
+    "build": "pnpm --filter @cbz-tool/ui build && node scripts/docker-build.mjs",
+    "package": "pnpm --filter @cbz-tool/ui build && pnpm --filter @cbz-tool/server build && pnpm --filter @cbz-tool/desktop package",
     "publish": "docker push LuzAramburo/cbz-tool:latest",
     "lint": "eslint packages",
     "lint:fix": "eslint packages --fix",
@@ -17,23 +14,23 @@
   },
   "engines": {
     "node": ">=22",
-    "npm": ">=11"
+    "pnpm": ">=11"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
     "@types/eslint": "^9.6.1",
     "@types/express": "^5.0.6",
-    "concurrently": "^8.0.0",
-    "cross-env": "^7.0.0",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
     "eslint": "^9.39.4",
-    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
-    "nodemon": "^3.0.0",
-    "prettier": "^3.8.1",
-    "typescript-eslint": "^8.56.1"
+    "nodemon": "^3.1.14",
+    "prettier": "^3.8.3",
+    "typescript-eslint": "^8.60.1"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.2.2",
-    "tailwindcss": "^4.2.2"
+    "@tailwindcss/vite": "^4.3.0",
+    "tailwindcss": "^4.3.0"
   }
 }
