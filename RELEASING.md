@@ -18,13 +18,19 @@
    ```
    Installer output: `packages/desktop/release/`
 
-4. **Commit the release**
+4. **Verify the Docker build locally**
+   ```bash
+   docker build -t cbz-tool-local .
+   ```
+   Tagging pushes straight to the `docker-publish` workflow (step 6), so catch build failures here — before a tag exists — rather than after.
+
+5. **Commit the release**
    ```bash
    git add CHANGELOG.md packages/*/package.json
    git commit -m "chore(release): bump version to x.y.z"
    ```
 
-5. **Tag and push**
+6. **Tag and push**
    ```bash
    git tag vx.y.z
    git push origin master --tags
