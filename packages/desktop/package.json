@@ -1,6 +1,6 @@
 {
   "name": "@cbz-tool/desktop",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "CBZ Tool desktop app",
   "author": "LuzAramburo",
   "type": "module",
