@@ -12,3 +12,30 @@ minimumReleaseAgeExclude:
   - multer@2.2.0
   - undici@6.27.0
   - js-yaml@4.1.2
+  - brace-expansion@2.1.2
+  - brace-expansion@1.1.16
+  - brace-expansion@5.0.7
+  - js-yaml@4.3.0
+  - shell-quote@1.8.5
+  - body-parser@1.20.6
+  - sharp@0.35.0
+  - builder-util-runtime@9.7.0
+  - app-builder-lib@26.15.0
+  - brace-expansion@1.1.17
+  - brace-expansion@2.1.3
+  - brace-expansion@5.0.8
+  - postcss@8.5.23
+  - undici@6.28.0
+  - brace-expansion@5.0.9
+  - brace-expansion@2.1.4
+  - brace-expansion@1.1.18
+  - electron@41.4.0
+  - electron@41.2.2
+  - electron@41.9.1
+  - electron@41.10.3
+  - js-yaml@4.3.1
+  - nanoid@3.3.16
+  - extract-zip@2.0.2
+  - nanoid@3.3.18
+  - postcss@8.5.18
+  - tar@7.5.21
