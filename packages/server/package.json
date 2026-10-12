@@ -30,7 +30,7 @@
     "@types/node": "^25.9.0",
     "@types/sharp": "^0.31.1",
     "@types/yauzl": "^2.10.3",
-    "@vitest/coverage-v8": "^4.1.6",
+    "@vitest/coverage-v8": "^4.1.11",
     "typescript": "^5.9.3",
     "vitest": "^4.1.6"
   }
