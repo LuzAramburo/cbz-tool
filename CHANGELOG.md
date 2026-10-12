@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.4] - 2026-10-12
+
+### Security
+
+- Patched vulnerable transitive dependencies via pnpm overrides (`multer`, `undici`, `qs`, `sharp`, `brace-expansion`, `fast-uri`, `js-yaml`, `proxy-addr`, and others)
+
+### Changed
+
+- Updated `vitest` and `@vitest/coverage-v8` to 4.1.11
+
 ## [1.4.3] - 2026-08-26
 
 ### Changed

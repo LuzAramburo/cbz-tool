@@ -2,7 +2,7 @@
 FROM node:22-alpine AS ui-builder
 WORKDIR /app
 
-RUN npm install -g pnpm@11
+RUN npm install -g pnpm@12
 
 COPY package.json .
 COPY pnpm-lock.yaml .
@@ -21,7 +21,7 @@ RUN pnpm --filter @cbz-tool/ui build
 FROM node:22-alpine AS server-builder
 WORKDIR /app
 
-RUN npm install -g pnpm@11
+RUN npm install -g pnpm@12
 
 COPY package.json .
 COPY pnpm-lock.yaml .
@@ -41,7 +41,7 @@ RUN pnpm --filter @cbz-tool/server build
 FROM node:22-alpine
 WORKDIR /app
 
-RUN npm install -g pnpm@11
+RUN npm install -g pnpm@12
 
 COPY package.json .
 COPY pnpm-lock.yaml .
